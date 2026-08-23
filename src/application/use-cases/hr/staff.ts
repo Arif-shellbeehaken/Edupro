@@ -1,0 +1,95 @@
+"use server";
+
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { requireTenantContext } from "@/infrastructure/auth/rbac";
+import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
+import { hrRepository } from "@/infrastructure/database/repositories/hr-repository";
+
+const schema = z.object({
+  employeeId: z.string().min(1, "কর্মচারী আইডি দিন"),
+  name: z.string().min(2, "নাম দিন"),
+  nameBn: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional(),
+  gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
+  designation: z.string().min(1, "পদবি দিন"),
+  department: z.string().optional(),
+  roleType: z
+    .enum(["TEACHER", "HIFZ_TEACHER", "ACCOUNTANT", "ADMIN", "SUPPORT"])
+    .default("TEACHER"),
+  employmentType: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT"]).default("FULL_TIME"),
+  joiningDate: z.string().optional(),
+  basicSalary: z.coerce.number().int().min(0).default(0),
+  houseRent: z.coerce.number().int().min(0).default(0),
+  medicalAllow: z.coerce.number().int().min(0).default(0),
+  otherAllow: z.coerce.number().int().min(0).default(0),
+  bankName: z.string().optional(),
+  bankAccount: z.string().optional(),
+  address: z.string().optional(),
+  emergencyContact: z.string().optional(),
+});
+
+export type CreateStaffState = { error?: string; success?: boolean };
+
+export async function createStaffAction(
+  _prev: CreateStaffState,
+  formData: FormData
+): Promise<CreateStaffState> {
+  const session = await requireTenantContext().catch(() => null);
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  setTenantContext({
+    tenantId: session.user.tenantId,
+    userId: session.user.id,
+    role: session.user.role,
+    isSuperAdmin: false,
+  });
+
+  const parsed = schema.safeParse({
+    employeeId: formData.get("employeeId"),
+    name: formData.get("name"),
+    nameBn: formData.get("nameBn") || undefined,
+    email: formData.get("email") || undefined,
+    phone: formData.get("phone") || undefined,
+    gender: formData.get("gender") || undefined,
+    designation: formData.get("designation"),
+    department: formData.get("department") || undefined,
+    roleType: formData.get("roleType") || "TEACHER",
+    employmentType: formData.get("employmentType") || "FULL_TIME",
+    joiningDate: formData.get("joiningDate") || undefined,
+    basicSalary: formData.get("basicSalary") || 0,
+    houseRent: formData.get("houseRent") || 0,
+    medicalAllow: formData.get("medicalAllow") || 0,
+    otherAllow: formData.get("otherAllow") || 0,
+    bankName: formData.get("bankName") || undefined,
+    bankAccount: formData.get("bankAccount") || undefined,
+    address: formData.get("address") || undefined,
+    emergencyContact: formData.get("emergencyContact") || undefined,
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.errors[0]?.message ?? "ইনপুট সঠিক নয়" };
+  }
+
+  try {
+    await hrRepository.createStaff({
+      tenantId: session.user.tenantId,
+      ...parsed.data,
+      email: parsed.data.email || undefined,
+      joiningDate: parsed.data.joiningDate
+        ? new Date(parsed.data.joiningDate)
+        : undefined,
+    });
+    revalidatePath("/tenant/admin/hr");
+    revalidatePath("/tenant/admin/staff");
+    return { success: true };
+  } catch (e: unknown) {
+    console.error(e);
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.includes("Unique") || msg.includes("unique")) {
+      return { error: "এই কর্মচারী আইডি ইতিমধ্যে আছে" };
+    }
+    return { error: "স্টাফ যোগ করা যায়নি" };
+  }
+}

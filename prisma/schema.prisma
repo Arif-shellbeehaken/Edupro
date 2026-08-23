@@ -519,13 +519,136 @@ model TimetableSlot {
   @@map("timetable_slots")
 }
 
+// ═══════════════════════════════════════════════════════════════
+// HR & PAYROLL
+// ═══════════════════════════════════════════════════════════════
+
+model Staff {
+  id              String    @id @default(cuid())
+  tenantId        String
+  employeeId      String                        // institution staff code
+  userId          String?                       // optional link to User login
+
+  name            String
+  nameBn          String?
+  email           String?
+  phone           String?
+  gender          String?
+  dateOfBirth     DateTime?
+  nid             String?
+  photoUrl        String?
+
+  designation     String                        // Teacher, Accountant, Clerk...
+  department      String?
+  roleType        String    @default("TEACHER") // TEACHER | HIFZ_TEACHER | ACCOUNTANT | ADMIN | SUPPORT
+  joiningDate     DateTime?
+  employmentType  String    @default("FULL_TIME") // FULL_TIME | PART_TIME | CONTRACT
+  status          String    @default("ACTIVE")  // ACTIVE | INACTIVE | TERMINATED | ON_LEAVE
+
+  basicSalary     Int       @default(0)         // BDT
+  houseRent       Int       @default(0)
+  medicalAllow    Int       @default(0)
+  otherAllow      Int       @default(0)
+  bankName        String?
+  bankAccount     String?
+
+  address         String?
+  emergencyContact String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  leaveRequests   LeaveRequest[]
+  salaryPayments  SalaryPayment[]
+
+  @@unique([tenantId, employeeId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("staff")
+}
+
+model LeaveRequest {
+  id            String    @id @default(cuid())
+  tenantId      String
+  staffId       String
+
+  leaveType     String    // CASUAL | SICK | EARNED | UNPAID | MATERNITY | OTHER
+  startDate     DateTime
+  endDate       DateTime
+  days          Float
+  reason        String?
+  status        String    @default("PENDING") // PENDING | APPROVED | REJECTED | CANCELLED
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  staff         Staff     @relation(fields: [staffId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([tenantId, staffId])
+  @@map("leave_requests")
+}
+
+model PayrollRun {
+  id            String    @id @default(cuid())
+  tenantId      String
+  month         Int       // 1-12
+  year          Int
+  status        String    @default("DRAFT") // DRAFT | PROCESSED | PAID
+  processedAt   DateTime?
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  payments      SalaryPayment[]
+
+  @@unique([tenantId, month, year])
+  @@index([tenantId])
+  @@map("payroll_runs")
+}
+
+model SalaryPayment {
+  id              String    @id @default(cuid())
+  tenantId        String
+  payrollRunId    String
+  staffId         String
+
+  basicSalary     Int
+  houseRent       Int       @default(0)
+  medicalAllow    Int       @default(0)
+  otherAllow      Int       @default(0)
+  grossSalary     Int
+  deduction       Int       @default(0)   // leave without pay, advance, etc.
+  netSalary       Int
+  status          String    @default("PENDING") // PENDING | PAID
+  paidAt          DateTime?
+  paymentMethod   String?   // CASH | BANK | BKASH | NAGAD
+  transactionId   String?
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  payrollRun      PayrollRun @relation(fields: [payrollRunId], references: [id])
+  staff           Staff      @relation(fields: [staffId], references: [id])
+
+  @@unique([payrollRunId, staffId])
+  @@index([tenantId])
+  @@index([tenantId, staffId])
+  @@map("salary_payments")
+}
 
 // ═══════════════════════════════════════════════════════════════
 // AUDIT & SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
-
 model AuditLog {
+
   id          String    @id @default(cuid())
   tenantId    String?
   userId      String?

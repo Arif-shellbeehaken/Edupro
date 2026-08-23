@@ -202,12 +202,76 @@ async function main() {
   }
   console.log("✅ Hifz students:", hifzStudents.length);
 
+  // 6. Sample Staff for HR/Payroll
+  const staffSeed = [
+    {
+      employeeId: "EMP-001",
+      name: "মাওলানা আব্দুর রহিম",
+      nameBn: "মাওলানা আব্দুর রহিম",
+      designation: "হিফজ শিক্ষক",
+      roleType: "HIFZ_TEACHER",
+      basicSalary: 25000,
+      houseRent: 5000,
+      medicalAllow: 2000,
+    },
+    {
+      employeeId: "EMP-002",
+      name: "উস্তাদ কামরুল হাসান",
+      nameBn: "উস্তাদ কামরুল হাসান",
+      designation: "সিনিয়র মুহাদ্দিস",
+      roleType: "TEACHER",
+      basicSalary: 30000,
+      houseRent: 6000,
+      medicalAllow: 2000,
+    },
+    {
+      employeeId: "EMP-003",
+      name: "জনাব করিম উল্লাহ",
+      nameBn: "জনাব করিম উল্লাহ",
+      designation: "অ্যাকাউন্ট্যান্ট",
+      roleType: "ACCOUNTANT",
+      basicSalary: 22000,
+      houseRent: 4000,
+      medicalAllow: 1500,
+    },
+  ];
+
+  for (const st of staffSeed) {
+    await prisma.staff.upsert({
+      where: {
+        tenantId_employeeId: {
+          tenantId: tenant.id,
+          employeeId: st.employeeId,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        employeeId: st.employeeId,
+        name: st.name,
+        nameBn: st.nameBn,
+        designation: st.designation,
+        roleType: st.roleType,
+        employmentType: "FULL_TIME",
+        status: "ACTIVE",
+        joiningDate: new Date("2024-01-01"),
+        basicSalary: st.basicSalary,
+        houseRent: st.houseRent,
+        medicalAllow: st.medicalAllow,
+        otherAllow: 0,
+        phone: "01700000000",
+      },
+    });
+  }
+  console.log("✅ Staff:", staffSeed.length);
+
   console.log("\n🎉 Seed completed successfully!");
   console.log("────────────────────────────────────");
   console.log("Super Admin  → super@edupro.app / Super@1234");
   console.log("Admin        → admin@demo-madrasah.edu.bd / Admin@1234");
   console.log("────────────────────────────────────");
 }
+
 
 
 main()

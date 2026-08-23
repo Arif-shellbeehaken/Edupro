@@ -46,7 +46,8 @@ const tenantAdminNav: NavItem[] = [
   { title: "হিফজ ট্র্যাকিং", href: "/tenant/admin/hifz", icon: BookOpen },
   { title: "ফি ও অ্যাকাউন্ট", href: "/tenant/admin/finance", icon: Wallet },
   { title: "টাইমটেবল", href: "/tenant/admin/timetable", icon: Calendar },
-  { title: "শিক্ষক/স্টাফ", href: "/tenant/admin/staff", icon: GraduationCap },
+  { title: "HR ও পে-রোল", href: "/tenant/admin/hr", icon: GraduationCap },
+
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
 
