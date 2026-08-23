@@ -95,9 +95,12 @@ export interface SidebarUser {
 }
 
 interface SidebarProps {
-  type: "super" | "tenant";
+  type: "super" | "super-admin" | "tenant";
   institutionName?: string;
   user?: SidebarUser;
+  /** White-label primary brand color (hex) */
+  primaryColor?: string | null;
+  logoUrl?: string | null;
 }
 
 function roleLabel(role: string): string {
@@ -115,25 +118,53 @@ function roleLabel(role: string): string {
   return map[role] ?? role;
 }
 
-export function Sidebar({ type, institutionName, user }: SidebarProps) {
+export function Sidebar({
+  type,
+  institutionName,
+  user,
+  primaryColor,
+  logoUrl,
+}: SidebarProps) {
   const pathname = usePathname();
-  const nav = type === "super" ? superAdminNav : tenantAdminNav;
+  const isSuper = type === "super" || type === "super-admin";
+  const nav = isSuper ? superAdminNav : tenantAdminNav;
+  const brand = primaryColor || "#059669";
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-border bg-card">
+    <aside
+      className="flex h-screen w-64 flex-col border-r border-border bg-card"
+      style={
+        {
+          ["--brand" as string]: brand,
+          ["--brand-soft" as string]: `${brand}18`,
+        } as React.CSSProperties
+      }
+    >
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-border px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-600 text-white">
-          <Mosque className="h-4 w-4" />
-        </div>
-        <div className="flex flex-col min-w-0">
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="h-8 w-8 rounded-md object-cover"
+          />
+        ) : (
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-md text-white"
+            style={{ backgroundColor: brand }}
+          >
+            <Mosque className="h-4 w-4" />
+          </div>
+        )}
+        <div className="flex min-w-0 flex-col">
           <span className="text-sm font-bold leading-none">Edupro</span>
           {type === "tenant" && institutionName && (
-            <span className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+            <span className="max-w-[150px] truncate text-[10px] text-muted-foreground">
               {institutionName}
             </span>
           )}
-          {type === "super" && (
+          {isSuper && (
             <span className="text-[10px] text-muted-foreground">Platform Admin</span>
           )}
         </div>
@@ -151,9 +182,14 @@ export function Sidebar({ type, institutionName, user }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  ? "font-semibold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
+              style={
+                isActive
+                  ? { backgroundColor: `${brand}18`, color: brand }
+                  : undefined
+              }
             >
               <item.icon className="h-4 w-4 shrink-0" />
               {item.title}
@@ -161,6 +197,7 @@ export function Sidebar({ type, institutionName, user }: SidebarProps) {
           );
         })}
       </nav>
+
 
       {/* User + Logout */}
       <div className="border-t border-border p-3 space-y-2">

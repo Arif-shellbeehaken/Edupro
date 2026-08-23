@@ -65,9 +65,12 @@ export default async function SettingsPage() {
       <Sidebar
         type="tenant"
         institutionName={tenantName}
+        primaryColor={tenant?.primaryColor}
+        logoUrl={tenant?.logoUrl}
         user={{
           name: session.user.name ?? "Admin",
           role: session.user.role,
+
           email: session.user.email ?? undefined,
         }}
       />

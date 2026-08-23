@@ -8,9 +8,11 @@ import {
   Calendar,
   Bell,
 } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
+import { getTenantBranding } from "@/lib/tenant-branding";
 import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
@@ -67,23 +69,22 @@ export default async function TenantAdminDashboard() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  let tenantName = "প্রতিষ্ঠান";
-  if (session.user.tenantId) {
-    try {
-      const tenant = await prisma.tenant.findUnique({
-        where: { id: session.user.tenantId },
-        select: { name: true, nameBn: true },
-      });
-      if (tenant) tenantName = tenant.nameBn || tenant.name;
-    } catch {
-      // DB may not be ready — fallback
-      tenantName = "দারুল উলূম মাদ্রাসা";
-    }
-  }
+  const branding = await getTenantBranding(session.user.tenantId);
+  const tenantName = branding.nameBn || branding.name;
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar type="tenant" institutionName={tenantName} user={{ name: session.user.name ?? "Admin", role: session.user.role, email: session.user.email ?? undefined }} />
+      <Sidebar
+        type="tenant"
+        institutionName={tenantName}
+        primaryColor={branding.primaryColor}
+        logoUrl={branding.logoUrl}
+        user={{
+          name: session.user.name ?? "Admin",
+          role: session.user.role,
+          email: session.user.email ?? undefined,
+        }}
+      />
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="ড্যাশবোর্ড"
@@ -94,6 +95,21 @@ export default async function TenantAdminDashboard() {
         />
 
         <div className="space-y-6 p-6">
+          {!branding.onboardingDone && (
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+                <div>
+                  <p className="font-medium text-amber-900">সেটআপ অসম্পূর্ণ</p>
+                  <p className="text-sm text-amber-800/80">
+                    একাডেমিক বছর, ক্লাস ও ফি কনফিগার করতে উইজার্ড চালান
+                  </p>
+                </div>
+                <Button asChild>
+                  <Link href="/tenant/onboarding">অনবোর্ডিং শুরু</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <Card key={stat.title}>
