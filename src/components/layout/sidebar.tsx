@@ -18,7 +18,10 @@ import {
   CreditCard,
   BarChart3,
   Bell,
+  Bus,
+  Home,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/application/use-cases/auth/logout";
 
@@ -47,9 +50,12 @@ const tenantAdminNav: NavItem[] = [
   { title: "ফি ও অ্যাকাউন্ট", href: "/tenant/admin/finance", icon: Wallet },
   { title: "টাইমটেবল", href: "/tenant/admin/timetable", icon: Calendar },
   { title: "HR ও পে-রোল", href: "/tenant/admin/hr", icon: GraduationCap },
-
+  { title: "লাইব্রেরি", href: "/tenant/admin/library", icon: BookOpen },
+  { title: "হোস্টেল", href: "/tenant/admin/hostel", icon: Home },
+  { title: "ট্রান্সপোর্ট", href: "/tenant/admin/transport", icon: Bus },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
+
 
 export interface SidebarUser {
   name: string;

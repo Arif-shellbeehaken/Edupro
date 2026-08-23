@@ -644,10 +644,143 @@ model SalaryPayment {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// OPERATIONS: LIBRARY · HOSTEL · TRANSPORT
+// ═══════════════════════════════════════════════════════════════
+
+model Book {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  titleBn       String?
+  author        String?
+  isbn          String?
+  category      String?
+  totalCopies   Int       @default(1)
+  availableCopies Int     @default(1)
+  shelfLocation String?
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  issues        BookIssue[]
+
+  @@index([tenantId])
+  @@index([tenantId, title])
+  @@map("books")
+}
+
+model BookIssue {
+  id            String    @id @default(cuid())
+  tenantId      String
+  bookId        String
+  studentId     String?
+  staffId       String?
+  issuedAt      DateTime  @default(now())
+  dueDate       DateTime
+  returnedAt    DateTime?
+  status        String    @default("ISSUED") // ISSUED | RETURNED | LOST | OVERDUE
+  fineAmount    Int       @default(0)
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  book          Book      @relation(fields: [bookId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([tenantId, bookId])
+  @@map("book_issues")
+}
+
+model HostelRoom {
+  id            String    @id @default(cuid())
+  tenantId      String
+  blockName     String?
+  roomNumber    String
+  capacity      Int       @default(4)
+  occupied      Int       @default(0)
+  roomType      String    @default("SHARED") // SHARED | SINGLE | DORM
+  monthlyFee    Int       @default(0)
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  allocations   HostelAllocation[]
+
+  @@unique([tenantId, roomNumber])
+  @@index([tenantId])
+  @@map("hostel_rooms")
+}
+
+model HostelAllocation {
+  id            String    @id @default(cuid())
+  tenantId      String
+  roomId        String
+  studentId     String
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  status        String    @default("ACTIVE") // ACTIVE | ENDED
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  room          HostelRoom @relation(fields: [roomId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([tenantId, studentId])
+  @@map("hostel_allocations")
+}
+
+model TransportRoute {
+  id            String    @id @default(cuid())
+  tenantId      String
+  name          String
+  nameBn        String?
+  vehicleNo     String?
+  driverName    String?
+  driverPhone   String?
+  monthlyFee    Int       @default(0)
+  capacity      Int       @default(30)
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  assignments   TransportAssignment[]
+
+  @@index([tenantId])
+  @@map("transport_routes")
+}
+
+model TransportAssignment {
+  id            String    @id @default(cuid())
+  tenantId      String
+  routeId       String
+  studentId     String
+  pickupPoint   String?
+  status        String    @default("ACTIVE") // ACTIVE | INACTIVE
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  route         TransportRoute @relation(fields: [routeId], references: [id])
+
+  @@unique([tenantId, studentId, routeId])
+  @@index([tenantId, routeId])
+  @@map("transport_assignments")
+}
+
+// ═══════════════════════════════════════════════════════════════
 // AUDIT & SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
 model AuditLog {
+
 
   id          String    @id @default(cuid())
   tenantId    String?
