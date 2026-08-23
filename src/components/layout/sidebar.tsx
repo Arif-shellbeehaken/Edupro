@@ -22,7 +22,9 @@ import {
   Home,
   Package,
   MessageSquare,
+  Award,
 } from "lucide-react";
+
 
 
 import { cn } from "@/lib/utils";
@@ -58,8 +60,11 @@ const tenantAdminNav: NavItem[] = [
   { title: "ট্রান্সপোর্ট", href: "/tenant/admin/transport", icon: Bus },
   { title: "ইনভেন্টরি", href: "/tenant/admin/inventory", icon: Package },
   { title: "যোগাযোগ", href: "/tenant/admin/communication", icon: MessageSquare },
+  { title: "সার্টিফিকেট", href: "/tenant/admin/certificates", icon: Award },
+  { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
+
 
 
 
