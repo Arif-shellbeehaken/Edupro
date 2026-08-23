@@ -6,8 +6,17 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
+import { redirect } from "next/navigation";
+import { auth } from "@/infrastructure/auth/auth";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppHeader } from "@/components/layout/app-header";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const stats = [
@@ -49,24 +58,24 @@ const recentTenants = [
   { name: "তাজকিয়া মাদ্রাসা", plan: "Standard", status: "suspended", students: 450 },
 ];
 
-export default function SuperAdminDashboard() {
+export default async function SuperAdminDashboard() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  if (!session.user.isSuperAdmin) redirect("/tenant/admin/dashboard");
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar type="super" />
+      <Sidebar type="super" user={{ name: session.user.name ?? "Super Admin", role: session.user.role, email: session.user.email ?? undefined }} />
       <main className="flex-1 overflow-y-auto bg-background">
-        {/* Top bar */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-card/80 px-6 backdrop-blur">
-          <div>
-            <h1 className="text-lg font-semibold">সুপার অ্যাডমিন ড্যাশবোর্ড</h1>
-            <p className="text-xs text-muted-foreground">প্ল্যাটফর্ম ওভারভিউ</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="success">সব সিস্টেম স্বাভাবিক</Badge>
-          </div>
-        </header>
+        <AppHeader
+          title="সুপার অ্যাডমিন ড্যাশবোর্ড"
+          subtitle="প্ল্যাটফর্ম ওভারভিউ"
+          userName={session.user.name ?? "Super Admin"}
+          userRole={session.user.role}
+          isSuperAdmin
+        />
 
-        <div className="p-6 space-y-6">
-          {/* Stats */}
+        <div className="space-y-6 p-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <Card key={stat.title}>
@@ -78,14 +87,13 @@ export default function SuperAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{stat.change}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* Recent Tenants */}
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>সাম্প্রতিক প্রতিষ্ঠান</CardTitle>
@@ -99,7 +107,7 @@ export default function SuperAdminDashboard() {
                       className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold dark:bg-emerald-950/40">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40">
                           {t.name.charAt(0)}
                         </div>
                         <div>
@@ -114,15 +122,15 @@ export default function SuperAdminDashboard() {
                           t.status === "active"
                             ? "success"
                             : t.status === "trial"
-                            ? "warning"
-                            : "destructive"
+                              ? "warning"
+                              : "destructive"
                         }
                       >
                         {t.status === "active"
                           ? "সক্রিয়"
                           : t.status === "trial"
-                          ? "ট্রায়াল"
-                          : "সাসপেন্ডেড"}
+                            ? "ট্রায়াল"
+                            : "সাসপেন্ডেড"}
                       </Badge>
                     </div>
                   ))}
@@ -130,7 +138,6 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* System Health */}
             <Card>
               <CardHeader>
                 <CardTitle>সিস্টেম হেলথ</CardTitle>

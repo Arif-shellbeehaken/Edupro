@@ -18,9 +18,9 @@ import {
   CreditCard,
   BarChart3,
   Bell,
-  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logoutAction } from "@/application/use-cases/auth/logout";
 
 interface NavItem {
   title: string;
@@ -50,12 +50,34 @@ const tenantAdminNav: NavItem[] = [
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
 
+export interface SidebarUser {
+  name: string;
+  email?: string | null;
+  role: string;
+}
+
 interface SidebarProps {
   type: "super" | "tenant";
   institutionName?: string;
+  user?: SidebarUser;
 }
 
-export function Sidebar({ type, institutionName }: SidebarProps) {
+function roleLabel(role: string): string {
+  const map: Record<string, string> = {
+    SUPER_ADMIN: "সুপার অ্যাডমিন",
+    INSTITUTION_ADMIN: "অ্যাডমিন",
+    PRINCIPAL: "প্রিন্সিপাল",
+    TEACHER: "শিক্ষক",
+    HIFZ_TEACHER: "হিফজ শিক্ষক",
+    MUHADDIS: "মুহাদ্দিস",
+    ACCOUNTANT: "অ্যাকাউন্ট্যান্ট",
+    PARENT: "অভিভাবক",
+    STUDENT: "শিক্ষার্থী",
+  };
+  return map[role] ?? role;
+}
+
+export function Sidebar({ type, institutionName, user }: SidebarProps) {
   const pathname = usePathname();
   const nav = type === "super" ? superAdminNav : tenantAdminNav;
 
@@ -66,10 +88,10 @@ export function Sidebar({ type, institutionName }: SidebarProps) {
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-600 text-white">
           <Mosque className="h-4 w-4" />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <span className="text-sm font-bold leading-none">Edupro</span>
           {type === "tenant" && institutionName && (
-            <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
+            <span className="text-[10px] text-muted-foreground truncate max-w-[150px]">
               {institutionName}
             </span>
           )}
@@ -82,7 +104,8 @@ export function Sidebar({ type, institutionName }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {nav.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}
@@ -101,15 +124,26 @@ export function Sidebar({ type, institutionName }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-border p-3">
-        <Link
-          href="/login"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <LogOut className="h-4 w-4" />
-          লগআউট
-        </Link>
+      {/* User + Logout */}
+      <div className="border-t border-border p-3 space-y-2">
+        {user && (
+          <div className="px-3 py-2">
+            <p className="text-sm font-medium truncate">{user.name}</p>
+            <p className="text-[11px] text-muted-foreground truncate">
+              {roleLabel(user.role)}
+              {user.email ? ` · ${user.email}` : ""}
+            </p>
+          </div>
+        )}
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            লগআউট
+          </button>
+        </form>
       </div>
     </aside>
   );

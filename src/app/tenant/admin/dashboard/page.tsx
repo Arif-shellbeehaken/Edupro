@@ -8,8 +8,18 @@ import {
   Calendar,
   Bell,
 } from "lucide-react";
+import { redirect } from "next/navigation";
+import { auth } from "@/infrastructure/auth/auth";
+import { prisma } from "@/infrastructure/database/prisma";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppHeader } from "@/components/layout/app-header";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -41,10 +51,10 @@ const stats = [
 ];
 
 const recentAdmissions = [
-  { name: "আব্দুল্লাহ ইবনে মাসউদ", class: "হিফজ - জুজ ৫", date: "২২ আগস্ট", status: "confirmed" },
-  { name: "ফাতিমা বিনতে ওমর", class: "দাখিল ১ম", date: "২১ আগস্ট", status: "pending" },
-  { name: "মুহাম্মদ ইউসুফ", class: "আলিম ২য়", date: "২০ আগস্ট", status: "confirmed" },
-  { name: "আয়েশা সিদ্দিকা", class: "হিফজ - জুজ ১২", date: "১৯ আগস্ট", status: "confirmed" },
+  { name: "আব্দুল্লাহ ইবনে মাসউদ", className: "হিফজ - জুজ ৫", date: "২২ আগস্ট", status: "confirmed" },
+  { name: "ফাতিমা বিনতে ওমর", className: "দাখিল ১ম", date: "২১ আগস্ট", status: "pending" },
+  { name: "মুহাম্মদ ইউসুফ", className: "আলিম ২য়", date: "২০ আগস্ট", status: "confirmed" },
+  { name: "আয়েশা সিদ্দিকা", className: "হিফজ - জুজ ১২", date: "১৯ আগস্ট", status: "confirmed" },
 ];
 
 const upcomingEvents = [
@@ -53,33 +63,37 @@ const upcomingEvents = [
   { title: "ঈদুল আজহা ছুটি", date: "১-৫ সেপ্টেম্বর", type: "holiday" },
 ];
 
-export default function TenantAdminDashboard() {
+export default async function TenantAdminDashboard() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  let tenantName = "প্রতিষ্ঠান";
+  if (session.user.tenantId) {
+    try {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: session.user.tenantId },
+        select: { name: true, nameBn: true },
+      });
+      if (tenant) tenantName = tenant.nameBn || tenant.name;
+    } catch {
+      // DB may not be ready — fallback
+      tenantName = "দারুল উলূম মাদ্রাসা";
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar type="tenant" institutionName="দারুল উলূম মাদ্রাসা" />
+      <Sidebar type="tenant" institutionName={tenantName} user={{ name: session.user.name ?? "Admin", role: session.user.role, email: session.user.email ?? undefined }} />
       <main className="flex-1 overflow-y-auto bg-background">
-        {/* Top bar */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-card/80 px-6 backdrop-blur">
-          <div>
-            <h1 className="text-lg font-semibold">ড্যাশবোর্ড</h1>
-            <p className="text-xs text-muted-foreground">
-              সেশন ২০২৫-২৬ · আজ রবিবার, ২৩ আগস্ট ২০২৬
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm">
-              <Bell className="h-4 w-4" />
-              নোটিশ
-            </Button>
-            <Button size="sm">
-              <UserPlus className="h-4 w-4" />
-              নতুন ভর্তি
-            </Button>
-          </div>
-        </header>
+        <AppHeader
+          title="ড্যাশবোর্ড"
+          subtitle={`সেশন ২০২৫-২৬ · ${tenantName}`}
+          userName={session.user.name ?? "Admin"}
+          userRole={session.user.role}
+          tenantName={tenantName}
+        />
 
-        <div className="p-6 space-y-6">
-          {/* Stats */}
+        <div className="space-y-6 p-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <Card key={stat.title}>
@@ -91,14 +105,13 @@ export default function TenantAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{stat.change}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* Recent Admissions */}
             <Card className="lg:col-span-2">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -119,7 +132,7 @@ export default function TenantAdminDashboard() {
                       <div>
                         <p className="text-sm font-medium">{a.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {a.class} · {a.date}
+                          {a.className} · {a.date}
                         </p>
                       </div>
                       <Badge variant={a.status === "confirmed" ? "success" : "warning"}>
@@ -131,7 +144,6 @@ export default function TenantAdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* Upcoming + Quick actions */}
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -166,9 +178,11 @@ export default function TenantAdminDashboard() {
                     <Wallet className="h-4 w-4" />
                     ফি গ্রহণ
                   </Button>
-                  <Button variant="outline" size="sm" className="justify-start">
-                    <BookOpen className="h-4 w-4" />
-                    হিফজ এন্ট্রি
+                  <Button variant="outline" size="sm" className="justify-start" asChild>
+                    <a href="/tenant/admin/hifz">
+                      <BookOpen className="h-4 w-4" />
+                      হিফজ এন্ট্রি
+                    </a>
                   </Button>
                   <Button variant="outline" size="sm" className="justify-start">
                     <TrendingUp className="h-4 w-4" />

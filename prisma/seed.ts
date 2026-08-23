@@ -127,12 +127,84 @@ async function main() {
   });
   console.log("✅ Academic Year:", year.name);
 
+  // 5. Sample Class + Hifz students
+  const hifzClass = await prisma.class.upsert({
+    where: {
+      tenantId_academicYearId_name: {
+        tenantId: tenant.id,
+        academicYearId: year.id,
+        name: "Hifz Group A",
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      academicYearId: year.id,
+      name: "Hifz Group A",
+      nameBn: "হিফজ গ্রুপ এ",
+      board: "BEFAQ",
+      level: "Hifz",
+      capacity: 40,
+    },
+  });
+
+  const hifzStudents = [
+    { studentId: "HIFZ-001", name: "আব্দুল্লাহ ইবনে মাসউদ", nameBn: "আব্দুল্লাহ ইবনে মাসউদ", juz: 5, page: 95 },
+    { studentId: "HIFZ-002", name: "মুহাম্মদ ইউসুফ", nameBn: "মুহাম্মদ ইউসুফ", juz: 12, page: 230 },
+    { studentId: "HIFZ-003", name: "উমর ফারুক", nameBn: "উমর ফারুক", juz: 3, page: 48 },
+  ];
+
+  for (const hs of hifzStudents) {
+    const student = await prisma.student.upsert({
+      where: {
+        tenantId_studentId: {
+          tenantId: tenant.id,
+          studentId: hs.studentId,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        studentId: hs.studentId,
+        name: hs.name,
+        nameBn: hs.nameBn,
+        gender: "MALE",
+        status: "ACTIVE",
+        isHifzStudent: true,
+        currentJuz: hs.juz,
+        currentPage: hs.page,
+        currentClassId: hifzClass.id,
+        academicYearId: year.id,
+        admissionDate: new Date("2025-01-15"),
+        fatherName: "আবদুর রহমান",
+        guardianPhone: "01711111111",
+      },
+    });
+
+    await prisma.hifzProgress.upsert({
+      where: { studentId: student.id },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        studentId: student.id,
+        currentJuz: hs.juz,
+        currentPage: hs.page,
+        totalJuzCompleted: Math.max(0, hs.juz - 1),
+        totalPagesMemorized: hs.page,
+        averageQualityScore: 4.2,
+        lastEntryDate: new Date(),
+      },
+    });
+  }
+  console.log("✅ Hifz students:", hifzStudents.length);
+
   console.log("\n🎉 Seed completed successfully!");
   console.log("────────────────────────────────────");
   console.log("Super Admin  → super@edupro.app / Super@1234");
   console.log("Admin        → admin@demo-madrasah.edu.bd / Admin@1234");
   console.log("────────────────────────────────────");
 }
+
 
 main()
   .catch((e) => {
