@@ -1004,10 +1004,36 @@ model Homework {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// NAMAZ MONITORING (Residential / Madrasah)
+// ═══════════════════════════════════════════════════════════════
+
+model NamazRecord {
+  id          String    @id @default(cuid())
+  tenantId    String
+  studentId   String
+  date        DateTime
+  fajr        String    @default("ABSENT") // PRESENT | ABSENT | LATE | EXCUSED
+  dhuhr       String    @default("ABSENT")
+  asr         String    @default("ABSENT")
+  maghrib     String    @default("ABSENT")
+  isha        String    @default("ABSENT")
+  notes       String?
+  markedById  String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([tenantId, studentId, date])
+  @@index([tenantId, date])
+  @@map("namaz_records")
+}
+
+// ═══════════════════════════════════════════════════════════════
 // AUDIT & SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
 model AuditLog {
+
 
 
 

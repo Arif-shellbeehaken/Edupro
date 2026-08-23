@@ -28,7 +28,10 @@ import {
   AlertCircle,
   PenLine,
   ScrollText,
+  Lock,
+  Moon,
 } from "lucide-react";
+
 
 
 
@@ -72,9 +75,12 @@ const tenantAdminNav: NavItem[] = [
   { title: "অভিযোগ", href: "/tenant/admin/grievance", icon: AlertCircle },
   { title: "হোমওয়ার্ক", href: "/tenant/admin/homework", icon: PenLine },
   { title: "অডিট লগ", href: "/tenant/admin/audit", icon: ScrollText },
+  { title: "নামাজ", href: "/tenant/admin/namaz", icon: Moon },
+  { title: "সিকিউরিটি", href: "/tenant/admin/security", icon: Lock },
   { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
+
 
 
 

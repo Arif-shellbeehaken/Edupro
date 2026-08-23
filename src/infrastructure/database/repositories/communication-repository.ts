@@ -1,10 +1,10 @@
 import { prisma } from "@/infrastructure/database/prisma";
 import { requireTenantId } from "@/infrastructure/tenancy/tenant-context";
+import { sendSms } from "@/infrastructure/sms/provider";
 
 /**
- * Production note: SMS/WhatsApp providers (SSL Wireless, Twilio, Meta)
- * would be plugged in here. For now we persist QUEUED → SENT logs
- * so the UI and audit trail are production-ready.
+ * SMS/WhatsApp provider plug-in via infrastructure/sms/provider.ts
+ * Env: SMS_PROVIDER=console|sslwireless|http, SMS_API_KEY, SMS_SENDER_ID, SMS_API_ENDPOINT
  */
 export const communicationRepository = {
   async listMessages(tenantId?: string, take = 40) {
@@ -25,7 +25,20 @@ export const communicationRepository = {
     relatedType?: string;
     relatedId?: string;
   }) {
-    // Simulate provider send — mark SENT immediately in dev
+    let status = "SENT";
+    let errorMessage: string | undefined;
+    let providerId: string | undefined;
+
+    if (data.channel === "SMS" || data.channel === "WHATSAPP") {
+      const result = await sendSms(data.recipient, data.body);
+      if (!result.success) {
+        status = "FAILED";
+        errorMessage = result.error;
+      } else {
+        providerId = result.providerMessageId;
+      }
+    }
+
     return prisma.messageLog.create({
       data: {
         tenantId: data.tenantId,
@@ -35,8 +48,9 @@ export const communicationRepository = {
         body: data.body,
         relatedType: data.relatedType,
         relatedId: data.relatedId,
-        status: "SENT",
-        sentAt: new Date(),
+        status,
+        errorMessage,
+        sentAt: status === "SENT" ? new Date() : undefined,
       },
     });
   },
@@ -65,6 +79,7 @@ export const communicationRepository = {
     for (const s of students) {
       const phone = s.guardianPhone || s.fatherPhone;
       if (!phone) continue;
+      const result = await sendSms(phone, data.body);
       const log = await prisma.messageLog.create({
         data: {
           tenantId: data.tenantId,
@@ -74,14 +89,16 @@ export const communicationRepository = {
           body: data.body,
           relatedType: "STUDENT",
           relatedId: s.id,
-          status: "SENT",
-          sentAt: new Date(),
+          status: result.success ? "SENT" : "FAILED",
+          errorMessage: result.error,
+          sentAt: result.success ? new Date() : undefined,
         },
       });
       logs.push(log);
     }
     return logs;
   },
+
 
   async listNotices(tenantId?: string) {
     const tid = tenantId ?? requireTenantId();
