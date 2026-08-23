@@ -7,9 +7,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  // Local/dev: sqlite | Production: postgresql
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
 
 // ═══════════════════════════════════════════════════════════════
 // TENANCY & PLATFORM
@@ -35,7 +37,8 @@ model Tenant {
   division              String?
 
   academicYearStartMonth Int?     @default(1)
-  boardAffiliation      String[]  @default([])
+  boardAffiliation      String    @default("[]")  // JSON array as string for SQLite; use String[] on PostgreSQL
+
 
   maxStudents           Int       @default(500)
   maxStaff              Int       @default(50)
@@ -287,8 +290,9 @@ model HifzEntry {
   studentId       String
   teacherId       String
 
-  date            DateTime  @db.Date
+  date            DateTime
   stream          String                        // SABAK | SABKI | MANZIL
+
 
   fromJuz         Int
   fromPage        Int

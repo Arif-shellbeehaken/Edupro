@@ -75,8 +75,9 @@ async function main() {
       address: "মিরপুর, ঢাকা",
       district: "ঢাকা",
       division: "ঢাকা",
-      boardAffiliation: ["BEFAQ"],
+      boardAffiliation: JSON.stringify(["BEFAQ"]),
       maxStudents: 2000,
+
       maxStaff: 100,
       primaryColor: "#059669",
     },
