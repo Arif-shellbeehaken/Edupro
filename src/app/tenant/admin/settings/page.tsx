@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SettingsForm } from "./settings-form";
+import { BrandingForm } from "./branding-form";
+import { SupportTicketForm } from "./support-form";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -28,6 +30,9 @@ export default async function SettingsPage() {
     plan: string;
     status: string;
     slug: string;
+    logoUrl: string | null;
+    primaryColor: string | null;
+    secondaryColor: string | null;
   } | null = null;
 
   if (session.user.tenantId) {
@@ -44,6 +49,9 @@ export default async function SettingsPage() {
           plan: true,
           status: true,
           slug: true,
+          logoUrl: true,
+          primaryColor: true,
+          secondaryColor: true,
         },
       });
       if (tenant) tenantName = tenant.nameBn || tenant.name;
@@ -102,6 +110,38 @@ export default async function SettingsPage() {
               ) : (
                 <p className="text-sm text-muted-foreground">টেনান্ট লোড হয়নি</p>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>White-label ব্র্যান্ডিং</CardTitle>
+              <CardDescription>লোগো URL · প্রাইমারি/সেকেন্ডারি রঙ</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {tenant ? (
+                <BrandingForm
+                  defaults={{
+                    logoUrl: tenant.logoUrl ?? "",
+                    primaryColor: tenant.primaryColor ?? "#059669",
+                    secondaryColor: tenant.secondaryColor ?? "#0f766e",
+                  }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">টেনান্ট লোড হয়নি</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>সাপোর্ট টিকিট</CardTitle>
+              <CardDescription>
+                প্ল্যাটফর্ম সাপোর্টে রিকোয়েস্ট — Super Admin কিউতে যাবে
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SupportTicketForm />
             </CardContent>
           </Card>
         </div>
