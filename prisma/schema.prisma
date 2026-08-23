@@ -249,6 +249,7 @@ model Student {
   hifzProgress        HifzProgress?
   hifzEntries         HifzEntry[]
   invoices            Invoice[]
+  attendances         Attendance[]
 
   @@unique([tenantId, studentId])
   @@index([tenantId])
@@ -258,8 +259,35 @@ model Student {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ATTENDANCE
+// ═══════════════════════════════════════════════════════════════
+
+model Attendance {
+  id          String    @id @default(cuid())
+  tenantId    String
+  studentId   String
+  date        DateTime
+  status      String    // PRESENT | ABSENT | LATE | HALF_DAY | LEAVE | HOLIDAY
+  period      String    @default("") // period-wise; empty = daily
+  remarks     String?
+  markedById  String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  student     Student   @relation(fields: [studentId], references: [id])
+
+  @@unique([tenantId, studentId, date, period])
+  @@index([tenantId, date])
+  @@index([tenantId, studentId])
+  @@map("attendances")
+}
+
+
+// ═══════════════════════════════════════════════════════════════
 // HIFZ (KEY DIFFERENTIATOR)
 // ═══════════════════════════════════════════════════════════════
+
 
 model HifzProgress {
   id                  String    @id @default(cuid())
