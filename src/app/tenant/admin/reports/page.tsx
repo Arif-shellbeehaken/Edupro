@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -16,6 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 
 function formatBdt(n: number) {
   return `৳${n.toLocaleString("en-BD")}`;
@@ -175,19 +178,24 @@ export default async function ReportsPage() {
             <CardHeader>
               <CardTitle>BANBEIS / বোর্ড রিপোর্ট</CardTitle>
               <CardDescription>
-                পরবর্তী স্প্রিন্টে Excel/PDF এক্সপোর্ট ও বোর্ড টেমপ্লেট যোগ হবে।
-                বর্তমান ডেটা মডেল BANBEIS ফিল্ডের জন্য প্রস্তুত।
+                শিক্ষার্থী সেন্সাস CSV এক্সপোর্ট — বোর্ড রিপোর্টিংয়ের জন্য
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
                 <li>শিক্ষার্থী সেন্সাস (জেন্ডার, ক্লাস, হিফজ)</li>
                 <li>শিক্ষক-কর্মী পরিসংখ্যান</li>
                 <li>উপস্থিতি রিপোর্ট</li>
                 <li>আর্থিক সংগ্রহ সারসংক্ষেপ</li>
               </ul>
+              <Button asChild>
+                <a href="/tenant/admin/reports/export" download>
+                  BANBEIS Student CSV ডাউনলোড
+                </a>
+              </Button>
             </CardContent>
           </Card>
+
         </div>
       </main>
     </div>

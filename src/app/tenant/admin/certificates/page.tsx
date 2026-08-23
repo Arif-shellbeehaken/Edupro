@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -14,7 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CertificateForms } from "./certificate-forms";
+
 
 const TYPE_LABEL: Record<string, string> = {
   TRANSFER: "ট্রান্সফার",
@@ -104,14 +107,24 @@ export default async function CertificatesPage() {
                         {c.issueDate.toLocaleDateString("bn-BD")}
                       </p>
                     </div>
-                    <Badge variant={c.status === "ISSUED" ? "success" : "secondary"}>
-                      {c.status === "ISSUED" ? "ইস্যু" : "বাতিল"}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={c.status === "ISSUED" ? "success" : "secondary"}>
+                        {c.status === "ISSUED" ? "ইস্যু" : "বাতিল"}
+                      </Badge>
+                      {c.status === "ISSUED" && (
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/tenant/admin/certificates/${c.id}/print`}>
+                            প্রিন্ট
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))
               )}
             </CardContent>
           </Card>
+
         </div>
       </main>
     </div>
