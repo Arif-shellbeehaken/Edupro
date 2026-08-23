@@ -1028,11 +1028,30 @@ model NamazRecord {
   @@map("namaz_records")
 }
 
+model HijriHoliday {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  titleBn       String?
+  hijriDate     String    // e.g. "1 Ramadan 1447"
+  gregorianDate DateTime?
+  holidayType   String    @default("RELIGIOUS") // RELIGIOUS | NATIONAL | INSTITUTION
+  isRecurring   Boolean   @default(true)
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@map("hijri_holidays")
+}
+
 // ═══════════════════════════════════════════════════════════════
 // AUDIT & SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
 model AuditLog {
+
 
 
 

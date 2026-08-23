@@ -76,10 +76,12 @@ const tenantAdminNav: NavItem[] = [
   { title: "হোমওয়ার্ক", href: "/tenant/admin/homework", icon: PenLine },
   { title: "অডিট লগ", href: "/tenant/admin/audit", icon: ScrollText },
   { title: "নামাজ", href: "/tenant/admin/namaz", icon: Moon },
+  { title: "হিজরি ক্যালেন্ডার", href: "/tenant/admin/hijri", icon: Calendar },
   { title: "সিকিউরিটি", href: "/tenant/admin/security", icon: Lock },
   { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
+
 
 
 
