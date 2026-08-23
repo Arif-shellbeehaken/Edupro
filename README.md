@@ -79,25 +79,50 @@ with deep madrasah-specific modules (Hifz tracking, Hijri calendar, Zakat/Donati
 
 ---
 
-## 🚀 Development Status & Process
+## 🚀 Development Status
 
-Following the recommended internal sequencing (even though external launch is single-phase):
+| Area | Modules | Status |
+|------|---------|--------|
+| **Core** | Auth, Multi-tenancy, RBAC, Tenant provisioning | ✅ |
+| **Academic** | SIS, Attendance, Exam/Marks, Timetable, Hifz | ✅ |
+| **Finance** | Fee structure, Invoice, Payment (bKash/Nagad ready) | ✅ |
+| **People** | HR Staff, Leave, Payroll | ✅ |
+| **Ops** | Library, Hostel, Transport, Inventory | ✅ |
+| **Growth** | Admission CRM, Communication (SMS log + Notice) | ✅ |
+| **Docs** | Certificates + Print, Reports, BANBEIS CSV | ✅ |
+| **Platform** | Tenant Settings, Super-admin Subscriptions, Health API | ✅ |
+| **Deploy** | Docker, security headers, PRODUCTION.md | ✅ |
 
-| Sprint | Focus | Status |
-|--------|-------|--------|
-| 1 | Foundation: Architecture, Multi-tenancy, Domain, Prisma Schema, UI shells | 🟡 In Progress |
-| 2 | Core Academic: Admission, SIS, Attendance, Timetable | ⚪ Planned |
-| 3 | Exam & Finance + Payment gateways | ⚪ Planned |
-| 4 | Madrasah-specific (Hifz, Boards, Donation) | ⚪ Planned |
-| 5 | Operations (HR, Library, Transport…) | ⚪ Planned |
-| 6 | Engagement (Comms, LMS, CRM) | ⚪ Planned |
-| 7 | Extended (Health, Extracurricular, Certificates, AI) | ⚪ Planned |
-| 8 | Hardening (Security, Load, Isolation, Billing QA) | ⚪ Planned |
+### Quick start (local)
 
-**Current focus (Sprint 1):**  
+```bash
+npm install
+cp .env.example .env          # set AUTH_SECRET
+npx prisma generate
+npx prisma db push
+npm run db:seed
+npm run dev
+```
+
+| Account | Email | Password |
+|---------|-------|----------|
+| Super Admin | `super@edupro.app` | `Super@1234` |
+| Tenant Admin | `admin@demo-madrasah.edu.bd` | `Admin@1234` |
+
+### Production deploy
+
+See **[docs/PRODUCTION.md](docs/PRODUCTION.md)** for PostgreSQL, Docker Compose, Nginx, and security checklist.
+
+```bash
+docker compose up -d --build
+curl http://localhost:3000/api/health
+```
+
+**Architecture notes:**  
 ✅ Clean Architecture + Modular Monolith structure  
 ✅ Domain Enums + Core Entities (Tenant, User, Student, Hifz)  
 ✅ Production Prisma Schema (Multi-tenant + Hifz + Finance core)  
+
 ✅ Tenant Context & Isolation helpers  
 ✅ Modern UI shells (Landing, Login, Super Admin, Tenant Admin)  
 ✅ **Auth Foundation** — Auth.js v5 + Credentials + JWT session + RBAC guards + Middleware  
