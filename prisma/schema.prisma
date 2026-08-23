@@ -425,8 +425,105 @@ model Payment {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// EXAM & RESULT
+// ═══════════════════════════════════════════════════════════════
+
+model Subject {
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String
+  nameBn      String?
+  code        String?
+  fullMarks   Int       @default(100)
+  passMarks   Int       @default(33)
+  isActive    Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  examMarks   ExamMark[]
+  timetableSlots TimetableSlot[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("subjects")
+}
+
+model Exam {
+  id              String    @id @default(cuid())
+  tenantId        String
+  name            String
+  nameBn          String?
+  examType        String    // CLASS_TEST | MID_TERM | FINAL | BOARD | HIFZ_TEST
+  academicYearId  String?
+  startDate       DateTime?
+  endDate         DateTime?
+  isPublished     Boolean   @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  marks           ExamMark[]
+
+  @@index([tenantId])
+  @@map("exams")
+}
+
+model ExamMark {
+  id          String    @id @default(cuid())
+  tenantId    String
+  examId      String
+  studentId   String
+  subjectId   String
+  marksObtained Float
+  fullMarks   Float     @default(100)
+  grade       String?
+  remarks     String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  exam        Exam      @relation(fields: [examId], references: [id])
+  subject     Subject   @relation(fields: [subjectId], references: [id])
+
+  @@unique([examId, studentId, subjectId])
+  @@index([tenantId, examId])
+  @@index([tenantId, studentId])
+  @@map("exam_marks")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TIMETABLE
+// ═══════════════════════════════════════════════════════════════
+
+model TimetableSlot {
+  id          String    @id @default(cuid())
+  tenantId    String
+  classId     String    @default("") // empty = general / all
+  dayOfWeek   Int       // 0=Sunday ... 6=Saturday
+  periodNo    Int
+  startTime   String    // "09:00"
+  endTime     String    // "09:45"
+  subjectId   String?
+  teacherId   String?
+  room        String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  subject     Subject?  @relation(fields: [subjectId], references: [id])
+
+  @@unique([tenantId, classId, dayOfWeek, periodNo])
+  @@index([tenantId])
+  @@index([tenantId, classId])
+  @@map("timetable_slots")
+}
+
+
+// ═══════════════════════════════════════════════════════════════
 // AUDIT & SYSTEM
 // ═══════════════════════════════════════════════════════════════
+
 
 model AuditLog {
   id          String    @id @default(cuid())

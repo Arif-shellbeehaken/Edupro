@@ -16,8 +16,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateInvoiceForm } from "./create-invoice-form";
+import { RecordPaymentForm } from "./record-payment-form";
 
 function formatBdt(n: number) {
+
   return `৳${n.toLocaleString("en-BD")}`;
 }
 
@@ -125,7 +127,7 @@ export default async function FinancePage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle>নতুন চালান</CardTitle>
@@ -138,11 +140,28 @@ export default async function FinancePage() {
 
             <Card>
               <CardHeader>
+                <CardTitle>পেমেন্ট রেকর্ড</CardTitle>
+                <CardDescription>bKash / Nagad / নগদ</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RecordPaymentForm
+                  invoices={invoices.map((inv) => ({
+                    id: inv.id,
+                    label: `${inv.invoiceNumber} — ${inv.student.nameBn || inv.student.name}`,
+                    due: Math.max(0, inv.totalAmount - inv.discountAmount - inv.paidAmount),
+                  }))}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Wallet className="h-5 w-5 text-emerald-600" />
                   সাম্প্রতিক চালান
                 </CardTitle>
               </CardHeader>
+
               <CardContent>
                 {invoices.length === 0 ? (
                   <p className="text-sm text-muted-foreground">এখনো কোনো চালান নেই</p>
