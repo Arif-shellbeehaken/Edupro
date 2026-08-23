@@ -152,7 +152,11 @@ async function main() {
     { studentId: "HIFZ-001", name: "আব্দুল্লাহ ইবনে মাসউদ", nameBn: "আব্দুল্লাহ ইবনে মাসউদ", juz: 5, page: 95 },
     { studentId: "HIFZ-002", name: "মুহাম্মদ ইউসুফ", nameBn: "মুহাম্মদ ইউসুফ", juz: 12, page: 230 },
     { studentId: "HIFZ-003", name: "উমর ফারুক", nameBn: "উমর ফারুক", juz: 3, page: 48 },
+    { studentId: "HIFZ-004", name: "আবু বকর সিদ্দীক", nameBn: "আবু বকর সিদ্দীক", juz: 18, page: 340 },
+    { studentId: "HIFZ-005", name: "উসমান ইবনে আফফান", nameBn: "উসমান ইবনে আফফান", juz: 27, page: 510 },
+    { studentId: "HIFZ-006", name: "আলী ইবনে আবী তালিব", nameBn: "আলী ইবনে আবী তালিব", juz: 8, page: 155 },
   ];
+
 
   for (const hs of hifzStudents) {
     const student = await prisma.student.upsert({

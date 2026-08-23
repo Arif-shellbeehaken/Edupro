@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BookOpen, Plus, Search } from "lucide-react";
 import { auth } from "@/infrastructure/auth/auth";
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
 
 const demoHifzStudents = [
   {
@@ -70,6 +72,8 @@ export default async function HifzPage() {
   if (!session?.user) redirect("/login");
 
   let tenantName = "প্রতিষ্ঠান";
+  let students = demoHifzStudents;
+
   if (session.user.tenantId) {
     try {
       const tenant = await prisma.tenant.findUnique({
@@ -77,12 +81,41 @@ export default async function HifzPage() {
         select: { name: true, nameBn: true },
       });
       if (tenant) tenantName = tenant.nameBn || tenant.name;
+
+      const dbStudents = await prisma.student.findMany({
+        where: {
+          tenantId: session.user.tenantId,
+          isHifzStudent: true,
+          deletedAt: null,
+          status: "ACTIVE",
+        },
+        include: { hifzProgress: true },
+        orderBy: { name: "asc" },
+        take: 50,
+      });
+
+      if (dbStudents.length > 0) {
+        students = dbStudents.map((s) => ({
+          id: s.id,
+          name: s.nameBn || s.name,
+          studentId: s.studentId,
+          currentJuz: s.hifzProgress?.currentJuz ?? s.currentJuz ?? 1,
+          currentPage: s.hifzProgress?.currentPage ?? s.currentPage ?? 1,
+          sabakToday:
+            s.hifzProgress?.lastEntryDate != null &&
+            new Date(s.hifzProgress.lastEntryDate).toDateString() ===
+              new Date().toDateString(),
+          quality: "GOOD",
+          totalJuz: s.hifzProgress?.totalJuzCompleted ?? 0,
+        }));
+      }
     } catch {
       tenantName = "দারুল উলূম মাদ্রাসা";
     }
   }
 
   return (
+
     <div className="flex h-screen overflow-hidden">
       <Sidebar
         type="tenant"
@@ -161,10 +194,13 @@ export default async function HifzPage() {
                 className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background pl-9 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
               />
             </div>
-            <Button>
-              <Plus className="h-4 w-4" />
-              নতুন সবক এন্ট্রি
+            <Button asChild>
+              <Link href="/tenant/admin/hifz/entry">
+                <Plus className="h-4 w-4" />
+                নতুন সবক এন্ট্রি
+              </Link>
             </Button>
+
           </div>
 
           {/* Student list */}
@@ -180,7 +216,8 @@ export default async function HifzPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {demoHifzStudents.map((s) => {
+                {students.map((s) => {
+
                   const q = qualityLabel[s.quality] ?? qualityLabel.AVERAGE;
                   return (
                     <div
@@ -206,9 +243,12 @@ export default async function HifzPage() {
                         <span className="text-xs text-muted-foreground">
                           {s.totalJuz}/30 পারা
                         </span>
-                        <Button size="sm" variant="outline">
-                          এন্ট্রি
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/tenant/admin/hifz/entry?studentId=${s.id}`}>
+                            এন্ট্রি
+                          </Link>
                         </Button>
+
                       </div>
                     </div>
                   );
