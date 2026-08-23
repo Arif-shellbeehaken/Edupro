@@ -65,15 +65,21 @@ export default async function StudentsPage() {
         />
 
         <div className="space-y-6 p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground">স্টুডেন্ট ইনফরমেশন সিস্টেম</p>
-            <Button asChild>
-              <Link href="/tenant/admin/students/new">
-                <Plus className="h-4 w-4" />
-                নতুন শিক্ষার্থী
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href="/tenant/admin/students/import">CSV ইমপোর্ট</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/tenant/admin/students/new">
+                  <Plus className="h-4 w-4" />
+                  নতুন শিক্ষার্থী
+                </Link>
+              </Button>
+            </div>
           </div>
+
 
           <Card>
             <CardHeader>

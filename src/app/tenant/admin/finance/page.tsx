@@ -17,6 +17,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CreateInvoiceForm } from "./create-invoice-form";
 import { RecordPaymentForm } from "./record-payment-form";
+import { BkashPayButton } from "./bkash-pay-button";
+
 
 function formatBdt(n: number) {
 
@@ -180,17 +182,22 @@ export default async function FinancePage() {
                             {inv.invoiceNumber} · {formatBdt(inv.totalAmount)}
                           </p>
                         </div>
-                        <Badge
-                          variant={
-                            inv.status === "PAID"
-                              ? "success"
-                              : inv.status === "OVERDUE"
-                                ? "destructive"
-                                : "warning"
-                          }
-                        >
-                          {statusLabel[inv.status] ?? inv.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          {inv.status !== "PAID" && inv.status !== "CANCELLED" && (
+                            <BkashPayButton invoiceId={inv.id} />
+                          )}
+                          <Badge
+                            variant={
+                              inv.status === "PAID"
+                                ? "success"
+                                : inv.status === "OVERDUE"
+                                  ? "destructive"
+                                  : "warning"
+                            }
+                          >
+                            {statusLabel[inv.status] ?? inv.status}
+                          </Badge>
+                        </div>
                       </div>
                     ))}
                   </div>
