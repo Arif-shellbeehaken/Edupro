@@ -20,7 +20,10 @@ import {
   Bell,
   Bus,
   Home,
+  Package,
+  MessageSquare,
 } from "lucide-react";
+
 
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/application/use-cases/auth/logout";
@@ -42,7 +45,7 @@ const superAdminNav: NavItem[] = [
 
 const tenantAdminNav: NavItem[] = [
   { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
-  { title: "ভর্তি", href: "/tenant/admin/admission", icon: ClipboardList },
+  { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
   { title: "শিক্ষার্থী", href: "/tenant/admin/students", icon: Users },
   { title: "উপস্থিতি", href: "/tenant/admin/attendance", icon: ClipboardList },
   { title: "পরীক্ষা ও ফলাফল", href: "/tenant/admin/exams", icon: FileText },
@@ -53,8 +56,11 @@ const tenantAdminNav: NavItem[] = [
   { title: "লাইব্রেরি", href: "/tenant/admin/library", icon: BookOpen },
   { title: "হোস্টেল", href: "/tenant/admin/hostel", icon: Home },
   { title: "ট্রান্সপোর্ট", href: "/tenant/admin/transport", icon: Bus },
+  { title: "ইনভেন্টরি", href: "/tenant/admin/inventory", icon: Package },
+  { title: "যোগাযোগ", href: "/tenant/admin/communication", icon: MessageSquare },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
+
 
 
 export interface SidebarUser {

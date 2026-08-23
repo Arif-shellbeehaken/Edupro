@@ -776,10 +776,123 @@ model TransportAssignment {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ADMISSION CRM · INVENTORY · COMMUNICATION
+// ═══════════════════════════════════════════════════════════════
+
+model AdmissionLead {
+  id              String    @id @default(cuid())
+  tenantId        String
+
+  applicantName   String
+  applicantNameBn String?
+  fatherName      String?
+  motherName      String?
+  phone           String
+  email           String?
+  gender          String?
+  dateOfBirth     DateTime?
+  previousSchool  String?
+  applyingClass   String?
+  source          String?   // WALK_IN | WEBSITE | REFERRAL | SOCIAL | OTHER
+  status          String    @default("NEW") // NEW | CONTACTED | VISIT_SCHEDULED | DOCUMENTS | ADMITTED | REJECTED | LOST
+  notes           String?
+  assignedToId    String?
+  followUpAt      DateTime?
+  convertedStudentId String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, phone])
+  @@map("admission_leads")
+}
+
+model InventoryItem {
+  id            String    @id @default(cuid())
+  tenantId      String
+  name          String
+  nameBn        String?
+  sku           String?
+  category      String?   // STATIONERY | UNIFORM | LAB | FURNITURE | OTHER
+  unit          String    @default("pcs")
+  quantity      Int       @default(0)
+  minStock      Int       @default(5)
+  unitCost      Int       @default(0)
+  location      String?
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  transactions  InventoryTxn[]
+
+  @@unique([tenantId, sku])
+  @@index([tenantId])
+  @@map("inventory_items")
+}
+
+model InventoryTxn {
+  id            String    @id @default(cuid())
+  tenantId      String
+  itemId        String
+  type          String    // IN | OUT | ADJUST
+  quantity      Int
+  note          String?
+  performedById String?
+
+  createdAt     DateTime  @default(now())
+
+  item          InventoryItem @relation(fields: [itemId], references: [id])
+
+  @@index([tenantId, itemId])
+  @@map("inventory_txns")
+}
+
+model MessageLog {
+  id            String    @id @default(cuid())
+  tenantId      String
+  channel       String    // SMS | WHATSAPP | EMAIL | IN_APP
+  recipient     String    // phone or email
+  subject       String?
+  body          String
+  status        String    @default("QUEUED") // QUEUED | SENT | FAILED | DELIVERED
+  relatedType   String?   // STUDENT | STAFF | LEAD | ALL
+  relatedId     String?
+  errorMessage  String?
+  sentAt        DateTime?
+
+  createdAt     DateTime  @default(now())
+
+  @@index([tenantId, channel])
+  @@index([tenantId, status])
+  @@map("message_logs")
+}
+
+model Notice {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  titleBn       String?
+  body          String
+  audience      String    @default("ALL") // ALL | STUDENTS | STAFF | PARENTS
+  isPublished   Boolean   @default(true)
+  publishedAt   DateTime  @default(now())
+  expiresAt     DateTime?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, isPublished])
+  @@map("notices")
+}
+
+// ═══════════════════════════════════════════════════════════════
 // AUDIT & SYSTEM
 // ═══════════════════════════════════════════════════════════════
 
 model AuditLog {
+
 
 
   id          String    @id @default(cuid())
