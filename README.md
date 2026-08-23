@@ -100,9 +100,12 @@ Following the recommended internal sequencing (even though external launch is si
 ✅ Production Prisma Schema (Multi-tenant + Hifz + Finance core)  
 ✅ Tenant Context & Isolation helpers  
 ✅ Modern UI shells (Landing, Login, Super Admin, Tenant Admin)  
-➡️ Next: Auth foundation + first vertical slice (Hifz or Admission)
+✅ **Auth Foundation** — Auth.js v5 + Credentials + JWT session + RBAC guards + Middleware  
+✅ Login Server Action + DB Seed (Super Admin + Demo Tenant + Admin)  
+➡️ Next: Session-aware dashboards + first vertical slice (Hifz recommended)
 
 See detailed decisions → [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
+
 
 
 ---
@@ -121,17 +124,28 @@ See detailed decisions → [`docs/architecture/ARCHITECTURE.md`](docs/architectu
 ## 🛠 Local Development
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 npm install
 
-# Run development server
-npm run dev
+# 2. Environment
+cp .env.example .env
+# Edit DATABASE_URL and set a strong AUTH_SECRET
 
-# Build for production
-npm run build
+# 3. Database
+npx prisma generate
+npx prisma db push
+npm run db:seed
+
+# 4. Run
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+**Demo logins (after seed):**
+- Super Admin → `super@edupro.app` / `Super@1234`
+- Institution Admin → `admin@demo-madrasah.edu.bd` / `Admin@1234`
+
 
 ---
 
