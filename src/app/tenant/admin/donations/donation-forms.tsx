@@ -1,0 +1,47 @@
+"use client";
+
+import { useActionState } from "react";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createDonationAction, type ExtState } from "@/application/use-cases/donations/actions";
+
+const inputClass =
+  "flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500";
+
+export function DonationForms() {
+  const [state, action, pending] = useActionState(createDonationAction, {} as ExtState);
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-base">নতুন অনুদান / যাকাত</CardTitle></CardHeader>
+      <CardContent>
+        <form action={action} className="grid gap-2 sm:grid-cols-2">
+          <input name="donorName" required placeholder="দাতার নাম *" className={inputClass} />
+          <input name="donorPhone" placeholder="ফোন" className={inputClass} />
+          <input name="amount" type="number" min={1} required placeholder="পরিমাণ (৳) *" className={inputClass} />
+          <select name="category" className={inputClass} defaultValue="ZAKAT">
+            <option value="ZAKAT">যাকাত</option>
+            <option value="SADAQAH">সদকা</option>
+            <option value="GENERAL">সাধারণ</option>
+            <option value="SPONSORSHIP">স্পনসরশিপ</option>
+            <option value="WAQF">ওয়াকফ</option>
+          </select>
+          <select name="method" className={inputClass} defaultValue="CASH">
+            <option value="CASH">নগদ</option>
+            <option value="BKASH">bKash</option>
+            <option value="NAGAD">Nagad</option>
+            <option value="BANK">ব্যাংক</option>
+          </select>
+          <input name="notes" placeholder="নোট" className={inputClass} />
+          <div className="sm:col-span-2">
+            {state.error && <p className="text-xs text-red-600">{state.error}</p>}
+            {state.success && <p className="text-xs text-emerald-600">{state.message}</p>}
+            <Button type="submit" disabled={pending}>
+              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "রসিদ তৈরি"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

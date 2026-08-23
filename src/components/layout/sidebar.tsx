@@ -23,7 +23,13 @@ import {
   Package,
   MessageSquare,
   Award,
+  Heart,
+  Shield,
+  AlertCircle,
+  PenLine,
+  ScrollText,
 } from "lucide-react";
+
 
 
 
@@ -61,9 +67,15 @@ const tenantAdminNav: NavItem[] = [
   { title: "ইনভেন্টরি", href: "/tenant/admin/inventory", icon: Package },
   { title: "যোগাযোগ", href: "/tenant/admin/communication", icon: MessageSquare },
   { title: "সার্টিফিকেট", href: "/tenant/admin/certificates", icon: Award },
+  { title: "যাকাত/অনুদান", href: "/tenant/admin/donations", icon: Heart },
+  { title: "গেট/ভিজিটর", href: "/tenant/admin/gate", icon: Shield },
+  { title: "অভিযোগ", href: "/tenant/admin/grievance", icon: AlertCircle },
+  { title: "হোমওয়ার্ক", href: "/tenant/admin/homework", icon: PenLine },
+  { title: "অডিট লগ", href: "/tenant/admin/audit", icon: ScrollText },
   { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
+
 
 
 
