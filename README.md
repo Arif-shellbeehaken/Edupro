@@ -85,7 +85,7 @@ Following the recommended internal sequencing (even though external launch is si
 
 | Sprint | Focus | Status |
 |--------|-------|--------|
-| 1 | Foundation: Multi-tenancy core, Auth/RBAC, Super Admin, Tenant provisioning | 🟡 In Progress |
+| 1 | Foundation: Architecture, Multi-tenancy, Domain, Prisma Schema, UI shells | 🟡 In Progress |
 | 2 | Core Academic: Admission, SIS, Attendance, Timetable | ⚪ Planned |
 | 3 | Exam & Finance + Payment gateways | ⚪ Planned |
 | 4 | Madrasah-specific (Hifz, Boards, Donation) | ⚪ Planned |
@@ -94,7 +94,16 @@ Following the recommended internal sequencing (even though external launch is si
 | 7 | Extended (Health, Extracurricular, Certificates, AI) | ⚪ Planned |
 | 8 | Hardening (Security, Load, Isolation, Billing QA) | ⚪ Planned |
 
-**Current focus:** Clean modern UI foundation + project structure + Super Admin & Tenant dashboards skeleton.
+**Current focus (Sprint 1):**  
+✅ Clean Architecture + Modular Monolith structure  
+✅ Domain Enums + Core Entities (Tenant, User, Student, Hifz)  
+✅ Production Prisma Schema (Multi-tenant + Hifz + Finance core)  
+✅ Tenant Context & Isolation helpers  
+✅ Modern UI shells (Landing, Login, Super Admin, Tenant Admin)  
+➡️ Next: Auth foundation + first vertical slice (Hifz or Admission)
+
+See detailed decisions → [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
+
 
 ---
 

@@ -1,0 +1,418 @@
+// Edupro — Production Prisma Schema
+// Multi-tenant Shared Database + tenant_id isolation
+// Strategy: Shared DB + strict tenant_id filtering + future RLS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TENANCY & PLATFORM
+// ═══════════════════════════════════════════════════════════════
+
+model Tenant {
+  id                    String    @id @default(cuid())
+  name                  String
+  nameBn                String?
+  slug                  String    @unique          // subdomain key
+  type                  String                    // InstitutionType enum
+  status                String    @default("TRIAL")
+  plan                  String    @default("BASIC")
+
+  logoUrl               String?
+  primaryColor          String?   @default("#059669")
+  secondaryColor        String?
+
+  email                 String?
+  phone                 String?
+  address               String?
+  district              String?
+  division              String?
+
+  academicYearStartMonth Int?     @default(1)
+  boardAffiliation      String[]  @default([])
+
+  maxStudents           Int       @default(500)
+  maxStaff              Int       @default(50)
+
+  trialEndsAt           DateTime?
+  subscriptionEndsAt    DateTime?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+
+  // Relations
+  users                 User[]
+  students              Student[]
+  academicYears         AcademicYear[]
+  classes               Class[]
+  hifzProgress          HifzProgress[]
+  hifzEntries           HifzEntry[]
+  feeStructures         FeeStructure[]
+  invoices              Invoice[]
+  auditLogs             AuditLog[]
+
+  @@index([status])
+  @@index([slug])
+  @@map("tenants")
+}
+
+model SubscriptionPlanConfig {
+  id              String   @id @default(cuid())
+  code            String   @unique          // BASIC, STANDARD, PREMIUM, ENTERPRISE
+  name            String
+  nameBn          String?
+  priceMonthly    Int                       // in BDT (paisa or full taka)
+  priceYearly     Int?
+  maxStudents     Int
+  maxStaff        Int
+  features        Json                      // feature flags
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("subscription_plan_configs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IDENTITY & ACCESS
+// ═══════════════════════════════════════════════════════════════
+
+model User {
+  id                String    @id @default(cuid())
+  tenantId          String?                       // null = SUPER_ADMIN
+  email             String
+  phone             String?
+  passwordHash      String
+
+  name              String
+  nameBn            String?
+  avatarUrl         String?
+
+  role              String                        // UserRole enum
+  isActive          Boolean   @default(true)
+  emailVerifiedAt   DateTime?
+  phoneVerifiedAt   DateTime?
+  lastLoginAt       DateTime?
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  hifzEntriesAsTeacher HifzEntry[] @relation("HifzTeacher")
+  auditLogs         AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([role])
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACADEMIC CORE
+// ═══════════════════════════════════════════════════════════════
+
+model AcademicYear {
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String                        // "2025-2026"
+  nameBn      String?
+  startDate   DateTime
+  endDate     DateTime
+  isCurrent   Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  classes     Class[]
+  students    Student[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("academic_years")
+}
+
+model Class {
+  id              String    @id @default(cuid())
+  tenantId        String
+  academicYearId  String
+  name            String                        // "Dakhil 1st", "Hifz Group A"
+  nameBn          String?
+  nameAr          String?
+  code            String?                       // internal code
+  capacity        Int?
+  sortOrder       Int       @default(0)
+
+  // Board mapping
+  board           String?                       // BMEB / BEFAQ / GENERAL
+  level           String?                       // Dakhil, Alim, Hifz, etc.
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  academicYear    AcademicYear @relation(fields: [academicYearId], references: [id])
+  sections        Section[]
+  students        Student[]
+
+  @@unique([tenantId, academicYearId, name])
+  @@index([tenantId])
+  @@map("classes")
+}
+
+model Section {
+  id          String    @id @default(cuid())
+  tenantId    String
+  classId     String
+  name        String                        // "A", "B", "Morning"
+  capacity    Int?
+  sortOrder   Int       @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  class       Class     @relation(fields: [classId], references: [id])
+  students    Student[]
+
+  @@unique([classId, name])
+  @@index([tenantId])
+  @@map("sections")
+}
+
+model Student {
+  id                  String    @id @default(cuid())
+  tenantId            String
+  studentId           String                        // institution generated ID
+  rollNumber          String?
+
+  name                String
+  nameBn              String?
+  nameAr              String?
+  dateOfBirth         DateTime?
+  gender              String
+  bloodGroup          String?
+  photoUrl            String?
+
+  currentClassId      String?
+  currentSectionId    String?
+  academicYearId      String?
+  status              String    @default("ACTIVE")
+  admissionDate       DateTime?
+
+  fatherName          String?
+  fatherNameBn        String?
+  fatherPhone         String?
+  fatherNid           String?
+  motherName          String?
+  motherNameBn        String?
+  motherPhone         String?
+  guardianName        String?
+  guardianPhone       String?
+  guardianRelation    String?
+
+  presentAddress      String?
+  permanentAddress    String?
+  birthCertificateNo  String?
+  nid                 String?
+
+  allergies           String?
+  chronicConditions   String?
+
+  isHifzStudent       Boolean   @default(false)
+  currentJuz          Int?
+  currentPage         Int?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  tenant              Tenant    @relation(fields: [tenantId], references: [id])
+  currentClass        Class?    @relation(fields: [currentClassId], references: [id])
+  currentSection      Section?  @relation(fields: [currentSectionId], references: [id])
+  academicYear        AcademicYear? @relation(fields: [academicYearId], references: [id])
+  hifzProgress        HifzProgress?
+  hifzEntries         HifzEntry[]
+  invoices            Invoice[]
+
+  @@unique([tenantId, studentId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, currentClassId])
+  @@map("students")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HIFZ (KEY DIFFERENTIATOR)
+// ═══════════════════════════════════════════════════════════════
+
+model HifzProgress {
+  id                  String    @id @default(cuid())
+  tenantId            String
+  studentId           String    @unique
+
+  totalJuzCompleted   Int       @default(0)
+  totalPagesMemorized Int       @default(0)
+  currentJuz          Int       @default(1)
+  currentPage         Int       @default(1)
+  currentSurah        String?
+  averageQualityScore Float     @default(0)
+  lastEntryDate       DateTime?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  tenant              Tenant    @relation(fields: [tenantId], references: [id])
+  student             Student   @relation(fields: [studentId], references: [id])
+
+  @@index([tenantId])
+  @@map("hifz_progress")
+}
+
+model HifzEntry {
+  id              String    @id @default(cuid())
+  tenantId        String
+  studentId       String
+  teacherId       String
+
+  date            DateTime  @db.Date
+  stream          String                        // SABAK | SABKI | MANZIL
+
+  fromJuz         Int
+  fromPage        Int
+  fromSurah       String?
+  fromAyah        Int?
+
+  toJuz           Int
+  toPage          Int
+  toSurah         String?
+  toAyah          Int?
+
+  quality         String                        // TilawatQuality
+  mistakesCount   Int?
+  teacherNote     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  student         Student   @relation(fields: [studentId], references: [id])
+  teacher         User      @relation("HifzTeacher", fields: [teacherId], references: [id])
+
+  @@index([tenantId, studentId, date])
+  @@index([tenantId, teacherId, date])
+  @@index([tenantId, stream, date])
+  @@map("hifz_entries")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINANCE (Core)
+// ═══════════════════════════════════════════════════════════════
+
+model FeeStructure {
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String
+  nameBn      String?
+  feeType     String                        // FeeType enum
+  amount      Int                           // in BDT (smallest unit or full)
+  classId     String?                       // null = applies to all
+  isRecurring Boolean   @default(true)
+  dueDay      Int?                          // day of month
+  isActive    Boolean   @default(true)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@map("fee_structures")
+}
+
+model Invoice {
+  id              String    @id @default(cuid())
+  tenantId        String
+  studentId       String
+  invoiceNumber   String
+  status          String    @default("ISSUED")
+
+  issueDate       DateTime  @default(now())
+  dueDate         DateTime
+  totalAmount     Int
+  paidAmount      Int       @default(0)
+  discountAmount  Int       @default(0)
+  fineAmount      Int       @default(0)
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  student         Student   @relation(fields: [studentId], references: [id])
+  payments        Payment[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId, studentId])
+  @@index([tenantId, status])
+  @@map("invoices")
+}
+
+model Payment {
+  id              String    @id @default(cuid())
+  tenantId        String
+  invoiceId       String
+  amount          Int
+  method          String                        // PaymentMethod
+  status          String    @default("COMPLETED")
+  transactionId   String?                       // bKash/Nagad trxID
+  paidAt          DateTime  @default(now())
+  notes           String?
+  receivedById    String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id])
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUDIT & SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  tenantId    String?
+  userId      String?
+  action      String                        // CREATE, UPDATE, DELETE, LOGIN...
+  entityType  String?                       // Student, Invoice, etc.
+  entityId    String?
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
