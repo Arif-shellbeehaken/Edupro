@@ -8,7 +8,6 @@ import {
   DAY_NAMES_BN,
 } from "@/infrastructure/database/repositories/timetable-repository";
 import { examRepository } from "@/infrastructure/database/repositories/exam-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -56,16 +55,7 @@ export default async function TimetablePage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="ক্লাস রুটিন"
@@ -136,6 +126,6 @@ export default async function TimetablePage() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

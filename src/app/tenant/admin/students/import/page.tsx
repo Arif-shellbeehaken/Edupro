@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,16 +23,7 @@ export default async function StudentImportPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="বাল্ক ইমপোর্ট"
@@ -72,6 +62,6 @@ Fatima Begum,ফাতিমা বেগম,FEMALE,,Abdul Mia,01800000001,,NO`}
           <BulkImportForm />
         </div>
       </main>
-    </div>
+    </>
   );
 }

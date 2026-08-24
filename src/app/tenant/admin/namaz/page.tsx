@@ -7,7 +7,6 @@ import {
   namazRepository,
   approximateHijri,
 } from "@/infrastructure/database/repositories/namaz-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NamazForm } from "./namaz-form";
@@ -55,16 +54,7 @@ export default async function NamazPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="নামাজ মনিটরিং"
@@ -110,6 +100,6 @@ export default async function NamazPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

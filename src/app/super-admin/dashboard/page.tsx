@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -64,8 +63,7 @@ export default async function SuperAdminDashboard() {
   if (!session.user.isSuperAdmin) redirect("/tenant/admin/dashboard");
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar type="super" user={{ name: session.user.name ?? "Super Admin", role: session.user.role, email: session.user.email ?? undefined }} />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="সুপার অ্যাডমিন ড্যাশবোর্ড"
@@ -173,6 +171,6 @@ export default async function SuperAdminDashboard() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

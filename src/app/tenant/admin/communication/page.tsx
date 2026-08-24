@@ -3,7 +3,6 @@ import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { communicationRepository } from "@/infrastructure/database/repositories/communication-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -44,16 +43,7 @@ export default async function CommunicationPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="যোগাযোগ"
@@ -142,6 +132,6 @@ export default async function CommunicationPage() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

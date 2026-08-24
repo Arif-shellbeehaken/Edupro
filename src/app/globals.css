@@ -1,16 +1,30 @@
 @import "tailwindcss";
 
+/**
+ * Edupro design tokens — single source of truth for light/dark surfaces.
+ * Feature UI must consume these (bg-background, text-primary, border-border)
+ * instead of ad-hoc emerald/zinc hex.
+ */
 :root {
-  --background: #fafafa;
+  --background: #f8faf9;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
   --primary: #059669;
   --primary-foreground: #ffffff;
+  --secondary: #ecfdf5;
+  --secondary-foreground: #064e3b;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
+  --accent: #ecfdf5;
+  --accent-foreground: #065f46;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --ring: #10b981;
+  --radius: 0.625rem;
+  --sidebar: #ffffff;
+  --sidebar-border: #e2e8f0;
 }
 
 @theme inline {
@@ -20,12 +34,24 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-border: var(--sidebar-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -36,27 +62,47 @@
     --card-foreground: #f1f5f9;
     --primary: #10b981;
     --primary-foreground: #022c22;
+    --secondary: #064e3b;
+    --secondary-foreground: #d1fae5;
     --muted: #1e293b;
     --muted-foreground: #94a3b8;
-    --border: #1e293b;
+    --accent: #064e3b;
+    --accent-foreground: #a7f3d0;
+    --destructive: #ef4444;
+    --destructive-foreground: #fef2f2;
+    --border: #1f2937;
     --ring: #34d399;
+    --sidebar: #0f172a;
+    --sidebar-border: #1f2937;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
-/* Smooth scrolling & selection */
-html {
-  scroll-behavior: smooth;
-}
-
-::selection {
-  background-color: #a7f3d0;
-  color: #064e3b;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -61,19 +60,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        primaryColor={tenant?.primaryColor}
-        logoUrl={tenant?.logoUrl}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="সেটিংস"
@@ -149,6 +136,6 @@ export default async function SettingsPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

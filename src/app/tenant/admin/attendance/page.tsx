@@ -5,7 +5,6 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { studentRepository } from "@/infrastructure/database/repositories/student-repository";
 import { attendanceRepository } from "@/infrastructure/database/repositories/attendance-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -52,16 +51,7 @@ export default async function AttendancePage() {
   const totalMarked = present + absent + late + (summary.LEAVE ?? 0) + (summary.HALF_DAY ?? 0);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="উপস্থিতি"
@@ -141,6 +131,6 @@ export default async function AttendancePage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

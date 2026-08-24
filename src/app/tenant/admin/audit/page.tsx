@@ -3,7 +3,6 @@ import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { extendedRepository } from "@/infrastructure/database/repositories/extended-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +23,7 @@ export default async function AuditPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar type="tenant" institutionName={tenantName} user={{ name: session.user.name ?? "Admin", role: session.user.role, email: session.user.email ?? undefined }} />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="অডিট লগ" subtitle="Enterprise activity trail" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
         <div className="space-y-6 p-6">
@@ -60,6 +58,6 @@ export default async function AuditPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

@@ -8,7 +8,6 @@ import { financeRepository } from "@/infrastructure/database/repositories/financ
 import { hrRepository } from "@/infrastructure/database/repositories/hr-repository";
 import { crmRepository } from "@/infrastructure/database/repositories/crm-repository";
 import { attendanceRepository } from "@/infrastructure/database/repositories/attendance-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -67,16 +66,7 @@ export default async function ReportsPage() {
   const newLeads = pipeline.NEW ?? 0;
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="রিপোর্টস"
@@ -198,6 +188,6 @@ export default async function ReportsPage() {
 
         </div>
       </main>
-    </div>
+    </>
   );
 }

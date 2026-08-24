@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { BookOpen, Plus, Search } from "lucide-react";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -116,16 +115,7 @@ export default async function HifzPage() {
 
   return (
 
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="হিফজুল কুরআন ট্র্যাকিং"
@@ -258,6 +248,6 @@ export default async function HifzPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

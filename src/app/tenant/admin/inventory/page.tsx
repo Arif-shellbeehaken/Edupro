@@ -3,7 +3,6 @@ import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { inventoryRepository } from "@/infrastructure/database/repositories/inventory-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -43,16 +42,7 @@ export default async function InventoryPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="ইনভেন্টরি"
@@ -129,6 +119,6 @@ export default async function InventoryPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

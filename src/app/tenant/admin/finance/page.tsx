@@ -5,7 +5,6 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { financeRepository } from "@/infrastructure/database/repositories/finance-repository";
 import { studentRepository } from "@/infrastructure/database/repositories/student-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -70,16 +69,7 @@ export default async function FinancePage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="ফি ও অ্যাকাউন্ট"
@@ -210,6 +200,6 @@ export default async function FinancePage() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

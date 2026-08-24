@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { Building2, Plus } from "lucide-react";
 import { auth } from "@/infrastructure/auth/auth";
 import { tenantRepository } from "@/infrastructure/database/repositories/tenant-repository";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -41,15 +40,7 @@ export default async function TenantsPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="super"
-        user={{
-          name: session.user.name ?? "Super Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="প্রতিষ্ঠানসমূহ"
@@ -120,6 +111,6 @@ export default async function TenantsPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

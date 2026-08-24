@@ -13,7 +13,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
 import { getTenantBranding } from "@/lib/tenant-branding";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -73,18 +72,7 @@ export default async function TenantAdminDashboard() {
   const tenantName = branding.nameBn || branding.name;
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="tenant"
-        institutionName={tenantName}
-        primaryColor={branding.primaryColor}
-        logoUrl={branding.logoUrl}
-        user={{
-          name: session.user.name ?? "Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="ড্যাশবোর্ড"
@@ -210,6 +198,6 @@ export default async function TenantAdminDashboard() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }

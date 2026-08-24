@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import {
   Card,
@@ -89,15 +88,7 @@ export default async function RevenuePage() {
   const maxSignups = Math.max(1, ...monthBuckets.map((m) => m.count));
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        type="super-admin"
-        user={{
-          name: session.user.name ?? "Super Admin",
-          role: session.user.role,
-          email: session.user.email ?? undefined,
-        }}
-      />
+    <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader
           title="রেভিনিউ"
@@ -263,6 +254,6 @@ export default async function RevenuePage() {
           </Card>
         </div>
       </main>
-    </div>
+    </>
   );
 }

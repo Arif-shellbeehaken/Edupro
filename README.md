@@ -174,35 +174,26 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📁 Project Structure (organized)
+## 📁 Project Structure (Clean Architecture)
 
 ```
 src/
-├── app/                    # App Router
-│   ├── (marketing)/        # Landing, pricing, public pages
-│   ├── (auth)/             # Login, register, forgot-password
-│   ├── (super-admin)/      # Platform-level dashboard
-│   ├── (tenant)/           # Tenant-scoped portals
-│   │   ├── admin/
-│   │   ├── teacher/
-│   │   ├── parent/
-│   │   └── student/
-│   └── api/                # API routes
+├── app/                         # Presentation (App Router)
+│   ├── api/                     # health · auth · payments
+│   ├── login/ · parent/ · student/
+│   ├── super-admin/             # + layout shell (platform)
+│   └── tenant/admin/            # + layout shell (tenant)
+├── application/use-cases/       # Server actions by domain
+├── domain/                      # entities · enums
+├── infrastructure/              # auth · prisma repos · payments · sms · tenancy
 ├── components/
-│   ├── ui/                 # Reusable primitives (Button, Card, Input…)
-│   ├── layout/             # Sidebars, headers, navs
-│   ├── modules/            # Feature-specific components
-│   └── charts/
-├── lib/
-│   ├── utils.ts
-│   ├── auth.ts
-│   └── db.ts
-├── types/
-│   ├── tenant.ts
-│   ├── student.ts
-│   └── index.ts
-└── styles/
+│   ├── layout/                  # AppShell · Sidebar · AppHeader
+│   └── ui/                      # token-based design system
+├── lib/                         # cn · branding helpers
+└── shared/                      # routes constants · errors
 ```
+
+Details: [`docs/architecture/STRUCTURE.md`](docs/architecture/STRUCTURE.md) · Deploy: [`docs/PRODUCTION.md`](docs/PRODUCTION.md)
 
 ---
 
@@ -217,11 +208,13 @@ src/
 
 ---
 
-## 📞 Next Steps (as per blueprint)
+## 📞 Status
 
 - [x] Git repository initialized & pushed
-- [ ] Complete Super Admin + Tenant onboarding UI
-- [ ] Database schema (Prisma) for multi-tenancy + core entities
+- [x] Super Admin + Tenant shells, onboarding, white-label
+- [x] Prisma multi-tenant schema + seed
+- [x] Layout-driven chrome (no duplicated sidebars)
+- [x] Design tokens + production docs
 - [ ] Authentication flow
 - [ ] Sample dashboards for each major role
 - [ ] Hifz tracking prototype (key differentiator)
