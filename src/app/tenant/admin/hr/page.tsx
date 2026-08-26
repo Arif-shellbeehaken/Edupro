@@ -70,6 +70,20 @@ export default async function HrDashboardPage() {
         />
 
         <div className="space-y-6 p-6">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/tenant/admin/hr/id-cards"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              স্টাফ আইডি কার্ড
+            </Link>
+            <Link
+              href="/tenant/admin/hr/staff/new"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              নতুন স্টাফ
+            </Link>
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
