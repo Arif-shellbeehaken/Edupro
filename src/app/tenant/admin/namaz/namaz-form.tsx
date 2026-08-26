@@ -38,13 +38,17 @@ export function NamazForm({
             className="flex h-9 rounded-lg border px-2 text-sm"
           />
         </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="notifyAbsent" />
+          অনুপস্থিতদের অভিভাবককে SMS
+        </label>
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "সংরক্ষণ"}
         </Button>
       </div>
       {state.error && <p className="text-xs text-red-600">{state.error}</p>}
       {state.success && (
-        <p className="text-xs text-emerald-600">{state.count} জনের নামাজ সংরক্ষিত</p>
+        <p className="text-xs text-emerald-600">{state.message || `${state.count} জনের নামাজ সংরক্ষিত`}</p>
       )}
 
       <div className="overflow-x-auto">

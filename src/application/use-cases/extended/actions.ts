@@ -112,16 +112,80 @@ export async function createNoticeAction(_p: ExtState, fd: FormData): Promise<Ex
   if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
   const title = String(fd.get("title") || "").trim();
   const body = String(fd.get("body") || "").trim();
+  const audience = String(fd.get("audience") || "ALL");
+  const sendSms = fd.get("sendSms") === "on";
   if (!title || !body) return { error: "শিরোনাম ও বিবরণ প্রয়োজন" };
-  await extendedOpsRepository.createNotice({
+
+  const notice = await extendedOpsRepository.createNotice({
     tenantId: s.user.tenantId,
     title,
     titleBn: String(fd.get("titleBn") || "") || undefined,
     body,
-    audience: String(fd.get("audience") || "ALL"),
+    audience,
   });
+
+  let smsNote = "";
+  if (sendSms) {
+    try {
+      const { prisma } = await import("@/infrastructure/database/prisma");
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      const tid = s.user.tenantId;
+
+      if (audience === "STAFF" || audience === "ALL") {
+        const staff = await prisma.staff.findMany({
+          where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
+          select: { phone: true },
+          take: 300,
+        });
+        for (const st of staff) {
+          if (st.phone) phones.add(st.phone);
+        }
+      }
+      if (audience === "PARENTS" || audience === "STUDENTS" || audience === "ALL") {
+        const students = await prisma.student.findMany({
+          where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
+          select: { fatherPhone: true, guardianPhone: true },
+          take: 500,
+        });
+        for (const st of students) {
+          const ph = st.guardianPhone || st.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+      }
+
+      const smsBody = `নোটিশ: ${title} — ${body.slice(0, 120)}${body.length > 120 ? "…" : ""} — Edupro`;
+      let sent = 0;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: tid,
+            channel: "SMS",
+            recipient: phone,
+            subject: title,
+            body: smsBody,
+            relatedType: "NOTICE",
+            relatedId:
+              typeof notice === "object" && notice && "id" in notice
+                ? String((notice as { id: string }).id)
+                : undefined,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+      smsNote = ` · SMS ${sent}`;
+    } catch (e) {
+      console.error("notice SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/notices");
-  return { success: "নোটিশ প্রকাশিত" };
+  revalidatePath("/tenant/admin/communication");
+  return { success: `নোটিশ প্রকাশিত${smsNote}` };
 }
 
 export async function createSurveyAction(_p: ExtState, fd: FormData): Promise<ExtState> {

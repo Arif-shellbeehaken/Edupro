@@ -25,6 +25,7 @@ const schema = z.object({
 export type CreateHifzEntryState = {
   error?: string;
   success?: boolean;
+  message?: string;
 };
 
 export async function createHifzEntryAction(
@@ -83,9 +84,62 @@ export async function createHifzEntryAction(
       teacherNote: data.teacherNote,
     });
 
+    const notifyGuardian = formData.get("notifyGuardian") === "on";
+    let smsNote = "";
+    if (notifyGuardian) {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const student = await prisma.student.findFirst({
+          where: { id: data.studentId, tenantId: session.user.tenantId },
+          select: {
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        });
+        const phone = student?.guardianPhone || student?.fatherPhone;
+        if (phone && student) {
+          const streamBn: Record<string, string> = {
+            SABAK: "সবক",
+            SABKI: "সবকি",
+            MANZIL: "মঞ্জিল",
+          };
+          const qualityBn: Record<string, string> = {
+            EXCELLENT: "চমৎকার",
+            GOOD: "ভালো",
+            AVERAGE: "মোটামুটি",
+            NEEDS_WORK: "উন্নতি প্রয়োজন",
+            WEAK: "দুর্বল",
+          };
+          const body = `হিফজ আপডেট: ${student.nameBn || student.name} (${student.studentId}) — ${streamBn[data.stream] || data.stream} জুজ ${data.fromJuz}–${data.toJuz}, পৃষ্ঠা ${data.fromPage}–${data.toPage}, মান: ${qualityBn[data.quality] || data.quality}। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Hifz progress",
+            body,
+            relatedType: "HIFZ",
+            relatedId: data.studentId,
+          });
+          smsNote = " · অভিভাবক SMS";
+        }
+      } catch (smsErr) {
+        console.error("hifz SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/hifz");
     revalidatePath(`/tenant/admin/hifz/${data.studentId}`);
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `এন্ট্রি সংরক্ষিত${smsNote}`,
+    };
   } catch (e) {
     console.error("createHifzEntry", e);
     return { error: "এন্ট্রি সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।" };

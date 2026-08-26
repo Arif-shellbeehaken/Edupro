@@ -196,7 +196,11 @@ export default function HifzEntryPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={pending}>
+              <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="notifyGuardian" defaultChecked />
+              অভিভাবককে SMS
+            </label>
+            <Button type="submit" className="w-full" disabled={pending}>
                 {pending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
