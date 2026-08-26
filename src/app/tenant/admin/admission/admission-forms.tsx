@@ -85,7 +85,7 @@ export function AdmissionForms({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">পাইপলাইন আপডেট</CardTitle>
+          <CardTitle className="text-base">পাইপলাইন আপডেট · SMS</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {active.length === 0 ? (
@@ -116,7 +116,9 @@ export function AdmissionForms({
             ))
           )}
           {statusState.success && (
-            <p className="text-xs text-emerald-600">স্ট্যাটাস আপডেট হয়েছে</p>
+            <p className="text-xs text-emerald-600">
+              {statusState.message || "স্ট্যাটাস আপডেট হয়েছে"}
+            </p>
           )}
         </CardContent>
       </Card>

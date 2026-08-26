@@ -63,17 +63,60 @@ export async function updateLeadStatusAction(
 
   const id = formData.get("leadId") as string;
   const status = formData.get("status") as string;
+  const notes = (formData.get("notes") as string) || undefined;
   if (!id || !status) return { error: "ইনপুট অসম্পূর্ণ" };
 
+  const STATUS_BN: Record<string, string> = {
+    NEW: "নতুন",
+    CONTACTED: "যোগাযোগ করা হয়েছে",
+    VISIT_SCHEDULED: "ভিজিট নির্ধারিত",
+    DOCUMENTS: "ডকুমেন্ট পর্যায়",
+    ADMITTED: "ভর্তি সম্পন্ন",
+    REJECTED: "প্রত্যাখ্যাত",
+    LOST: "হারিয়ে গেছে",
+  };
+
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const lead = await prisma.admissionLead.findFirst({
+      where: { id, tenantId: session.user.tenantId },
+    });
+    if (!lead) return { error: "লিড পাওয়া যায়নি" };
+
     await crmRepository.updateLeadStatus({
       id,
       tenantId: session.user.tenantId,
       status,
-      notes: (formData.get("notes") as string) || undefined,
+      notes,
     });
+
+    let smsNote = "";
+    if (lead.phone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const statusBn = STATUS_BN[status] || status;
+        const cls = lead.applyingClass ? ` ক্লাস: ${lead.applyingClass}.` : "";
+        const body = `ভর্তি আপডেট: ${lead.applicantNameBn || lead.applicantName} — স্ট্যাটাস: ${statusBn}.${cls}${notes ? " নোট: " + notes : ""} — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: lead.phone,
+          subject: `Admission ${status}`,
+          body,
+          relatedType: "ADMISSION",
+          relatedId: lead.id,
+        });
+        smsNote = " · SMS পাঠানো হয়েছে";
+      } catch (smsErr) {
+        console.error("admission SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/admission");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `স্ট্যাটাস আপডেট${smsNote}` };
   } catch (e) {
     console.error(e);
     return { error: "স্ট্যাটাস আপডেট ব্যর্থ" };
