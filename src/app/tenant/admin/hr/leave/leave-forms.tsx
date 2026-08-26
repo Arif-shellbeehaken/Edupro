@@ -91,7 +91,7 @@ export function LeaveForms({
       <Card>
         <CardHeader>
           <CardTitle className="text-base">পেন্ডিং অনুমোদন</CardTitle>
-          <CardDescription>{pendingLeaves.length} টি অপেক্ষমাণ</CardDescription>
+          <CardDescription>{pendingLeaves.length} টি অপেক্ষমাণ · অনুমোদন/বাতিলের পর স্টাফ SMS</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {pendingLeaves.length === 0 ? (

@@ -139,7 +139,14 @@ export const hrRepository = {
       },
       include: {
         staff: {
-          select: { id: true, name: true, nameBn: true, employeeId: true, designation: true },
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            employeeId: true,
+            designation: true,
+            phone: true,
+          },
         },
       },
       orderBy: { createdAt: "desc" },

@@ -95,6 +95,29 @@ export async function reviewLeaveAction(
   }
 
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const leave = await prisma.leaveRequest.findFirst({
+      where: {
+        id: parsed.data.leaveId,
+        tenantId: session.user.tenantId,
+        status: "PENDING",
+      },
+      include: {
+        staff: {
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            employeeId: true,
+            phone: true,
+          },
+        },
+      },
+    });
+    if (!leave) {
+      return { error: "আবেদন পাওয়া যায়নি বা ইতিমধ্যে রিভিউ হয়েছে" };
+    }
+
     const result = await hrRepository.reviewLeave({
       id: parsed.data.leaveId,
       tenantId: session.user.tenantId,
@@ -105,8 +128,35 @@ export async function reviewLeaveAction(
     if (result.count === 0) {
       return { error: "আবেদন পাওয়া যায়নি বা ইতিমধ্যে রিভিউ হয়েছে" };
     }
+
+    // Notify staff via SMS when phone is available
+    if (leave.staff.phone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const statusBn =
+          parsed.data.decision === "APPROVED" ? "অনুমোদিত" : "প্রত্যাখ্যাত";
+        const start = leave.startDate.toLocaleDateString("en-GB");
+        const end = leave.endDate.toLocaleDateString("en-GB");
+        const body = `ছুটি ${statusBn}: ${leave.staff.nameBn || leave.staff.name} (${leave.staff.employeeId}) — ${leave.leaveType}, ${start}–${end} (${leave.days} দিন).${parsed.data.reviewNote ? " নোট: " + parsed.data.reviewNote : ""} — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: leave.staff.phone,
+          subject: `Leave ${parsed.data.decision}`,
+          body,
+          relatedType: "LEAVE",
+          relatedId: leave.id,
+        });
+      } catch (smsErr) {
+        console.error("leave SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/hr/leave");
     revalidatePath("/tenant/admin/hr");
+    revalidatePath("/tenant/admin/communication");
     return { success: true };
   } catch (e) {
     console.error(e);
