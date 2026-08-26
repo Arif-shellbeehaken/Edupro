@@ -76,7 +76,11 @@ export function TimetableForm({
       {state.error && <p className="text-xs text-red-600">{state.error}</p>}
       {state.success && <p className="text-xs text-emerald-600">স্লট সংরক্ষিত</p>}
 
-      <Button type="submit" className="w-full" disabled={pending}>
+      <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="notifyClass" />
+            ক্লাসের অভিভাবককে SMS
+          </label>
+          <Button type="submit" className="w-full" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "সংরক্ষণ"}
       </Button>
     </form>

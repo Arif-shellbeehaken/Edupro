@@ -20,6 +20,10 @@ export function ModuleForm() {
             <option value="STUDENTS">শিক্ষার্থী</option>
           </select>
           <textarea name="description" placeholder="বিবরণ" className={inputClass + " min-h-20 sm:col-span-2"} />
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" name="sendSms" />
+            অডিয়েন্সকে SMS নোটিশ
+          </label>
           <Button type="submit" disabled={pending} className="sm:col-span-2">
             {pending ? "সংরক্ষণ…" : "সংরক্ষণ"}
           </Button>

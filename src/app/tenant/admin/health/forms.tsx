@@ -26,6 +26,10 @@ export function ModuleForm({ students }: { students: { id: string; name: string;
           <input name="emergencyContact" placeholder="জরুরি যোগাযোগ" className={inputClass} />
           <textarea name="lastVisitNote" placeholder="শেষ ভিজিট নোট" className={inputClass + " min-h-16 sm:col-span-2"} />
           <textarea name="notes" placeholder="অন্যান্য নোট" className={inputClass + " min-h-16 sm:col-span-2"} />
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" name="notifyGuardian" />
+            অভিভাবককে SMS (অ্যালার্জি/রোগ থাকলে অটো)
+          </label>
           <Button type="submit" disabled={pending} className="sm:col-span-2">
             {pending ? "সংরক্ষণ…" : "সংরক্ষণ"}
           </Button>
