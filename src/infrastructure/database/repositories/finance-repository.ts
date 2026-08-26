@@ -224,4 +224,46 @@ export const financeRepository = {
 
     return { created, skipped, totalAmount: amount };
   },
+
+  /** Open invoices past due (or due within daysAhead) with balance > 0. */
+  async listOverdueForReminder(options?: {
+    tenantId?: string;
+    daysAhead?: number; // include due within N days (0 = only overdue)
+    take?: number;
+  }) {
+    const tid = options?.tenantId ?? requireTenantId();
+    const daysAhead = options?.daysAhead ?? 0;
+    const cutoff = new Date();
+    cutoff.setHours(23, 59, 59, 999);
+    cutoff.setDate(cutoff.getDate() + daysAhead);
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        tenantId: tid,
+        status: { in: ["ISSUED", "PARTIALLY_PAID", "OVERDUE"] },
+        dueDate: { lte: cutoff },
+      },
+      orderBy: { dueDate: "asc" },
+      take: options?.take ?? 200,
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        },
+      },
+    });
+
+    return invoices
+      .map((inv) => {
+        const due = inv.totalAmount - inv.paidAmount - (inv.discountAmount ?? 0);
+        return { ...inv, balance: due };
+      })
+      .filter((inv) => inv.balance > 0);
+  },
 };

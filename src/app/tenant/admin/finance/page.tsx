@@ -83,6 +83,20 @@ export default async function FinancePage() {
         <div className="space-y-6 p-6">
           <div className="flex flex-wrap gap-2">
             <Link
+              href="/tenant/admin/finance/reminders"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              ফি রিমাইন্ডার SMS
+            </Link>
+            <Link
+              href="/tenant/admin/finance/passbook"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              পাসবুক
+            </Link>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
               href="/tenant/admin/finance/passbook"
               className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
             >
