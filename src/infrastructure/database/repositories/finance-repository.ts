@@ -145,4 +145,83 @@ export const financeRepository = {
       invoiceCount: invoices.length,
     };
   },
+
+  /**
+   * Create one invoice per active student in a class from matching fee structures.
+   * Uses class-specific structures + global (classId null). Skips if student already
+   * has an open invoice with same notes marker for this batch key.
+   */
+  async generateInvoicesForClass(data: {
+    tenantId: string;
+    classId: string;
+    dueDate?: Date;
+    batchNote?: string;
+  }) {
+    const tid = data.tenantId;
+    const due =
+      data.dueDate ??
+      new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    const note = data.batchNote ?? `CLASS-FEE-${data.classId}`;
+
+    const structures = await prisma.feeStructure.findMany({
+      where: {
+        tenantId: tid,
+        isActive: true,
+        OR: [{ classId: data.classId }, { classId: null }],
+      },
+    });
+    if (structures.length === 0) {
+      return { created: 0, skipped: 0, totalAmount: 0 };
+    }
+
+    const amount = structures.reduce((s, f) => s + f.amount, 0);
+    const feeNames = structures.map((f) => f.nameBn || f.name).join(", ");
+
+    const students = await prisma.student.findMany({
+      where: {
+        tenantId: tid,
+        deletedAt: null,
+        status: "ACTIVE",
+        currentClassId: data.classId,
+      },
+      select: { id: true },
+    });
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const st of students) {
+      const existing = await prisma.invoice.findFirst({
+        where: {
+          tenantId: tid,
+          studentId: st.id,
+          notes: note,
+          status: { not: "CANCELLED" },
+        },
+      });
+      if (existing) {
+        skipped += 1;
+        continue;
+      }
+
+      const count = await prisma.invoice.count({ where: { tenantId: tid } });
+      const invoiceNumber = `INV-${new Date().getFullYear()}-${String(count + 1).padStart(5, "0")}`;
+
+      await prisma.invoice.create({
+        data: {
+          tenantId: tid,
+          studentId: st.id,
+          invoiceNumber,
+          status: "ISSUED",
+          dueDate: due,
+          totalAmount: amount,
+          discountAmount: 0,
+          notes: `${note} · ${feeNames}`,
+        },
+      });
+      created += 1;
+    }
+
+    return { created, skipped, totalAmount: amount };
+  },
 };

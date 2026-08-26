@@ -150,4 +150,16 @@ export const studentRepository = {
 
     return { promoted: count, fromClass, toClass };
   },
+
+  /** Move students back (or sideways) — same rules as promote, explicit name for UI. */
+  async demoteBatch(data: {
+    tenantId: string;
+    fromClassId: string;
+    toClassId: string;
+    studentIds?: string[];
+    toSectionId?: string | null;
+  }) {
+    return studentRepository.promoteBatch(data);
+  },
 };
+
