@@ -21,6 +21,7 @@ export default async function CommunicationPage() {
   let tenantName = "প্রতিষ্ঠান";
   let messages: Awaited<ReturnType<typeof communicationRepository.listMessages>> = [];
   let notices: Awaited<ReturnType<typeof communicationRepository.listNotices>> = [];
+  let classes: { id: string; name: string; nameBn: string | null }[] = [];
 
   if (session.user.tenantId) {
     setTenantContext({
@@ -37,6 +38,12 @@ export default async function CommunicationPage() {
       if (t) tenantName = t.nameBn || t.name;
       messages = await communicationRepository.listMessages();
       notices = await communicationRepository.listNotices();
+      classes = await prisma.class.findMany({
+        where: { tenantId: session.user.tenantId, deletedAt: null },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: { id: true, name: true, nameBn: true },
+        take: 100,
+      });
     } catch {
       /* db */
     }
@@ -72,7 +79,7 @@ export default async function CommunicationPage() {
             </Card>
           </div>
 
-          <CommunicationForms />
+          <CommunicationForms classes={classes} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>

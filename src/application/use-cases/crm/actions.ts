@@ -157,8 +157,23 @@ export async function sendMessageAction(
 
   if (!body) return { error: "মেসেজ লিখুন" };
 
+  const classId = (formData.get("classId") as string)?.trim() || "";
+
   try {
     if (bulk) {
+      if (classId) {
+        const result = await communicationRepository.bulkSmsToClass({
+          tenantId: session.user.tenantId,
+          classId,
+          body,
+          subject: (formData.get("subject") as string) || undefined,
+        });
+        revalidatePath("/tenant/admin/communication");
+        return {
+          success: true,
+          message: `ক্লাস SMS: ${result.sent}/${result.targeted} জন (লগ ${result.logs.length})`,
+        };
+      }
       const logs = await communicationRepository.bulkSmsToStudents({
         tenantId: session.user.tenantId,
         body,

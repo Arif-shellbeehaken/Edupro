@@ -100,6 +100,54 @@ export const communicationRepository = {
   },
 
 
+
+  async bulkSmsToClass(data: {
+    tenantId: string;
+    classId: string;
+    body: string;
+    subject?: string;
+  }) {
+    const students = await prisma.student.findMany({
+      where: {
+        tenantId: data.tenantId,
+        deletedAt: null,
+        status: "ACTIVE",
+        currentClassId: data.classId,
+      },
+      select: {
+        id: true,
+        fatherPhone: true,
+        guardianPhone: true,
+        name: true,
+        nameBn: true,
+      },
+      take: 500,
+    });
+
+    const logs = [];
+    for (const s of students) {
+      const phone = s.guardianPhone || s.fatherPhone;
+      if (!phone) continue;
+      const result = await sendSms(phone, data.body);
+      const log = await prisma.messageLog.create({
+        data: {
+          tenantId: data.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: data.subject,
+          body: data.body,
+          relatedType: "CLASS",
+          relatedId: data.classId,
+          status: result.success ? "SENT" : "FAILED",
+          errorMessage: result.error,
+          sentAt: result.success ? new Date() : undefined,
+        },
+      });
+      logs.push(log);
+    }
+    return { logs, targeted: students.length, sent: logs.filter((l) => l.status === "SENT").length };
+  },
+
   async listNotices(tenantId?: string) {
     const tid = tenantId ?? requireTenantId();
     return prisma.notice.findMany({

@@ -21,7 +21,11 @@ const inputClass =
 const textareaClass =
   "flex min-h-[80px] w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500";
 
-export function CommunicationForms() {
+export function CommunicationForms({
+  classes = [],
+}: {
+  classes?: { id: string; name: string; nameBn: string | null }[];
+}) {
   const [msgState, msgAction, msgPending] = useActionState(
     sendMessageAction,
     {} as ActionState
@@ -37,7 +41,7 @@ export function CommunicationForms() {
         <CardHeader>
           <CardTitle className="text-base">SMS / মেসেজ পাঠান</CardTitle>
           <CardDescription>
-            একক প্রাপক বা সব অভিভাবককে bulk SMS
+            একক · ক্লাসভিত্তিক bulk · সব অভিভাবক
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -47,18 +51,45 @@ export function CommunicationForms() {
               <option value="WHATSAPP">WhatsApp</option>
               <option value="EMAIL">Email</option>
             </select>
-            <input name="recipient" placeholder="ফোন / ইমেইল (একক)" className={inputClass} />
+            <input
+              name="recipient"
+              placeholder="ফোন / ইমেইল (একক পাঠাতে)"
+              className={inputClass}
+            />
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="bulk" value="true" className="rounded" />
-              সব সক্রিয় শিক্ষার্থীর অভিভাবককে bulk SMS
+              <input type="checkbox" name="bulk" value="true" />
+              Bulk SMS (অভিভাবক)
             </label>
-            <textarea name="body" required placeholder="মেসেজ *" className={textareaClass} />
-            {msgState.error && <p className="text-xs text-red-600">{msgState.error}</p>}
+            <select name="classId" className={inputClass} defaultValue="">
+              <option value="">সব ক্লাস (পুরো প্রতিষ্ঠান)</option>
+              {classes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nameBn || c.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Bulk + ক্লাস সিলেক্ট = শুধু সেই ক্লাসের অভিভাবক · ক্লাস খালি = সবাই
+            </p>
+            <input name="subject" placeholder="বিষয় (ঐচ্ছিক)" className={inputClass} />
+            <textarea
+              name="body"
+              required
+              placeholder="মেসেজ *"
+              className={textareaClass}
+            />
+            {msgState.error && (
+              <p className="text-xs text-red-600">{msgState.error}</p>
+            )}
             {msgState.success && (
               <p className="text-xs text-emerald-600">{msgState.message}</p>
             )}
             <Button type="submit" className="w-full" disabled={msgPending}>
-              {msgPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "পাঠান"}
+              {msgPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "পাঠান"
+              )}
             </Button>
           </form>
         </CardContent>
@@ -66,7 +97,8 @@ export function CommunicationForms() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">নোটিশ প্রকাশ</CardTitle>
+          <CardTitle className="text-base">নোটিশ বোর্ড</CardTitle>
+          <CardDescription>প্রতিষ্ঠান-wide ঘোষণা</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={noticeAction} className="space-y-2">
@@ -86,7 +118,11 @@ export function CommunicationForms() {
               <p className="text-xs text-emerald-600">নোটিশ প্রকাশিত</p>
             )}
             <Button type="submit" className="w-full" disabled={noticePending}>
-              {noticePending ? <Loader2 className="h-4 w-4 animate-spin" /> : "প্রকাশ"}
+              {noticePending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "প্রকাশ"
+              )}
             </Button>
           </form>
         </CardContent>
