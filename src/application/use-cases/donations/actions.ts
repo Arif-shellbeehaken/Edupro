@@ -30,14 +30,18 @@ export async function createDonationAction(
   const amount = Number(formData.get("amount") || 0);
   if (!donorName || amount <= 0) return { error: "দাতার নাম ও পরিমাণ দিন" };
 
+  const donorPhone = (formData.get("donorPhone") as string)?.trim() || undefined;
+  const category = (formData.get("category") as string) || "GENERAL";
+  const method = (formData.get("method") as string) || undefined;
+
   try {
     const d = await extendedRepository.createDonation({
       tenantId: s.user.tenantId,
       donorName,
-      donorPhone: (formData.get("donorPhone") as string) || undefined,
+      donorPhone,
       amount,
-      category: (formData.get("category") as string) || "GENERAL",
-      method: (formData.get("method") as string) || undefined,
+      category,
+      method,
       notes: (formData.get("notes") as string) || undefined,
       receivedById: s.user.id,
     });
@@ -49,8 +53,42 @@ export async function createDonationAction(
       entityId: d.id,
       newValues: { amount, category: d.category, receiptNo: d.receiptNo },
     });
+
+    let smsNote = "";
+    if (donorPhone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const catBn: Record<string, string> = {
+          ZAKAT: "যাকাত",
+          SADAQAH: "সদকা",
+          GENERAL: "সাধারণ",
+          SPONSORSHIP: "স্পন্সরশিপ",
+          WAQF: "ওয়াকফ",
+        };
+        const body = `দান রসিদ: ${donorName} — ৳${amount.toLocaleString("en-BD")} (${catBn[category] || category}), রসিদ ${d.receiptNo}${method ? ", " + method : ""}। জাজাকাল্লাহু খাইরান। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: donorPhone,
+          subject: "Donation receipt",
+          body,
+          relatedType: "DONATION",
+          relatedId: d.id,
+        });
+        smsNote = " · SMS রসিদ পাঠানো হয়েছে";
+      } catch (smsErr) {
+        console.error("donation SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/donations");
-    return { success: true, message: `রসিদ: ${d.receiptNo}` };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `রসিদ: ${d.receiptNo}${smsNote}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "ডোনেশন সংরক্ষণ ব্যর্থ" };

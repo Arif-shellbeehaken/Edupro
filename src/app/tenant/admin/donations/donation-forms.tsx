@@ -13,7 +13,7 @@ export function DonationForms() {
   const [state, action, pending] = useActionState(createDonationAction, {} as ExtState);
   return (
     <Card>
-      <CardHeader><CardTitle className="text-base">নতুন অনুদান / যাকাত</CardTitle></CardHeader>
+      <CardHeader><CardTitle className="text-base">নতুন অনুদান / যাকাত · SMS রসিদ</CardTitle></CardHeader>
       <CardContent>
         <form action={action} className="grid gap-2 sm:grid-cols-2">
           <input name="donorName" required placeholder="দাতার নাম *" className={inputClass} />
