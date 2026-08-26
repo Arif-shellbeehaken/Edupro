@@ -31,7 +31,7 @@ export function CertificateForms({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">নতুন সার্টিফিকেট ইস্যু</CardTitle>
+        <CardTitle className="text-base">নতুন সার্টিফিকেট ইস্যু · অভিভাবক SMS</CardTitle>
         <CardDescription>
           শিক্ষার্থী সিলেক্ট করলে নাম/পিতা অটো ভরাট হবে
         </CardDescription>
@@ -62,7 +62,7 @@ export function CertificateForms({
             {state.error && <p className="mb-2 text-xs text-red-600">{state.error}</p>}
             {state.success && (
               <p className="mb-2 text-xs text-emerald-600">
-                ইস্যু হয়েছে: {state.certificateNo}
+                {state.message || `ইস্যু হয়েছে: ${state.certificateNo}`}
               </p>
             )}
             <Button type="submit" disabled={pending}>

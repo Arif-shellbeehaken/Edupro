@@ -52,7 +52,7 @@ export function GrievanceForms({
         </CardContent>
       </Card>
       <Card>
-        <CardHeader><CardTitle className="text-base">স্ট্যাটাস আপডেট</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">স্ট্যাটাস আপডেট · SMS</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {openItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">ওপেন অভিযোগ নেই</p>

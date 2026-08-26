@@ -57,7 +57,7 @@ export function OnboardingWizard({
               : "ফি স্ট্রাকচার"}
         </CardTitle>
         <CardDescription>
-          প্রয়োজনীয় কনফিগ — পরে Settings থেকে পরিবর্তন করা যাবে
+          ৩ ধাপে প্রতিষ্ঠান চালু — সেশন, ক্লাস/সেকশন, ফি · পরে Settings থেকে সম্পাদনা
         </CardDescription>
         <div className="flex gap-1 pt-2">
           {[1, 2, 3].map((s) => (
@@ -103,7 +103,7 @@ export function OnboardingWizard({
           <div className={step === 2 ? "space-y-3" : "hidden"}>
             <input
               name="yearName"
-              defaultValue="2026"
+              defaultValue="2025-2026"
               placeholder="একাডেমিক বছর (2026)"
               className={inputClass}
             />
@@ -116,6 +116,16 @@ export function OnboardingWizard({
             <input
               name="classNameBn"
               placeholder="ক্লাসের বাংলা নাম"
+              className={inputClass}
+            />
+            <input
+              name="className2"
+              placeholder="দ্বিতীয় ক্লাস (ঐচ্ছিক) e.g. Class 7"
+              className={inputClass}
+            />
+            <input
+              name="className2Bn"
+              placeholder="দ্বিতীয় ক্লাস বাংলা"
               className={inputClass}
             />
           </div>
@@ -133,6 +143,17 @@ export function OnboardingWizard({
               min={0}
               defaultValue={500}
               placeholder="পরিমাণ (৳)"
+              className={inputClass}
+            />
+            <input
+              name="feeName2"
+              placeholder="অতিরিক্ত ফি নাম (ঐচ্ছিক)"
+              className={inputClass}
+            />
+            <input
+              name="feeAmount2"
+              type="number"
+              placeholder="অতিরিক্ত ফি পরিমাণ"
               className={inputClass}
             />
           </div>

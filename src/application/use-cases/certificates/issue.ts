@@ -10,6 +10,7 @@ export type CertState = {
   error?: string;
   success?: boolean;
   certificateNo?: string;
+  message?: string;
 };
 
 export async function issueCertificateAction(
@@ -33,6 +34,7 @@ export async function issueCertificateAction(
   let fatherName = (formData.get("fatherName") as string) || undefined;
   let className = (formData.get("className") as string) || undefined;
 
+  let studentPhone: string | undefined;
   if (studentId) {
     const s = await prisma.student.findFirst({
       where: { id: studentId, tenantId: session.user.tenantId },
@@ -43,6 +45,7 @@ export async function issueCertificateAction(
       studentNameBn = s.nameBn ?? undefined;
       fatherName = s.fatherName ?? undefined;
       className = s.currentClass?.nameBn || s.currentClass?.name || className;
+      studentPhone = s.guardianPhone || s.fatherPhone || undefined;
     }
   }
 
@@ -72,8 +75,43 @@ export async function issueCertificateAction(
       revalidatePath("/tenant/admin/students");
     }
 
+    let smsNote = "";
+    if (studentPhone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const TYPE_BN: Record<string, string> = {
+          TRANSFER: "টিসি",
+          CHARACTER: "চারিত্রিক",
+          TESTIMONIAL: "টেস্টিমোনিয়াল",
+          COMPLETION: "সমাপন",
+          BONAFIDE: "বোনাফাইড",
+        };
+        const typeBn = TYPE_BN[certType] || certType;
+        const body = `সার্টিফিকেট ইস্যু: ${studentNameBn || studentName} — ${typeBn}, নং ${cert.certificateNo}। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: studentPhone,
+          subject: `Certificate ${certType}`,
+          body,
+          relatedType: "CERTIFICATE",
+          relatedId: cert.id,
+        });
+        smsNote = " · অভিভাবক SMS";
+      } catch (smsErr) {
+        console.error("cert SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/certificates");
-    return { success: true, certificateNo: cert.certificateNo };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      certificateNo: cert.certificateNo,
+      message: `ইস্যু: ${cert.certificateNo}${smsNote}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "সার্টিফিকেট ইস্যু ব্যর্থ" };

@@ -31,11 +31,16 @@ export async function completeOnboardingAction(
   const phone = (formData.get("phone") as string)?.trim();
   const address = (formData.get("address") as string)?.trim();
   const primaryColor = (formData.get("primaryColor") as string)?.trim();
-  const yearName = (formData.get("yearName") as string)?.trim() || "2026";
+  const yearName =
+    (formData.get("yearName") as string)?.trim() || "2025-2026";
   const className = (formData.get("className") as string)?.trim() || "Class 6";
   const classNameBn = (formData.get("classNameBn") as string)?.trim();
+  const className2 = (formData.get("className2") as string)?.trim();
+  const className2Bn = (formData.get("className2Bn") as string)?.trim();
   const feeName = (formData.get("feeName") as string)?.trim() || "Monthly Tuition";
   const feeAmount = Number(formData.get("feeAmount") || 0);
+  const feeName2 = (formData.get("feeName2") as string)?.trim();
+  const feeAmount2 = Number(formData.get("feeAmount2") || 0);
 
   if (!name) return { error: "প্রতিষ্ঠানের নাম দিন", step: 1 };
 
@@ -67,19 +72,56 @@ export async function completeOnboardingAction(
         },
       }));
 
-    // Class
-    const existingClass = await prisma.class.findFirst({
-      where: { tenantId: session.user.tenantId, name: className },
+    // Ensure only this year is current
+    await prisma.academicYear.updateMany({
+      where: { tenantId: session.user.tenantId, id: { not: year.id } },
+      data: { isCurrent: false },
     });
-    if (!existingClass) {
-      await prisma.class.create({
-        data: {
+    if (!year.isCurrent) {
+      await prisma.academicYear.update({
+        where: { id: year.id },
+        data: { isCurrent: true },
+      });
+    }
+
+    // Class + default section A
+    async function ensureClass(name: string, nameBn?: string) {
+      let cls = await prisma.class.findFirst({
+        where: {
           tenantId: session.user.tenantId,
-          name: className,
-          nameBn: classNameBn || undefined,
           academicYearId: year.id,
+          name,
+          deletedAt: null,
         },
       });
+      if (!cls) {
+        cls = await prisma.class.create({
+          data: {
+            tenantId: session.user.tenantId,
+            name,
+            nameBn: nameBn || undefined,
+            academicYearId: year.id,
+          },
+        });
+      }
+      const sec = await prisma.section.findFirst({
+        where: { classId: cls.id, name: "A" },
+      });
+      if (!sec) {
+        await prisma.section.create({
+          data: {
+            tenantId: session.user.tenantId,
+            classId: cls.id,
+            name: "A",
+          },
+        });
+      }
+      return cls;
+    }
+
+    await ensureClass(className, classNameBn || undefined);
+    if (className2) {
+      await ensureClass(className2, className2Bn || undefined);
     }
 
     // Optional fee head if model exists
@@ -87,17 +129,31 @@ export async function completeOnboardingAction(
       const feeCount = await prisma.feeStructure.count({
         where: { tenantId: session.user.tenantId },
       });
-      if (feeCount === 0 && feeAmount > 0) {
-        await prisma.feeStructure.create({
-          data: {
-            tenantId: session.user.tenantId,
-            name: feeName,
-            amount: feeAmount,
-            feeType: "TUITION",
-            isRecurring: true,
-            isActive: true,
-          },
-        });
+      if (feeCount === 0) {
+        if (feeAmount > 0) {
+          await prisma.feeStructure.create({
+            data: {
+              tenantId: session.user.tenantId,
+              name: feeName,
+              amount: feeAmount,
+              feeType: "TUITION",
+              isRecurring: true,
+              isActive: true,
+            },
+          });
+        }
+        if (feeName2 && feeAmount2 > 0) {
+          await prisma.feeStructure.create({
+            data: {
+              tenantId: session.user.tenantId,
+              name: feeName2,
+              amount: feeAmount2,
+              feeType: "OTHER",
+              isRecurring: true,
+              isActive: true,
+            },
+          });
+        }
       }
 
     } catch {
@@ -108,7 +164,7 @@ export async function completeOnboardingAction(
     revalidatePath("/tenant/onboarding");
     return {
       success: true,
-      message: "অনবোর্ডিং সম্পন্ন — ড্যাশবোর্ডে যান",
+      message: "অনবোর্ডিং সম্পন্ন — সেশন, ক্লাস, সেকশন ও ফি সেট · ড্যাশবোর্ডে যান",
     };
   } catch (e) {
     console.error(e);

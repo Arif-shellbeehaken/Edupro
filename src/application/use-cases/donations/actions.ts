@@ -209,16 +209,56 @@ export async function updateGrievanceAction(
   if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
   const id = formData.get("grievanceId") as string;
   const status = formData.get("status") as string;
+  const resolution = (formData.get("resolution") as string) || undefined;
   if (!id || !status) return { error: "ইনপুট অসম্পূর্ণ" };
+
+  const STATUS_BN: Record<string, string> = {
+    OPEN: "খোলা",
+    IN_PROGRESS: "চলমান",
+    RESOLVED: "সমাধান",
+    CLOSED: "বন্ধ",
+  };
+
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const g = await prisma.grievance.findFirst({
+      where: { id, tenantId: s.user.tenantId },
+    });
+    if (!g) return { error: "অভিযোগ পাওয়া যায়নি" };
+
     await extendedRepository.updateGrievanceStatus({
       id,
       tenantId: s.user.tenantId,
       status,
-      resolution: (formData.get("resolution") as string) || undefined,
+      resolution,
     });
+
+    let smsNote = "";
+    if (g.contactPhone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const statusBn = STATUS_BN[status] || status;
+        const body = `অভিযোগ আপডেট: "${g.subject}" — স্ট্যাটাস: ${statusBn}.${resolution ? " সমাধান: " + resolution : ""} — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: g.contactPhone,
+          subject: `Grievance ${status}`,
+          body,
+          relatedType: "GRIEVANCE",
+          relatedId: g.id,
+        });
+        smsNote = " · SMS পাঠানো হয়েছে";
+      } catch (smsErr) {
+        console.error("grievance SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/grievance");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `আপডেট সম্পন্ন${smsNote}` };
   } catch (e) {
     return { error: "আপডেট ব্যর্থ" };
   }
