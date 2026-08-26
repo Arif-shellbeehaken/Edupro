@@ -40,7 +40,7 @@ export function SupportAdminForms({
     <Card>
       <CardHeader>
         <CardTitle>টিকিট কিউ</CardTitle>
-        <CardDescription>স্ট্যাটাস ও নোট আপডেট করুন</CardDescription>
+        <CardDescription>স্ট্যাটাস ও নোট · ক্রিয়েটর SMS</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {tickets.length === 0 ? (

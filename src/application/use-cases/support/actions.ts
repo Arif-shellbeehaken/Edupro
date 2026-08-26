@@ -49,19 +49,62 @@ export async function updateSupportTicketAction(
   const status = formData.get("status") as string;
   if (!id || !status) return { error: "ইনপুট অসম্পূর্ণ" };
 
+  const assigneeNote = (formData.get("assigneeNote") as string) || undefined;
+
   try {
+    const ticket = await prisma.supportTicket.findUnique({ where: { id } });
+    if (!ticket) return { error: "টিকিট পাওয়া যায়নি" };
+
     await prisma.supportTicket.update({
       where: { id },
       data: {
         status,
-        assigneeNote: (formData.get("assigneeNote") as string) || undefined,
+        assigneeNote,
         ...(status === "RESOLVED" || status === "CLOSED"
           ? { resolvedAt: new Date() }
           : {}),
       },
     });
+
+    let smsNote = "";
+    if (ticket.createdById) {
+      const creator = await prisma.user.findUnique({
+        where: { id: ticket.createdById },
+        select: { phone: true, name: true },
+      });
+      if (creator?.phone) {
+        try {
+          const { communicationRepository } = await import(
+            "@/infrastructure/database/repositories/communication-repository"
+          );
+          const STATUS_BN: Record<string, string> = {
+            OPEN: "খোলা",
+            IN_PROGRESS: "চলমান",
+            WAITING: "অপেক্ষমাণ",
+            RESOLVED: "সমাধান",
+            CLOSED: "বন্ধ",
+          };
+          const body = `সাপোর্ট টিকিট: "${ticket.subject}" — স্ট্যাটাস: ${STATUS_BN[status] || status}.${assigneeNote ? " নোট: " + assigneeNote : ""} — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: ticket.tenantId || session.user.tenantId || "platform",
+            channel: "SMS",
+            recipient: creator.phone,
+            subject: `Ticket ${status}`,
+            body,
+            relatedType: "SUPPORT",
+            relatedId: ticket.id,
+          });
+          smsNote = " · SMS";
+        } catch (smsErr) {
+          console.error("support SMS", smsErr);
+        }
+      }
+    }
+
     revalidatePath("/super-admin/support");
-    return { success: true, message: "টিকিট আপডেট হয়েছে" };
+    revalidatePath("/tenant/admin/settings");
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `টিকিট আপডেট${smsNote}` };
   } catch (e) {
     console.error(e);
     return { error: "আপডেট ব্যর্থ" };

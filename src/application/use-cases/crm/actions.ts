@@ -273,3 +273,84 @@ export async function createNoticeAction(
     return { error: "নোটিশ তৈরি ব্যর্থ" };
   }
 }
+
+
+export async function notifyLowStockAction(
+  _p: ActionState,
+  _formData: FormData
+): Promise<ActionState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  try {
+    const { inventoryRepository } = await import(
+      "@/infrastructure/database/repositories/inventory-repository"
+    );
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+    const { prisma } = await import("@/infrastructure/database/prisma");
+
+    const low = await inventoryRepository.lowStockItems(session.user.tenantId);
+    if (low.length === 0) return { error: "লো-স্টক আইটেম নেই" };
+
+    // Notify active admin/accountant staff + tenant phone
+    const phones = new Set<string>();
+    const staff = await prisma.staff.findMany({
+      where: {
+        tenantId: session.user.tenantId,
+        deletedAt: null,
+        status: "ACTIVE",
+        roleType: { in: ["ADMIN", "ACCOUNTANT", "SUPPORT"] },
+      },
+      select: { phone: true },
+      take: 50,
+    });
+    for (const s of staff) {
+      if (s.phone) phones.add(s.phone);
+    }
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: session.user.tenantId },
+      select: { phone: true },
+    });
+    if (tenant?.phone) phones.add(tenant.phone);
+
+    if (phones.size === 0) {
+      return { error: "নোটিফাই করার মতো ফোন নেই (স্টাফ/প্রতিষ্ঠান)" };
+    }
+
+    const lines = low
+      .slice(0, 8)
+      .map((i) => `${i.nameBn || i.name}: ${i.quantity}/${i.minStock}`)
+      .join("; ");
+    const body = `লো-স্টক অ্যালার্ট (${low.length} আইটেম): ${lines} — Edupro`;
+
+    let sent = 0;
+    for (const phone of phones) {
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Low stock alert",
+          body,
+          relatedType: "INVENTORY",
+          relatedId: low[0]?.id,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/inventory");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `লো-স্টক SMS ${sent} জনকে · ${low.length} আইটেম`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "লো-স্টক অ্যালার্ট ব্যর্থ" };
+  }
+}

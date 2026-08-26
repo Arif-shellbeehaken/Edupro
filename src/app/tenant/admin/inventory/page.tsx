@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InventoryForms } from "./inventory-forms";
+import { LowStockNotifyButton } from "./low-stock-notify";
 
 export default async function InventoryPage() {
   const session = await auth();
@@ -79,6 +80,16 @@ export default async function InventoryPage() {
                 <div className="text-2xl font-bold text-amber-600">{lowStock.length}</div>
               </CardContent>
             </Card>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900 dark:bg-amber-950/20">
+            <div>
+              <p className="text-sm font-medium">লো-স্টক অ্যালার্ট</p>
+              <p className="text-xs text-muted-foreground">
+                অ্যাডমিন/অ্যাকাউন্ট্যান্ট স্টাফ ও প্রতিষ্ঠানের ফোনে SMS
+              </p>
+            </div>
+            <LowStockNotifyButton count={lowStock.length} />
           </div>
 
           <InventoryForms

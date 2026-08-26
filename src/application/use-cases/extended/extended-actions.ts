@@ -33,15 +33,78 @@ export async function createCampusAction(formData: FormData) {
 
 export async function createEmergencyAction(formData: FormData) {
   const session = await ctx();
-  await extendedOpsRepository.createEmergency({
+  const title = String(formData.get("title") || "");
+  const message = String(formData.get("message") || "");
+  const severity = String(formData.get("severity") || "HIGH");
+  const audience = String(formData.get("audience") || "ALL");
+  const sendSms = formData.get("sendSms") === "on";
+
+  const alert = await extendedOpsRepository.createEmergency({
     tenantId: session.user.tenantId!,
-    title: String(formData.get("title") || ""),
-    message: String(formData.get("message") || ""),
-    severity: String(formData.get("severity") || "HIGH"),
-    audience: String(formData.get("audience") || "ALL"),
+    title,
+    message,
+    severity,
+    audience,
     createdById: session.user.id,
   });
+
+  if (sendSms && session.user.tenantId) {
+    try {
+      const { prisma } = await import("@/infrastructure/database/prisma");
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const tid = session.user.tenantId;
+      const phones = new Set<string>();
+
+      if (audience === "STAFF" || audience === "ALL") {
+        const staff = await prisma.staff.findMany({
+          where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
+          select: { phone: true },
+          take: 300,
+        });
+        for (const s of staff) {
+          if (s.phone) phones.add(s.phone);
+        }
+      }
+      if (audience === "PARENTS" || audience === "ALL" || audience === "STUDENTS") {
+        const students = await prisma.student.findMany({
+          where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
+          select: { fatherPhone: true, guardianPhone: true },
+          take: 500,
+        });
+        for (const s of students) {
+          const ph = s.guardianPhone || s.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+      }
+
+      const body = `🚨 ইমার্জেন্সি [${severity}]: ${title} — ${message} — Edupro`;
+      let sent = 0;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: tid,
+            channel: "SMS",
+            recipient: phone,
+            subject: title,
+            body,
+            relatedType: "EMERGENCY",
+            relatedId: alert.id,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+      console.info(`emergency SMS sent ${sent}/${phones.size}`);
+    } catch (e) {
+      console.error("emergency SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/emergency");
+  revalidatePath("/tenant/admin/communication");
 }
 
 export async function resolveEmergencyAction(id: string) {

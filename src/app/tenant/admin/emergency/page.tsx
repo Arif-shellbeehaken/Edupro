@@ -74,6 +74,10 @@ export default async function EmergencyPage() {
               rows={3}
               className="sm:col-span-2 rounded-md border border-border bg-background px-3 py-2 text-sm"
             />
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" name="sendSms" defaultChecked />
+              অডিয়েন্সকে bulk SMS পাঠান
+            </label>
             <Button type="submit">ব্রডকাস্ট</Button>
           </form>
         </CardContent>
