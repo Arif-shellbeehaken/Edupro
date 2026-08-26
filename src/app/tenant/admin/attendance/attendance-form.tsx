@@ -37,6 +37,10 @@ export function AttendanceForm({
             className="flex h-10 rounded-lg border border-zinc-200 bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
           />
         </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="notifyAbsent" />
+          অনুপস্থিতদের অভিভাবককে SMS
+        </label>
         <Button type="submit" disabled={pending}>
           {pending ? (
             <>
@@ -54,7 +58,7 @@ export function AttendanceForm({
       )}
       {state.success && (
         <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          {state.count} জনের উপস্থিতি সংরক্ষিত হয়েছে
+          {state.message || `${state.count} জনের উপস্থিতি সংরক্ষিত হয়েছে`}
         </div>
       )}
 
