@@ -167,6 +167,7 @@ export async function createHomeworkAction(
       title,
       description: (formData.get("description") as string) || undefined,
       subjectName: (formData.get("subjectName") as string) || undefined,
+      classId: (formData.get("classId") as string) || undefined,
       dueDate: formData.get("dueDate")
         ? new Date(formData.get("dueDate") as string)
         : undefined,
@@ -176,5 +177,82 @@ export async function createHomeworkAction(
     return { success: true };
   } catch (e) {
     return { error: "হোমওয়ার্ক তৈরি ব্যর্থ" };
+  }
+}
+
+export async function notifyHomeworkAction(
+  _p: ExtState,
+  formData: FormData
+): Promise<ExtState> {
+  const s = await session();
+  if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const homeworkId = (formData.get("homeworkId") as string)?.trim();
+  if (!homeworkId) return { error: "হোমওয়ার্ক বাছুন" };
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const hw = await prisma.homework.findFirst({
+      where: { id: homeworkId, tenantId: s.user.tenantId },
+    });
+    if (!hw) return { error: "হোমওয়ার্ক পাওয়া যায়নি" };
+
+    const students = await prisma.student.findMany({
+      where: {
+        tenantId: s.user.tenantId,
+        deletedAt: null,
+        status: "ACTIVE",
+        ...(hw.classId ? { currentClassId: hw.classId } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        nameBn: true,
+        studentId: true,
+        fatherPhone: true,
+        guardianPhone: true,
+      },
+      take: 500,
+    });
+
+    const due = hw.dueDate
+      ? hw.dueDate.toLocaleDateString("en-GB")
+      : "শীঘ্রই";
+    const subj = hw.subjectName || "হোমওয়ার্ক";
+    let sent = 0;
+
+    for (const st of students) {
+      const phone = st.guardianPhone || st.fatherPhone;
+      if (!phone) continue;
+      const body = `হোমওয়ার্ক: ${hw.title} (${subj}) — ${st.nameBn || st.name} (${st.studentId}) এর জন্য ডিউ ${due}। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: hw.title,
+          body,
+          relatedType: "HOMEWORK",
+          relatedId: hw.id,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/homework");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `${sent}/${students.length} জন অভিভাবককে রিমাইন্ডার পাঠানো হয়েছে`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "হোমওয়ার্ক SMS ব্যর্থ" };
   }
 }

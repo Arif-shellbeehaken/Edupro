@@ -152,6 +152,7 @@ export const extendedRepository = {
     title: string;
     description?: string;
     subjectName?: string;
+    classId?: string;
     dueDate?: Date;
     assignedById?: string;
   }) {
@@ -161,12 +162,14 @@ export const extendedRepository = {
         title: data.title,
         description: data.description,
         subjectName: data.subjectName,
+        classId: data.classId,
         dueDate: data.dueDate,
         assignedById: data.assignedById,
         status: "ACTIVE",
       },
     });
   },
+
 
   // ─── Audit ─────────────────────────────────────────────────
   async listAudit(tenantId?: string, take = 50) {
