@@ -148,4 +148,62 @@ export const examRepository = {
     const tid = tenantId ?? requireTenantId();
     return prisma.exam.findFirst({ where: { id: examId, tenantId: tid } });
   },
+
+  async listMarksByExam(examId: string, tenantId?: string) {
+    const tid = tenantId ?? requireTenantId();
+    return prisma.examMark.findMany({
+      where: { tenantId: tid, examId },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        },
+        subject: { select: { id: true, name: true, nameBn: true, fullMarks: true } },
+      },
+      orderBy: { studentId: "asc" },
+    });
+  },
+
+  /** Aggregate per-student totals for an exam. */
+  async studentResultsSummary(examId: string, tenantId?: string) {
+    const marks = await this.listMarksByExam(examId, tenantId);
+    const byStudent = new Map<
+      string,
+      {
+        studentId: string;
+        name: string;
+        code: string;
+        phone: string;
+        obtained: number;
+        full: number;
+        subjects: number;
+      }
+    >();
+    for (const m of marks) {
+      const phone = m.student.guardianPhone || m.student.fatherPhone || "";
+      const row = byStudent.get(m.student.id) ?? {
+        studentId: m.student.id,
+        name: m.student.nameBn || m.student.name,
+        code: m.student.studentId,
+        phone,
+        obtained: 0,
+        full: 0,
+        subjects: 0,
+      };
+      row.obtained += m.marksObtained;
+      row.full += m.fullMarks;
+      row.subjects += 1;
+      byStudent.set(m.student.id, row);
+    }
+    return [...byStudent.values()].map((r) => ({
+      ...r,
+      pct: r.full > 0 ? Math.round((r.obtained / r.full) * 1000) / 10 : 0,
+    }));
+  },
 };

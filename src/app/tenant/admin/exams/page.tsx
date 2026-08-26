@@ -72,6 +72,20 @@ export default async function ExamsPage() {
         />
 
         <div className="space-y-6 p-6">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/tenant/admin/exams/notify"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              ফলাফল SMS
+            </Link>
+            <Link
+              href="/tenant/admin/exams/marksheet"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              মার্কশিট
+            </Link>
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
