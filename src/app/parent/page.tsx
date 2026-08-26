@@ -133,6 +133,12 @@ export default async function ParentPortalPage() {
                       ).length
                     }
                   </p>
+                  <Link
+                    href={`/parent/fees?studentId=${s.id}`}
+                    className="mt-1 inline-block text-xs text-emerald-700 underline"
+                  >
+                    ফি পাসবুক
+                  </Link>
                 </div>
                 <div className="rounded-lg bg-muted/50 p-3">
                   <p className="text-xs text-muted-foreground">স্ট্যাটাস</p>

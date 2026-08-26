@@ -43,6 +43,7 @@ import {
   HelpCircle,
   Utensils,
   Wrench,
+  Scale,
 } from "lucide-react";
 
 
@@ -104,6 +105,7 @@ const tenantAdminNav: NavItem[] = [
   { title: "নামাজ", href: "/tenant/admin/namaz", icon: Moon },
   { title: "হিজরি ক্যালেন্ডার", href: "/tenant/admin/hijri", icon: Calendar },
   { title: "সিকিউরিটি", href: "/tenant/admin/security", icon: Lock },
+  { title: "লেজার", href: "/tenant/admin/ledger", icon: Scale },
   { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
