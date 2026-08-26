@@ -95,3 +95,46 @@ export async function createQuestionAction(formData: FormData) {
   });
   revalidatePath("/tenant/admin/questions");
 }
+
+export async function createCanteenItemAction(formData: FormData) {
+  const session = await ctx();
+  await extendedOpsRepository.createCanteenItem({
+    tenantId: session.user.tenantId!,
+    name: String(formData.get("name") || ""),
+    nameBn: String(formData.get("nameBn") || "") || undefined,
+    price: Number(formData.get("price") || 0),
+    category: String(formData.get("category") || "MEAL"),
+  });
+  revalidatePath("/tenant/admin/canteen");
+}
+
+export async function createCanteenSaleAction(formData: FormData) {
+  const session = await ctx();
+  const qty = Number(formData.get("quantity") || 1);
+  const unit = Number(formData.get("unitPrice") || 0);
+  await extendedOpsRepository.createCanteenSale({
+    tenantId: session.user.tenantId!,
+    itemName: String(formData.get("itemName") || ""),
+    quantity: qty,
+    unitPrice: unit,
+    studentId: String(formData.get("studentId") || "") || undefined,
+    paidVia: String(formData.get("paidVia") || "CASH"),
+    note: String(formData.get("note") || "") || undefined,
+  });
+  revalidatePath("/tenant/admin/canteen");
+}
+
+export async function createVehicleLogAction(formData: FormData) {
+  const session = await ctx();
+  const amount = formData.get("amount");
+  const odo = formData.get("odometer");
+  await extendedOpsRepository.createVehicleLog({
+    tenantId: session.user.tenantId!,
+    vehicleLabel: String(formData.get("vehicleLabel") || ""),
+    logType: String(formData.get("logType") || "SERVICE"),
+    amount: amount ? Number(amount) : undefined,
+    odometer: odo ? Number(odo) : undefined,
+    notes: String(formData.get("notes") || "") || undefined,
+  });
+  revalidatePath("/tenant/admin/vehicles");
+}

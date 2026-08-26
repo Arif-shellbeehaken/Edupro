@@ -41,6 +41,8 @@ import {
   Boxes,
   MapPinned,
   HelpCircle,
+  Utensils,
+  Wrench,
 } from "lucide-react";
 
 
@@ -95,6 +97,8 @@ const tenantAdminNav: NavItem[] = [
   { title: "ক্যারিয়ার", href: "/tenant/admin/career", icon: Briefcase },
   { title: "অ্যাসেট", href: "/tenant/admin/assets", icon: Boxes },
   { title: "ক্যাম্পাস/শাখা", href: "/tenant/admin/campuses", icon: MapPinned },
+  { title: "ক্যান্টিন/মেস", href: "/tenant/admin/canteen", icon: Utensils },
+  { title: "যানবাহন লগ", href: "/tenant/admin/vehicles", icon: Wrench },
   { title: "ইমার্জেন্সি", href: "/tenant/admin/emergency", icon: Siren },
   { title: "অডিট লগ", href: "/tenant/admin/audit", icon: ScrollText },
   { title: "নামাজ", href: "/tenant/admin/namaz", icon: Moon },

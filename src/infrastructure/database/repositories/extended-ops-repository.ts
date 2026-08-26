@@ -372,4 +372,88 @@ export const extendedOpsRepository = {
       },
     });
   },
+
+  async listCanteenItems(take = 50) {
+    const tid = requireTenantId();
+    return prisma.canteenItem.findMany({
+      where: { tenantId: tid, isAvailable: true },
+      orderBy: { name: "asc" },
+      take,
+    });
+  },
+  async createCanteenItem(data: {
+    tenantId: string;
+    name: string;
+    nameBn?: string;
+    price: number;
+    category?: string;
+  }) {
+    return prisma.canteenItem.create({
+      data: {
+        tenantId: data.tenantId,
+        name: data.name,
+        nameBn: data.nameBn,
+        price: data.price,
+        category: data.category || "MEAL",
+        isAvailable: true,
+      },
+    });
+  },
+  async listCanteenSales(take = 50) {
+    const tid = requireTenantId();
+    return prisma.canteenSale.findMany({
+      where: { tenantId: tid },
+      orderBy: { soldAt: "desc" },
+      take,
+    });
+  },
+  async createCanteenSale(data: {
+    tenantId: string;
+    itemName: string;
+    quantity: number;
+    unitPrice: number;
+    studentId?: string;
+    paidVia?: string;
+    note?: string;
+  }) {
+    return prisma.canteenSale.create({
+      data: {
+        tenantId: data.tenantId,
+        itemName: data.itemName,
+        quantity: data.quantity,
+        unitPrice: data.unitPrice,
+        total: data.quantity * data.unitPrice,
+        studentId: data.studentId,
+        paidVia: data.paidVia || "CASH",
+        note: data.note,
+      },
+    });
+  },
+  async listVehicleLogs(take = 50) {
+    const tid = requireTenantId();
+    return prisma.vehicleLog.findMany({
+      where: { tenantId: tid },
+      orderBy: { serviceDate: "desc" },
+      take,
+    });
+  },
+  async createVehicleLog(data: {
+    tenantId: string;
+    vehicleLabel: string;
+    logType?: string;
+    amount?: number;
+    odometer?: number;
+    notes?: string;
+  }) {
+    return prisma.vehicleLog.create({
+      data: {
+        tenantId: data.tenantId,
+        vehicleLabel: data.vehicleLabel,
+        logType: data.logType || "SERVICE",
+        amount: data.amount,
+        odometer: data.odometer,
+        notes: data.notes,
+      },
+    });
+  },
 };
