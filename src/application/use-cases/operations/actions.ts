@@ -245,17 +245,74 @@ export async function assignTransportAction(
 
   const routeId = formData.get("routeId") as string;
   const studentId = formData.get("studentId") as string;
+  const pickupPoint = (formData.get("pickupPoint") as string) || undefined;
   if (!routeId || !studentId) return { error: "রুট ও শিক্ষার্থী সিলেক্ট করুন" };
 
   try {
-    await operationsRepository.assignStudent({
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const [route, student] = await Promise.all([
+      prisma.transportRoute.findFirst({
+        where: { id: routeId, tenantId: session.user.tenantId },
+      }),
+      prisma.student.findFirst({
+        where: {
+          id: studentId,
+          tenantId: session.user.tenantId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          nameBn: true,
+          studentId: true,
+          fatherPhone: true,
+          guardianPhone: true,
+        },
+      }),
+    ]);
+
+    const assignment = await operationsRepository.assignStudent({
       tenantId: session.user.tenantId,
       routeId,
       studentId,
-      pickupPoint: (formData.get("pickupPoint") as string) || undefined,
+      pickupPoint,
     });
+
+    let smsNote = "";
+    const phone = student?.guardianPhone || student?.fatherPhone;
+    if (phone && route && student) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const routeName = route.nameBn || route.name;
+        const pickup = pickupPoint ? ` পিকআপ: ${pickupPoint}.` : "";
+        const vehicle = route.vehicleNo ? ` যান: ${route.vehicleNo}.` : "";
+        const driver = route.driverName
+          ? ` ড্রাইভার: ${route.driverName}${route.driverPhone ? " (" + route.driverPhone + ")" : ""}.`
+          : "";
+        const body = `ট্রান্সপোর্ট: ${student.nameBn || student.name} (${student.studentId}) — রুট ${routeName}.${vehicle}${driver}${pickup} মাসিক ফি ৳${route.monthlyFee.toLocaleString("en-BD")}। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Transport assignment",
+          body,
+          relatedType: "TRANSPORT",
+          relatedId: assignment.id,
+        });
+        smsNote = " · অভিভাবক SMS পাঠানো হয়েছে";
+      } catch (smsErr) {
+        console.error("transport SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/transport");
-    return { success: true, message: "ট্রান্সপোর্ট অ্যাসাইন হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `ট্রান্সপোর্ট অ্যাসাইন হয়েছে${smsNote}`,
+    };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "";
     if (msg.includes("Unique") || msg.includes("unique")) {

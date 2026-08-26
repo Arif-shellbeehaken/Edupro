@@ -64,7 +64,7 @@ export function TransportForms({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">শিক্ষার্থী অ্যাসাইন</CardTitle>
+          <CardTitle className="text-base">শিক্ষার্থী অ্যাসাইন · অভিভাবক SMS</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={assignAction} className="space-y-2">
