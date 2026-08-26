@@ -55,6 +55,15 @@ export default async function StudentsPage() {
         />
 
         <div className="space-y-6 p-6">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/tenant/admin/students/id-cards"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              আইডি কার্ড প্রিন্ট
+            </Link>
+          </div>
+
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm text-muted-foreground">স্টুডেন্ট ইনফরমেশন সিস্টেম</p>
             <div className="flex gap-2">
