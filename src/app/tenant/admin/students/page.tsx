@@ -62,6 +62,12 @@ export default async function StudentsPage() {
             >
               আইডি কার্ড প্রিন্ট
             </Link>
+            <Link
+              href="/tenant/admin/students/promote"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              ব্যাচ প্রমোশন
+            </Link>
           </div>
 
           <div className="flex items-center justify-between gap-2">

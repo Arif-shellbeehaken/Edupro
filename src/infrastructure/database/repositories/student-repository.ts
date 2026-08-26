@@ -89,4 +89,65 @@ export const studentRepository = {
       where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
     });
   },
+
+
+  /**
+   * Promote students from one class to another (batch).
+   * Clears section assignment (sections are class-scoped).
+   * Optionally updates academicYearId from the target class.
+   */
+  async promoteBatch(data: {
+    tenantId: string;
+    fromClassId: string;
+    toClassId: string;
+    studentIds?: string[]; // if omitted, all ACTIVE in fromClass
+    toSectionId?: string | null;
+  }) {
+    const tid = data.tenantId;
+
+    const [fromClass, toClass] = await Promise.all([
+      prisma.class.findFirst({
+        where: { id: data.fromClassId, tenantId: tid, deletedAt: null },
+      }),
+      prisma.class.findFirst({
+        where: { id: data.toClassId, tenantId: tid, deletedAt: null },
+        include: { sections: true },
+      }),
+    ]);
+    if (!fromClass) throw new Error("Source class not found");
+    if (!toClass) throw new Error("Target class not found");
+    if (data.fromClassId === data.toClassId) {
+      throw new Error("Source and target class must differ");
+    }
+
+    let toSectionId: string | null = data.toSectionId ?? null;
+    if (toSectionId) {
+      const ok = toClass.sections.some((s) => s.id === toSectionId);
+      if (!ok) throw new Error("Section does not belong to target class");
+    }
+
+    const where = {
+      tenantId: tid,
+      deletedAt: null,
+      status: "ACTIVE" as const,
+      currentClassId: data.fromClassId,
+      ...(data.studentIds?.length
+        ? { id: { in: data.studentIds } }
+        : {}),
+    };
+
+    const count = await prisma.student.count({ where });
+    if (count === 0) return { promoted: 0, fromClass, toClass };
+
+    await prisma.student.updateMany({
+      where,
+      data: {
+        currentClassId: data.toClassId,
+        currentSectionId: toSectionId,
+        academicYearId: toClass.academicYearId,
+      },
+    });
+
+    return { promoted: count, fromClass, toClass };
+  },
 };
