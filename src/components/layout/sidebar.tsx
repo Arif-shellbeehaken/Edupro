@@ -44,6 +44,7 @@ import {
   Utensils,
   Wrench,
   Scale,
+  CalendarRange,
 } from "lucide-react";
 
 
@@ -72,6 +73,7 @@ const tenantAdminNav: NavItem[] = [
   { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
   { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
   { title: "শিক্ষার্থী", href: "/tenant/admin/students", icon: Users },
+  { title: "একাডেমিক রোলওভার", href: "/tenant/admin/academic/rollover", icon: CalendarRange },
   { title: "উপস্থিতি", href: "/tenant/admin/attendance", icon: ClipboardList },
   { title: "পরীক্ষা ও ফলাফল", href: "/tenant/admin/exams", icon: FileText },
   { title: "হিফজ ট্র্যাকিং", href: "/tenant/admin/hifz", icon: BookOpen },
