@@ -7,6 +7,7 @@ import { attendanceRepository } from "@/infrastructure/database/repositories/att
 import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NotifyChronicForm } from "./notify-form";
 
 function defaultRange() {
   const to = new Date();
@@ -180,6 +181,14 @@ export default async function AbsenteeismReportPage({
               </CardContent>
             </Card>
           </div>
+
+          <NotifyChronicForm
+            from={fromStr}
+            to={toStr}
+            threshold={threshold}
+            classId={classId}
+            flaggedCount={report.rows.length}
+          />
 
           <Card>
             <CardHeader>
