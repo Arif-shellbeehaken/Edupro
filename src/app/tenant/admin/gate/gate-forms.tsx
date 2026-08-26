@@ -24,16 +24,17 @@ export function GateForms({
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
-        <CardHeader><CardTitle className="text-base">চেক-ইন</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">চেক-ইন · হোস্ট SMS</CardTitle></CardHeader>
         <CardContent>
           <form action={inAction} className="space-y-2">
             <input name="visitorName" required placeholder="নাম *" className={inputClass} />
             <input name="visitorPhone" placeholder="ফোন" className={inputClass} />
             <input name="purpose" placeholder="উদ্দেশ্য" className={inputClass} />
             <input name="hostName" placeholder="কার সাথে দেখা" className={inputClass} />
+            <input name="hostPhone" placeholder="হোস্ট ফোন (SMS)" className={inputClass} />
             <input name="vehicleNo" placeholder="গাড়ির নম্বর" className={inputClass} />
             {inState.error && <p className="text-xs text-red-600">{inState.error}</p>}
-            {inState.success && <p className="text-xs text-emerald-600">চেক-ইন হয়েছে</p>}
+            {inState.success && <p className="text-xs text-emerald-600">{inState.message || "চেক-ইন হয়েছে"}</p>}
             <Button type="submit" disabled={inPending}>
               {inPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "চেক-ইন"}
             </Button>

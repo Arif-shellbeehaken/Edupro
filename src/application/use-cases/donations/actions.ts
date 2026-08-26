@@ -105,18 +105,51 @@ export async function checkInVisitorAction(
   const visitorName = (formData.get("visitorName") as string)?.trim();
   if (!visitorName) return { error: "ভিজিটরের নাম দিন" };
 
+  const hostName = (formData.get("hostName") as string)?.trim() || undefined;
+  const hostPhone = (formData.get("hostPhone") as string)?.trim() || undefined;
+  const purpose = (formData.get("purpose") as string)?.trim() || undefined;
+  const visitorPhone =
+    (formData.get("visitorPhone") as string)?.trim() || undefined;
+
   try {
-    await extendedRepository.checkInVisitor({
+    const log = await extendedRepository.checkInVisitor({
       tenantId: s.user.tenantId,
       visitorName,
-      visitorPhone: (formData.get("visitorPhone") as string) || undefined,
-      purpose: (formData.get("purpose") as string) || undefined,
-      hostName: (formData.get("hostName") as string) || undefined,
+      visitorPhone,
+      purpose,
+      hostName,
       vehicleNo: (formData.get("vehicleNo") as string) || undefined,
       notes: (formData.get("notes") as string) || undefined,
     });
+
+    let smsNote = "";
+    if (hostPhone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const body = `গেট নোটিশ: ${visitorName}${visitorPhone ? " (" + visitorPhone + ")" : ""} আপনার সাথে দেখা করতে এসেছেন${purpose ? " — " + purpose : ""}। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: hostPhone,
+          subject: "Visitor check-in",
+          body,
+          relatedType: "GATE",
+          relatedId: log.id,
+        });
+        smsNote = " · হোস্ট SMS পাঠানো হয়েছে";
+      } catch (smsErr) {
+        console.error("gate SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/gate");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `চেক-ইন সম্পন্ন${smsNote}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "চেক-ইন ব্যর্থ" };
