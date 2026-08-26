@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wallet } from "lucide-react";
 import { auth } from "@/infrastructure/auth/auth";
@@ -80,6 +81,14 @@ export default async function FinancePage() {
         />
 
         <div className="space-y-6 p-6">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/tenant/admin/finance/passbook"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              ফি পাসবুক / সেটেলমেন্ট
+            </Link>
+          </div>
           <div className="grid gap-4 sm:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">

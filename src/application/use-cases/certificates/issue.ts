@@ -62,6 +62,16 @@ export async function issueCertificateAction(
       remarks: (formData.get("remarks") as string) || undefined,
       issuedById: session.user.id,
     });
+
+    // TRANSFER TC: release student from active roll
+    if (certType === "TRANSFER" && studentId) {
+      await prisma.student.updateMany({
+        where: { id: studentId, tenantId: session.user.tenantId },
+        data: { status: "LEFT" },
+      });
+      revalidatePath("/tenant/admin/students");
+    }
+
     revalidatePath("/tenant/admin/certificates");
     return { success: true, certificateNo: cert.certificateNo };
   } catch (e) {

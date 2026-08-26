@@ -109,11 +109,39 @@ export default async function CertificatePrintPage({
             </p>
           )}
           {cert.certType === "TRANSFER" && (
-            <p>
-              He/She is hereby released from this institution. There is nothing
-              on record against him/her. This certificate is issued for the
-              purpose of transfer/admission elsewhere.
-            </p>
+            <>
+              <p>
+                He/She is hereby released from this institution with effect from{" "}
+                <strong>{issueDate}</strong>. All dues payable to the institution
+                have been cleared / adjusted as per records. There is nothing on
+                record against his/her character or conduct that would debar
+                admission elsewhere.
+              </p>
+              <p>
+                এই প্রত্যয়নপত্রটি অন্য শিক্ষাপ্রতিষ্ঠানে ভর্তির জন্য ইস্যু করা
+                হলো। উল্লিখিত শিক্ষার্থীকে{" "}
+                <strong>{issueDate}</strong> তারিখ থেকে এ প্রতিষ্ঠান থেকে অব্যাহতি
+                দেওয়া হলো।
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2 rounded border border-zinc-200 p-3 text-sm">
+                <p>
+                  Certificate No: <strong>{cert.certificateNo}</strong>
+                </p>
+                <p>
+                  Class last attended:{" "}
+                  <strong>{cert.className || "—"}</strong>
+                </p>
+                <p>
+                  Status: <strong>Transferred / Released</strong>
+                </p>
+                <p>
+                  Verification:{" "}
+                  <strong className="font-mono text-xs">
+                    {cert.id.slice(0, 8).toUpperCase()}
+                  </strong>
+                </p>
+              </div>
+            </>
           )}
           {cert.certType === "HIFZ_COMPLETION" && (
             <p>

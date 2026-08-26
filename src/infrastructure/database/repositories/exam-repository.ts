@@ -125,4 +125,27 @@ export const examRepository = {
       take: 100,
     });
   },
+
+  async listMarksGroupedByStudent(examId: string, tenantId?: string) {
+    const tid = tenantId ?? requireTenantId();
+    const marks = await prisma.examMark.findMany({
+      where: { examId, tenantId: tid },
+      include: {
+        subject: { select: { id: true, name: true, nameBn: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    const byStudent = new Map<string, typeof marks>();
+    for (const m of marks) {
+      const arr = byStudent.get(m.studentId) ?? [];
+      arr.push(m);
+      byStudent.set(m.studentId, arr);
+    }
+    return byStudent;
+  },
+
+  async getExam(examId: string, tenantId?: string) {
+    const tid = tenantId ?? requireTenantId();
+    return prisma.exam.findFirst({ where: { id: examId, tenantId: tid } });
+  },
 };

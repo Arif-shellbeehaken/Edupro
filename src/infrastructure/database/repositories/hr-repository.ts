@@ -374,4 +374,135 @@ export const hrRepository = {
       });
     });
   },
+
+  // ─── Staff Attendance ───────────────────────────────────────
+  async listStaffAttendance(options: {
+    tenantId?: string;
+    date: Date;
+    take?: number;
+  }) {
+    const tid = options.tenantId ?? requireTenantId();
+    const start = new Date(options.date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return prisma.staffAttendance.findMany({
+      where: {
+        tenantId: tid,
+        date: { gte: start, lt: end },
+      },
+      include: {
+        staff: {
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            employeeId: true,
+            designation: true,
+            department: true,
+          },
+        },
+      },
+      orderBy: { staff: { name: "asc" } },
+      take: options.take ?? 200,
+    });
+  },
+
+  async upsertStaffAttendance(data: {
+    tenantId: string;
+    staffId: string;
+    date: Date;
+    status: string;
+    checkIn?: string;
+    checkOut?: string;
+    remarks?: string;
+    markedById?: string;
+  }) {
+    const day = new Date(data.date);
+    day.setHours(0, 0, 0, 0);
+    return prisma.staffAttendance.upsert({
+      where: {
+        tenantId_staffId_date: {
+          tenantId: data.tenantId,
+          staffId: data.staffId,
+          date: day,
+        },
+      },
+      create: {
+        tenantId: data.tenantId,
+        staffId: data.staffId,
+        date: day,
+        status: data.status,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        remarks: data.remarks,
+        markedById: data.markedById,
+      },
+      update: {
+        status: data.status,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        remarks: data.remarks,
+        markedById: data.markedById,
+      },
+    });
+  },
+
+  async bulkMarkStaffAttendance(data: {
+    tenantId: string;
+    date: Date;
+    marks: { staffId: string; status: string }[];
+    markedById?: string;
+  }) {
+    const day = new Date(data.date);
+    day.setHours(0, 0, 0, 0);
+    await prisma.$transaction(
+      data.marks.map((m) =>
+        prisma.staffAttendance.upsert({
+          where: {
+            tenantId_staffId_date: {
+              tenantId: data.tenantId,
+              staffId: m.staffId,
+              date: day,
+            },
+          },
+          create: {
+            tenantId: data.tenantId,
+            staffId: m.staffId,
+            date: day,
+            status: m.status,
+            markedById: data.markedById,
+          },
+          update: {
+            status: m.status,
+            markedById: data.markedById,
+          },
+        })
+      )
+    );
+  },
+
+  async listApprovedLeavesForMonth(options: {
+    tenantId?: string;
+    year: number;
+    month: number;
+  }) {
+    const tid = options.tenantId ?? requireTenantId();
+    const start = new Date(options.year, options.month - 1, 1);
+    const end = new Date(options.year, options.month, 0, 23, 59, 59);
+    return prisma.leaveRequest.findMany({
+      where: {
+        tenantId: tid,
+        status: "APPROVED",
+        startDate: { lte: end },
+        endDate: { gte: start },
+      },
+      include: {
+        staff: {
+          select: { id: true, name: true, nameBn: true, employeeId: true },
+        },
+      },
+      orderBy: { startDate: "asc" },
+    });
+  },
 };

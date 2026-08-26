@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { ExamForms } from "./exam-forms";
 
 const typeLabel: Record<string, string> = {
@@ -138,9 +139,17 @@ export default async function ExamsPage() {
                           {typeLabel[e.examType] ?? e.examType} · {e._count.marks} মার্ক
                         </p>
                       </div>
-                      <Badge variant={e.isPublished ? "success" : "secondary"}>
-                        {e.isPublished ? "প্রকাশিত" : "ড্রাফট"}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/tenant/admin/exams/marksheet?examId=${e.id}`}
+                          className="text-xs text-primary underline"
+                        >
+                          মার্কশিট / GPA
+                        </Link>
+                        <Badge variant={e.isPublished ? "success" : "secondary"}>
+                          {e.isPublished ? "প্রকাশিত" : "ড্রাফট"}
+                        </Badge>
+                      </div>
                     </div>
                   ))}
                 </div>

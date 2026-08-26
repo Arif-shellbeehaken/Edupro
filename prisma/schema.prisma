@@ -561,6 +561,7 @@ model Staff {
 
   leaveRequests   LeaveRequest[]
   salaryPayments  SalaryPayment[]
+  attendances     StaffAttendance[]
 
   @@unique([tenantId, employeeId])
   @@index([tenantId])
@@ -591,6 +592,29 @@ model LeaveRequest {
   @@index([tenantId, status])
   @@index([tenantId, staffId])
   @@map("leave_requests")
+}
+
+
+model StaffAttendance {
+  id          String    @id @default(cuid())
+  tenantId    String
+  staffId     String
+  date        DateTime
+  status      String    // PRESENT | ABSENT | LATE | HALF_DAY | LEAVE | HOLIDAY
+  checkIn     String?   // HH:mm
+  checkOut    String?
+  remarks     String?
+  markedById  String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  staff       Staff     @relation(fields: [staffId], references: [id])
+
+  @@unique([tenantId, staffId, date])
+  @@index([tenantId, date])
+  @@index([tenantId, staffId])
+  @@map("staff_attendances")
 }
 
 model PayrollRun {
@@ -1101,4 +1125,227 @@ model AuditLog {
   @@index([tenantId, createdAt])
   @@index([entityType, entityId])
   @@map("audit_logs")
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// ALUMNI · HEALTH · CLUBS · SURVEY · LMS (blueprint extended)
+// ═══════════════════════════════════════════════════════════════
+
+model Alumni {
+  id            String    @id @default(cuid())
+  tenantId      String
+  studentId     String?
+  name          String
+  nameBn        String?
+  phone         String?
+  email         String?
+  graduationYear Int?
+  lastClass     String?
+  currentJob    String?
+  organization  String?
+  notes         String?
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([tenantId, graduationYear])
+  @@map("alumni")
+}
+
+model HealthRecord {
+  id            String    @id @default(cuid())
+  tenantId      String
+  studentId     String
+  bloodGroup    String?
+  allergies     String?
+  chronicConditions String?
+  vaccinations  String?   // JSON text or freeform
+  lastVisitAt   DateTime?
+  lastVisitNote String?
+  emergencyContact String?
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, studentId])
+  @@index([tenantId])
+  @@map("health_records")
+}
+
+model Club {
+  id            String    @id @default(cuid())
+  tenantId      String
+  name          String
+  nameBn        String?
+  category      String    @default("GENERAL") // SPORTS | CULTURAL | ACADEMIC | RELIGIOUS
+  coachName     String?
+  isActive      Boolean   @default(true)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  members       ClubMember[]
+
+  @@index([tenantId])
+  @@map("clubs")
+}
+
+model ClubMember {
+  id            String    @id @default(cuid())
+  tenantId      String
+  clubId        String
+  studentId     String
+  role          String    @default("MEMBER") // MEMBER | CAPTAIN
+  joinedAt      DateTime  @default(now())
+
+  club          Club      @relation(fields: [clubId], references: [id])
+
+  @@unique([clubId, studentId])
+  @@index([tenantId])
+  @@map("club_members")
+}
+
+model Survey {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  description   String?
+  audience      String    @default("PARENTS") // PARENTS | STAFF | STUDENTS
+  status        String    @default("OPEN") // OPEN | CLOSED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  responses     SurveyResponse[]
+
+  @@index([tenantId, status])
+  @@map("surveys")
+}
+
+model SurveyResponse {
+  id            String    @id @default(cuid())
+  tenantId      String
+  surveyId      String
+  respondent    String?
+  score         Int?      // NPS 0-10
+  comment       String?
+  createdAt     DateTime  @default(now())
+
+  survey        Survey    @relation(fields: [surveyId], references: [id])
+
+  @@index([tenantId, surveyId])
+  @@map("survey_responses")
+}
+
+model LmsMaterial {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  className     String?
+  subject       String?
+  materialType  String    @default("NOTE") // NOTE | VIDEO | LINK | FILE
+  url           String?
+  body          String?
+  isPublished   Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@map("lms_materials")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Extended: Emergency, Career, Assets, Campus branches
+// ═══════════════════════════════════════════════════════════════
+
+model Campus {
+  id            String    @id @default(cuid())
+  tenantId      String
+  name          String
+  nameBn        String?
+  code          String?
+  address       String?
+  phone         String?
+  isMain        Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("campuses")
+}
+
+model EmergencyAlert {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  message       String
+  severity      String    @default("HIGH") // LOW | MEDIUM | HIGH | CRITICAL
+  audience      String    @default("ALL") // ALL | STAFF | PARENTS | STUDENTS
+  status        String    @default("ACTIVE") // ACTIVE | RESOLVED
+  createdById   String?
+  resolvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@map("emergency_alerts")
+}
+
+model JobPosting {
+  id            String    @id @default(cuid())
+  tenantId      String
+  title         String
+  company       String?
+  location      String?
+  jobType       String    @default("FULL_TIME") // FULL_TIME | PART_TIME | INTERNSHIP
+  description   String?
+  applyUrl      String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, isActive])
+  @@map("job_postings")
+}
+
+model FixedAsset {
+  id            String    @id @default(cuid())
+  tenantId      String
+  name          String
+  category      String    @default("GENERAL") // FURNITURE | LAB | IT | VEHICLE | OTHER
+  assetTag      String?
+  location      String?
+  purchaseDate  DateTime?
+  purchaseValue Float?
+  condition     String    @default("GOOD") // GOOD | FAIR | POOR | RETIRED
+  notes         String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, category])
+  @@map("fixed_assets")
+}
+
+model QuestionBankItem {
+  id            String    @id @default(cuid())
+  tenantId      String
+  subject       String
+  className     String?
+  questionType  String    @default("MCQ") // MCQ | SHORT | ESSAY
+  questionText  String
+  optionsJson   String?   // JSON array for MCQ
+  correctAnswer String?
+  difficulty    String    @default("MEDIUM") // EASY | MEDIUM | HARD
+  marks         Float     @default(1)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, subject])
+  @@map("question_bank_items")
 }

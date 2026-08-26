@@ -105,6 +105,12 @@ export default async function HrDashboardPage() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link href="/tenant/admin/hr/attendance">
+                <ClipboardList className="h-4 w-4" />
+                স্টাফ উপস্থিতি
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/tenant/admin/hr/leave">
                 <CalendarDays className="h-4 w-4" />
                 ছুটি ব্যবস্থাপনা
