@@ -61,7 +61,7 @@ export function HostelForms({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">রুম অ্যালোকেট</CardTitle>
+          <CardTitle className="text-base">রুম অ্যালোকেট · অভিভাবক SMS</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={allocAction} className="space-y-2">

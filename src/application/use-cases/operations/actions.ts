@@ -146,14 +146,61 @@ export async function allocateRoomAction(
   if (!roomId || !studentId) return { error: "রুম ও শিক্ষার্থী সিলেক্ট করুন" };
 
   try {
-    await operationsRepository.allocateRoom({
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const room = await prisma.hostelRoom.findFirst({
+      where: { id: roomId, tenantId: session.user.tenantId },
+    });
+    const student = await prisma.student.findFirst({
+      where: { id: studentId, tenantId: session.user.tenantId, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        nameBn: true,
+        studentId: true,
+        fatherPhone: true,
+        guardianPhone: true,
+      },
+    });
+
+    const alloc = await operationsRepository.allocateRoom({
       tenantId: session.user.tenantId,
       roomId,
       studentId,
       notes: (formData.get("notes") as string) || undefined,
     });
+
+    let smsNote = "";
+    const phone = student?.guardianPhone || student?.fatherPhone;
+    if (phone && room && student) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const roomLabel = room.blockName
+          ? `${room.blockName}-${room.roomNumber}`
+          : room.roomNumber;
+        const body = `হোস্টেল অ্যালোকেশন: ${student.nameBn || student.name} (${student.studentId}) — রুম ${roomLabel} (${room.roomType})। মাসিক ফি ৳${room.monthlyFee.toLocaleString("en-BD")}। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Hostel allocation",
+          body,
+          relatedType: "HOSTEL",
+          relatedId: alloc.id,
+        });
+        smsNote = " · অভিভাবক SMS পাঠানো হয়েছে";
+      } catch (smsErr) {
+        console.error("hostel SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/hostel");
-    return { success: true, message: "রুম অ্যালোকেট হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `রুম অ্যালোকেট হয়েছে${smsNote}`,
+    };
   } catch (e: unknown) {
     return { error: e instanceof Error ? e.message : "অ্যালোকেশন ব্যর্থ" };
   }
