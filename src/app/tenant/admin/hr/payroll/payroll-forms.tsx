@@ -113,7 +113,7 @@ export function PayrollForms({
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base">সর্বশেষ স্যালারি স্লিপ</CardTitle>
-            <CardDescription>গ্রস · কর্তন · নেট · স্ট্যাটাস</CardDescription>
+            <CardDescription>গ্রস · কর্তন · নেট · স্ট্যাটাস · পেইড মার্ক করলে স্টাফ SMS</CardDescription>
           </div>
           {latestRunId && payments.some((p) => p.status === "PENDING") && (
             <form action={payAction}>

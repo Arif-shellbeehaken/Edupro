@@ -80,20 +80,116 @@ export async function markSalaryPaidAction(
   const payrollRunId = formData.get("payrollRunId") as string;
 
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    let targets: {
+      id: string;
+      netSalary: number;
+      staff: {
+        id: string;
+        name: string;
+        nameBn: string | null;
+        employeeId: string;
+        phone: string | null;
+      };
+      run: { month: number; year: number };
+    }[] = [];
+
     if (markAll && payrollRunId) {
-      await hrRepository.markAllSalariesPaid(payrollRunId, session.user.tenantId);
+      const pending = await prisma.salaryPayment.findMany({
+        where: {
+          payrollRunId,
+          tenantId: session.user.tenantId,
+          status: "PENDING",
+        },
+        include: {
+          staff: {
+            select: {
+              id: true,
+              name: true,
+              nameBn: true,
+              employeeId: true,
+              phone: true,
+            },
+          },
+          payrollRun: { select: { month: true, year: true } },
+        },
+      });
+      await hrRepository.markAllSalariesPaid(
+        payrollRunId,
+        session.user.tenantId
+      );
+      targets = pending.map((p) => ({
+        id: p.id,
+        netSalary: p.netSalary,
+        staff: p.staff,
+        run: p.payrollRun,
+      }));
     } else if (paymentId) {
+      const one = await prisma.salaryPayment.findFirst({
+        where: { id: paymentId, tenantId: session.user.tenantId },
+        include: {
+          staff: {
+            select: {
+              id: true,
+              name: true,
+              nameBn: true,
+              employeeId: true,
+              phone: true,
+            },
+          },
+          payrollRun: { select: { month: true, year: true } },
+        },
+      });
       await hrRepository.markSalaryPaid({
         paymentId,
         tenantId: session.user.tenantId,
         paymentMethod,
         transactionId,
       });
+      if (one) {
+        targets = [
+          {
+            id: one.id,
+            netSalary: one.netSalary,
+            staff: one.staff,
+            run: one.payrollRun,
+          },
+        ];
+      }
     } else {
       return { error: "পেমেন্ট আইডি দরকার" };
     }
+
+    let smsSent = 0;
+    for (const t of targets) {
+      if (!t.staff.phone) continue;
+      const body = `স্যালারি প্রদান: ${t.staff.nameBn || t.staff.name} (${t.staff.employeeId}) — ${t.run.month}/${t.run.year} নেট ৳${t.netSalary.toLocaleString("en-BD")}। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: t.staff.phone,
+          subject: "Salary paid",
+          body,
+          relatedType: "PAYROLL",
+          relatedId: t.id,
+        });
+        smsSent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
     revalidatePath("/tenant/admin/hr/payroll");
-    return { success: true, message: "পেমেন্ট আপডেট হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `পেমেন্ট আপডেট · SMS ${smsSent}/${targets.length}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "পেমেন্ট মার্ক ব্যর্থ" };
