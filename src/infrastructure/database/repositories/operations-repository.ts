@@ -116,6 +116,61 @@ export const operationsRepository = {
     });
   },
 
+  async listOverdueIssues(tenantId?: string, take = 100) {
+    const tid = tenantId ?? requireTenantId();
+    const now = new Date();
+    const issues = await prisma.bookIssue.findMany({
+      where: {
+        tenantId: tid,
+        status: "ISSUED",
+        dueDate: { lt: now },
+      },
+      include: {
+        book: { select: { title: true, titleBn: true } },
+      },
+      orderBy: { dueDate: "asc" },
+      take,
+    });
+
+    // Enrich with student contact when studentId present
+    const studentIds = [
+      ...new Set(issues.map((i) => i.studentId).filter(Boolean) as string[]),
+    ];
+    const students = studentIds.length
+      ? await prisma.student.findMany({
+          where: { id: { in: studentIds }, tenantId: tid },
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        })
+      : [];
+    const byId = new Map(students.map((s) => [s.id, s]));
+
+    return issues.map((i) => {
+      const st = i.studentId ? byId.get(i.studentId) : undefined;
+      const daysLate = Math.ceil(
+        (now.getTime() - i.dueDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return {
+        ...i,
+        daysLate,
+        student: st
+          ? {
+              id: st.id,
+              name: st.nameBn || st.name,
+              code: st.studentId,
+              phone: st.guardianPhone || st.fatherPhone || "",
+            }
+          : null,
+      };
+    });
+  },
+
   // ═══ HOSTEL ════════════════════════════════════════════════
   async listRooms(tenantId?: string) {
     const tid = tenantId ?? requireTenantId();

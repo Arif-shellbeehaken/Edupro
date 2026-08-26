@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LibraryForms } from "./library-forms";
+import { OverdueNotifyButton } from "./overdue-notify";
 
 export default async function LibraryPage() {
   const session = await auth();
@@ -23,6 +24,7 @@ export default async function LibraryPage() {
   let tenantName = "প্রতিষ্ঠান";
   let books: Awaited<ReturnType<typeof operationsRepository.listBooks>> = [];
   let issues: Awaited<ReturnType<typeof operationsRepository.listActiveIssues>> = [];
+  let overdue: Awaited<ReturnType<typeof operationsRepository.listOverdueIssues>> = [];
   let students: { id: string; name: string; studentId: string }[] = [];
 
   if (session.user.tenantId) {
@@ -40,6 +42,7 @@ export default async function LibraryPage() {
       if (t) tenantName = t.nameBn || t.name;
       books = await operationsRepository.listBooks();
       issues = await operationsRepository.listActiveIssues();
+      overdue = await operationsRepository.listOverdueIssues();
       const s = await studentRepository.list({ status: "ACTIVE", take: 100 });
       students = s.map((x) => ({
         id: x.id,
@@ -90,6 +93,39 @@ export default async function LibraryPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>ওভারডিউ বই</CardTitle>
+                <CardDescription>ডিউ পার হওয়া ইস্যু · অভিভাবক রিমাইন্ডার</CardDescription>
+              </div>
+              <OverdueNotifyButton count={overdue.length} />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {overdue.length === 0 ? (
+                <p className="text-sm text-muted-foreground">কোনো ওভারডিউ নেই</p>
+              ) : (
+                overdue.slice(0, 15).map((o) => (
+                  <div
+                    key={o.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/60 px-3 py-2 text-sm"
+                  >
+                    <div>
+                      <p className="font-medium">{o.book.titleBn || o.book.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {o.student
+                          ? `${o.student.name} (${o.student.code})`
+                          : "—"}{" "}
+                        · {o.daysLate} দিন দেরি
+                      </p>
+                    </div>
+                    <Badge variant="destructive">{o.daysLate}d</Badge>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
           <LibraryForms
             books={books.map((b) => ({

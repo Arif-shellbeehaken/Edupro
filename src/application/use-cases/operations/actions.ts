@@ -217,3 +217,56 @@ export async function assignTransportAction(
     return { error: "অ্যাসাইনমেন্ট ব্যর্থ" };
   }
 }
+
+export async function notifyOverdueBooksAction(
+  _p: OpsState,
+  formData: FormData
+): Promise<OpsState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  try {
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const list = await operationsRepository.listOverdueIssues(
+      session.user.tenantId,
+      200
+    );
+    if (list.length === 0) {
+      return { error: "কোনো ওভারডিউ বই নেই" };
+    }
+
+    let sent = 0;
+    for (const issue of list) {
+      if (!issue.student?.phone) continue;
+      const title = issue.book.titleBn || issue.book.title;
+      const body = `লাইব্রেরি: "${title}" ফেরত বাকি — ${issue.student.name} (${issue.student.code}), ${issue.daysLate} দিন দেরি, ডিউ ${issue.dueDate.toLocaleDateString("en-GB")}। অনুগ্রহ করে ফেরত দিন। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: issue.student.phone,
+          subject: "Library overdue",
+          body,
+          relatedType: "LIBRARY_OVERDUE",
+          relatedId: issue.id,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/library");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `${sent}/${list.length} ওভারডিউ রিমাইন্ডার পাঠানো হয়েছে`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "লাইব্রেরি SMS ব্যর্থ" };
+  }
+}
