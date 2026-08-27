@@ -39,6 +39,8 @@ export type ProvisionTenantState = {
   success?: boolean;
   tenantId?: string;
   slug?: string;
+  message?: string;
+  adminEmail?: string;
 };
 
 export async function provisionTenantAction(
@@ -100,6 +102,8 @@ export async function provisionTenantAction(
       success: true,
       tenantId: result.tenant.id,
       slug: result.tenant.slug,
+      adminEmail: data.adminEmail,
+      message: `প্রতিষ্ঠান তৈরি: ${data.name} (${result.tenant.slug}) · অ্যাডমিন ${data.adminEmail} · ১৪ দিন ট্রায়াল`,
     };
   } catch (e) {
     if (e instanceof ConflictError || e instanceof AppError) {

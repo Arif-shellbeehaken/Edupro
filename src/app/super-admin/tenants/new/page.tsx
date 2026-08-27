@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -25,11 +25,25 @@ const inputClass =
 export default function NewTenantPage() {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(provisionTenantAction, initial);
+  const [slug, setSlug] = useState("");
+  function slugify(name: string) {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .slice(0, 40);
+  }
+
 
   useEffect(() => {
     if (state.success) {
-      router.push("/super-admin/tenants");
-      router.refresh();
+      const t = setTimeout(() => {
+        router.push("/super-admin/tenants");
+        router.refresh();
+      }, 1800);
+      return () => clearTimeout(t);
     }
   }, [state, router]);
 
@@ -61,7 +75,18 @@ export default function NewTenantPage() {
                     <label className="text-sm font-medium" htmlFor="name">
                       নাম (ইংরেজি/বাংলা) *
                     </label>
-                    <input id="name" name="name" required className={inputClass} placeholder="Darul Ulum Madrasah" />
+                    <input
+                      id="name"
+                      name="name"
+                      required
+                      className={inputClass}
+                      placeholder="Darul Ulum Madrasah"
+                      onChange={(e) => {
+                        if (!slug || slug === slugify(e.target.value.slice(0, -1))) {
+                          setSlug(slugify(e.target.value));
+                        }
+                      }}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="nameBn">
@@ -78,6 +103,8 @@ export default function NewTenantPage() {
                       name="slug"
                       required
                       pattern="[a-z0-9\-]+"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
                       className={inputClass}
                       placeholder="darul-ulum"
                     />
@@ -178,6 +205,11 @@ export default function NewTenantPage() {
                 </div>
               </fieldset>
 
+              {state.success && state.message && (
+                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                  {state.message}
+                </p>
+              )}
               {state.error && (
                 <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-400">
                   {state.error}

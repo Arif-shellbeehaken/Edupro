@@ -1,76 +1,93 @@
 import { auth } from "@/infrastructure/auth/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { UserRole } from "@/domain/enums";
 
 /**
- * Auth + Route Protection Middleware
- *
- * Rules:
- * - /login, / → public
- * - /super-admin/* → Super Admin only
- * - /tenant/* → authenticated non-super (or super with caution)
- * - Unauthenticated → redirect to /login
+ * Auth + Route Protection + baseline security headers
  */
 
-const publicPaths = ["/", "/login"];
-const authPaths = ["/login"];
+const publicExact = new Set(["/", "/login"]);
+const publicPrefixes = [
+  "/api/auth",
+  "/api/health",
+  "/parent",
+];
+
+function isPublic(pathname: string) {
+  if (publicExact.has(pathname)) return true;
+  return publicPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+}
+
+function withSecurityHeaders(res: NextResponse) {
+  res.headers.set("X-Frame-Options", "SAMEORIGIN");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()"
+  );
+  res.headers.set("X-DNS-Prefetch-Control", "on");
+  // Soft CSP — allow self + inline for Next; tighten later with nonces
+  if (!res.headers.has("Content-Security-Policy")) {
+    res.headers.set(
+      "Content-Security-Policy",
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+    );
+  }
+  return res;
+}
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
   const isLoggedIn = !!session?.user;
 
-  // Public routes
-  if (publicPaths.includes(pathname) || pathname.startsWith("/api/auth")) {
-    // If already logged in and hitting login, redirect to dashboard
-    if (isLoggedIn && authPaths.includes(pathname)) {
-      const role = session.user.role;
-      const isSuper = session.user.isSuperAdmin;
-      const dest = isSuper
+  if (isPublic(pathname)) {
+    if (isLoggedIn && pathname === "/login") {
+      const dest = session.user.isSuperAdmin
         ? "/super-admin/dashboard"
         : "/tenant/admin/dashboard";
-      return NextResponse.redirect(new URL(dest, req.url));
+      return withSecurityHeaders(
+        NextResponse.redirect(new URL(dest, req.url))
+      );
     }
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next());
   }
 
-  // Must be logged in for everything else under these prefixes
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    return withSecurityHeaders(NextResponse.redirect(loginUrl));
   }
 
-  // Super Admin area
   if (pathname.startsWith("/super-admin")) {
     if (!session.user.isSuperAdmin) {
-      return NextResponse.redirect(new URL("/tenant/admin/dashboard", req.url));
+      return withSecurityHeaders(
+        NextResponse.redirect(new URL("/tenant/admin/dashboard", req.url))
+      );
     }
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next());
   }
 
-  // Tenant area — Super Admin can view but normal flow is tenant users
   if (pathname.startsWith("/tenant")) {
-    // Allow Super Admin to inspect (optional: restrict later)
     if (session.user.isSuperAdmin) {
-      return NextResponse.next();
+      return withSecurityHeaders(NextResponse.next());
     }
-    // Must have a tenant
     if (!session.user.tenantId) {
-      return NextResponse.redirect(new URL("/login", req.url));
+      return withSecurityHeaders(
+        NextResponse.redirect(new URL("/login", req.url))
+      );
     }
-    return NextResponse.next();
+    return withSecurityHeaders(NextResponse.next());
   }
 
-  return NextResponse.next();
+  return withSecurityHeaders(NextResponse.next());
 });
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except static files and Next internals
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

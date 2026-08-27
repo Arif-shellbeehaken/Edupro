@@ -64,7 +64,7 @@ npm run build && npm run start:prod
 # 3b. Docker (recommended)
 export AUTH_SECRET=$(openssl rand -base64 32)
 docker compose up -d --build
-curl -sf http://localhost:3000/api/health
+curl -sf http://localhost:3000/api/health\n# or: npm run smoke
 
 # 4. First login
 # Super Admin → provision tenants from /super-admin
