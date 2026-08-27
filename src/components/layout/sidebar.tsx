@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -198,6 +199,22 @@ export function Sidebar({
   const nav = isSuper ? superAdminNav : [];
   const sections = isSuper ? [] : tenantAdminSections;
   const brand = primaryColor || "#059669";
+  const [navQuery, setNavQuery] = useState("");
+  const q = navQuery.trim().toLowerCase();
+  const filteredSections = useMemo(() => {
+    if (!q) return sections;
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter(
+          (item) =>
+            item.title.toLowerCase().includes(q) ||
+            item.href.toLowerCase().includes(q)
+        ),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [sections, q]);
+
 
   return (
     <aside
@@ -265,7 +282,18 @@ export function Sidebar({
             </Link>
           );
         })}
-        {sections.map((section) => (
+        {!isSuper && (
+          <div className="px-1 pb-2">
+            <input
+              type="search"
+              value={navQuery}
+              onChange={(e) => setNavQuery(e.target.value)}
+              placeholder="মডিউল খুঁজুন..."
+              className="flex h-9 w-full rounded-lg border border-border bg-background px-3 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            />
+          </div>
+        )}
+        {filteredSections.map((section) => (
           <div key={section.label} className="space-y-1">
             <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
               {section.label}

@@ -466,6 +466,77 @@ async function main() {
   }
   console.log("✅ Subscription plans seeded");
 
+
+  // ─── SEED_REFRESH_V3: campus, notice, sample invoice ───
+  try {
+    const campusModel = (prisma as { campus?: { upsert: Function } }).campus;
+    if (campusModel) {
+      await campusModel.upsert({
+        where: { tenantId_code: { tenantId: tenant.id, code: "MAIN" } },
+        update: {},
+        create: {
+          tenantId: tenant.id,
+          code: "MAIN",
+          name: "Main Campus",
+          nameBn: "প্রধান ক্যাম্পাস",
+          address: "Dhaka",
+          isMain: true,
+        },
+      });
+      console.log("✅ Campus: MAIN");
+    }
+  } catch (e) {
+    console.log("⚠️ Campus skip", e instanceof Error ? e.message : e);
+  }
+
+  try {
+    const noticeCount = await prisma.notice.count({ where: { tenantId: tenant.id } });
+    if (noticeCount === 0) {
+      await prisma.notice.create({
+        data: {
+          tenantId: tenant.id,
+          title: "Welcome to Edupro Demo",
+          titleBn: "এডুপ্রো ডেমোতে স্বাগতম",
+          body: "এডুপ্রো ডেমো — অভিভাবক ও স্টাফদের জন্য নোটিশ।",
+          audience: "ALL",
+          isPublished: true,
+          publishedAt: new Date(),
+        },
+      });
+      console.log("✅ Demo notice");
+    }
+  } catch (e) {
+    console.log("⚠️ Notice skip", e instanceof Error ? e.message : e);
+  }
+
+  try {
+    const invCount = await prisma.invoice.count({ where: { tenantId: tenant.id } });
+    if (invCount === 0) {
+      const stu = await prisma.student.findFirst({
+        where: { tenantId: tenant.id, studentId: "STD-601" },
+      });
+      if (stu) {
+        const due = new Date();
+        due.setDate(due.getDate() + 10);
+        await prisma.invoice.create({
+          data: {
+            tenantId: tenant.id,
+            studentId: stu.id,
+            invoiceNumber: "INV-DEMO-" + Date.now().toString().slice(-6),
+            totalAmount: 1500,
+            paidAmount: 0,
+            status: "ISSUED",
+            dueDate: due,
+            notes: "Demo monthly tuition",
+          },
+        });
+        console.log("✅ Demo invoice for STD-601");
+      }
+    }
+  } catch (e) {
+    console.log("⚠️ Invoice skip", e instanceof Error ? e.message : e);
+  }
+
   console.log("\n🎉 Seed completed successfully!");
   console.log("────────────────────────────────────");
   console.log("Super Admin  → super@edupro.app / Super@1234");
