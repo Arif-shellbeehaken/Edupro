@@ -90,6 +90,41 @@ export async function updateLeadStatusAction(
       notes,
     });
 
+    let convertNote = "";
+    // Auto-create student when marked ADMITTED
+    if (status === "ADMITTED" && !lead.convertedStudentId) {
+      try {
+        const studentIdCode =
+          "ADM" +
+          Date.now().toString().slice(-6) +
+          Math.floor(Math.random() * 90 + 10);
+        const student = await prisma.student.create({
+          data: {
+            tenantId: session.user.tenantId,
+            studentId: studentIdCode,
+            name: lead.applicantName,
+            nameBn: lead.applicantNameBn || undefined,
+            gender: lead.gender || "OTHER",
+            fatherName: lead.fatherName || undefined,
+            fatherPhone: lead.phone || undefined,
+            guardianPhone: lead.phone || undefined,
+            dateOfBirth: lead.dateOfBirth || undefined,
+            status: "ACTIVE",
+            admissionDate: new Date(),
+          },
+        });
+        await prisma.admissionLead.update({
+          where: { id: lead.id },
+          data: { convertedStudentId: student.id },
+        });
+        convertNote = ` · শিক্ষার্থী ${studentIdCode}`;
+        revalidatePath("/tenant/admin/students");
+      } catch (convErr) {
+        console.error("lead convert", convErr);
+        convertNote = " · কনভার্ট ব্যর্থ";
+      }
+    }
+
     let smsNote = "";
     if (lead.phone) {
       try {
@@ -98,14 +133,17 @@ export async function updateLeadStatusAction(
         );
         const statusBn = STATUS_BN[status] || status;
         const cls = lead.applyingClass ? ` ক্লাস: ${lead.applyingClass}.` : "";
-        const body = `ভর্তি আপডেট: ${lead.applicantNameBn || lead.applicantName} — স্ট্যাটাস: ${statusBn}.${cls}${notes ? " নোট: " + notes : ""} — Edupro`;
+        let body = `ভর্তি আপডেট: ${lead.applicantNameBn || lead.applicantName} — স্ট্যাটাস: ${statusBn}.${cls}${notes ? " নোট: " + notes : ""} — Edupro`;
+        if (status === "ADMITTED") {
+          body = `ভর্তি সম্পন্ন: ${lead.applicantNameBn || lead.applicantName}${cls} স্বাগতম!${convertNote.includes("শিক্ষার্থী") ? " আইডি তৈরি হয়েছে।" : ""} — Edupro`;
+        }
         await communicationRepository.sendMessage({
           tenantId: session.user.tenantId,
           channel: "SMS",
           recipient: lead.phone,
           subject: `Admission ${status}`,
           body,
-          relatedType: "ADMISSION",
+          relatedType: status === "ADMITTED" ? "ADMISSION_CONVERT" : "ADMISSION",
           relatedId: lead.id,
         });
         smsNote = " · SMS পাঠানো হয়েছে";
@@ -116,7 +154,10 @@ export async function updateLeadStatusAction(
 
     revalidatePath("/tenant/admin/admission");
     revalidatePath("/tenant/admin/communication");
-    return { success: true, message: `স্ট্যাটাস আপডেট${smsNote}` };
+    return {
+      success: true,
+      message: `স্ট্যাটাস আপডেট${convertNote}${smsNote}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "স্ট্যাটাস আপডেট ব্যর্থ" };

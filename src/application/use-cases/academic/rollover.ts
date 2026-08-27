@@ -132,14 +132,69 @@ export async function rolloverAction(
       /* optional */
     }
 
+    let smsNote = "";
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { phone: true },
+      });
+      if (tenant?.phone) phones.add(tenant.phone);
+      const admins = await prisma.user.findMany({
+        where: {
+          tenantId,
+          role: { in: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"] },
+        },
+        select: { phone: true },
+        take: 10,
+      });
+      for (const a of admins) {
+        if (a.phone) phones.add(a.phone);
+      }
+      const years = await prisma.academicYear.findMany({
+        where: { id: { in: [fromYearId, toYearId] } },
+        select: { id: true, name: true },
+      });
+      const fromName =
+        years.find((y) => y.id === fromYearId)?.name || fromYearId;
+      const toName = years.find((y) => y.id === toYearId)?.name || toYearId;
+      const body = `একাডেমিক রোলওভার: ${fromName} → ${toName} · ক্লাস ${cloned}, শিক্ষার্থী ${moved}${
+        setCurrent ? ", নতুন সেশন বর্তমান" : ""
+      }। — Edupro`;
+      let sent = 0;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Academic rollover",
+            body,
+            relatedType: "ACADEMIC_ROLLOVER",
+            relatedId: toYearId,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+      if (sent) smsNote = ` · SMS ${sent}`;
+    } catch (smsErr) {
+      console.error("rollover SMS", smsErr);
+    }
+
     revalidatePath("/tenant/admin/academic/rollover");
     revalidatePath("/tenant/admin/students");
+    revalidatePath("/tenant/admin/communication");
 
     return {
       success: true,
       message: `রোলওভার সম্পন্ন · ক্লাস ম্যাপ ${cloned} · শিক্ষার্থী স্থানান্তর ${moved}${
         setCurrent ? " · নতুন সেশন বর্তমান" : ""
-      }`,
+      }${smsNote}`,
     };
   } catch (e) {
     console.error(e);

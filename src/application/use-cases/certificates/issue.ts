@@ -129,9 +129,55 @@ export async function cancelCertificateAction(
   if (!id) return { error: "আইডি দরকার" };
 
   try {
+    const cert = await prisma.certificate.findFirst({
+      where: { id, tenantId: session.user.tenantId },
+    });
+    if (!cert) return { error: "সার্টিফিকেট পাওয়া যায়নি" };
+
     await certificateRepository.cancel(id, session.user.tenantId);
+
+    let smsNote = "";
+    if (cert.studentId) {
+      try {
+        const student = await prisma.student.findFirst({
+          where: { id: cert.studentId, tenantId: session.user.tenantId },
+          select: {
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        });
+        const phone = student?.guardianPhone || student?.fatherPhone;
+        if (phone && student) {
+          const { communicationRepository } = await import(
+            "@/infrastructure/database/repositories/communication-repository"
+          );
+          const body = `সার্টিফিকেট বাতিল: ${student.nameBn || student.name} (${student.studentId}) — নং ${cert.certificateNo} (${cert.certType}) বাতিল করা হয়েছে। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Certificate cancelled",
+            body,
+            relatedType: "CERTIFICATE_CANCEL",
+            relatedId: cert.id,
+          });
+          smsNote = " · SMS";
+        }
+      } catch (smsErr) {
+        console.error("cert cancel SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/certificates");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `বাতিল সম্পন্ন${smsNote}`,
+      certificateNo: cert.certificateNo,
+    };
   } catch (e) {
     console.error(e);
     return { error: "বাতিল ব্যর্থ" };
