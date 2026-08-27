@@ -88,6 +88,10 @@ export function BrandingForm({
       {state.success && (
         <p className="text-xs text-emerald-600">{state.message}</p>
       )}
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="notify" />
+        স্টাফ/প্রতিষ্ঠানকে থিম publish SMS
+      </label>
       <Button type="submit" disabled={pending}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "ব্র্যান্ডিং সেভ"}
       </Button>

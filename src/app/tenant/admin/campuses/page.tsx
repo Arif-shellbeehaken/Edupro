@@ -1,3 +1,4 @@
+import { CampusDigestForm } from "./digest-form";
 import { auth } from "@/infrastructure/auth/auth";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { extendedOpsRepository } from "@/infrastructure/database/repositories/extended-ops-repository";
@@ -25,6 +26,7 @@ export default async function CampusesPage() {
 
   return (
     <div className="space-y-6 p-6">
+      <CampusDigestForm />
       <div>
         <h1 className="text-2xl font-semibold">মাল্টি-ক্যাম্পাস / শাখা</h1>
         <p className="text-sm text-muted-foreground">

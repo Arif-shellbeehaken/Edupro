@@ -185,9 +185,10 @@ export async function updateBrandingAction(
   const primaryColor = (formData.get("primaryColor") as string)?.trim();
   const secondaryColor = (formData.get("secondaryColor") as string)?.trim();
   const logoUrl = (formData.get("logoUrl") as string)?.trim();
+  const notify = formData.get("notify") === "on";
 
   try {
-    await prisma.tenant.update({
+    const tenant = await prisma.tenant.update({
       where: { id: session.user.tenantId },
       data: {
         ...(primaryColor ? { primaryColor } : {}),
@@ -195,9 +196,55 @@ export async function updateBrandingAction(
         ...(logoUrl !== undefined ? { logoUrl: logoUrl || null } : {}),
       },
     });
+
+    let smsNote = "";
+    if (notify) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const phones = new Set<string>();
+        if (tenant.phone) phones.add(tenant.phone);
+        const staff = await prisma.staff.findMany({
+          where: {
+            tenantId: session.user.tenantId,
+            deletedAt: null,
+            status: "ACTIVE",
+          },
+          select: { phone: true },
+          take: 50,
+        });
+        for (const s of staff) {
+          if (s.phone) phones.add(s.phone);
+        }
+        const body = `White-label থিম আপডেট: ${tenant.nameBn || tenant.name} — প্রাইমারি ${primaryColor || tenant.primaryColor || "#059669"}। নতুন ব্র্যান্ডিং লাইভ। — Edupro`;
+        let sent = 0;
+        for (const phone of phones) {
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: "Theme publish",
+              body,
+              relatedType: "WHITELABEL",
+              relatedId: session.user.tenantId,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = ` · SMS ${sent}`;
+      } catch (e) {
+        console.error("branding SMS", e);
+      }
+    }
+
     revalidatePath("/tenant/admin/settings");
     revalidatePath("/tenant/admin/dashboard");
-    return { success: true, message: "ব্র্যান্ডিং সেভ হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `ব্র্যান্ডিং সেভ হয়েছে${smsNote}` };
   } catch (e) {
     console.error(e);
     return { error: "ব্র্যান্ডিং আপডেট ব্যর্থ" };

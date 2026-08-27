@@ -64,7 +64,46 @@ export async function GET(req: Request) {
       }
     }
 
-    return NextResponse.redirect(`${appUrl}/tenant/admin/finance?nagad=success`);
+    
+    if (invoiceNumber) {
+      try {
+        const inv = await prisma.invoice.findFirst({
+          where: { invoiceNumber },
+          include: {
+            student: {
+              select: {
+                name: true,
+                nameBn: true,
+                studentId: true,
+                fatherPhone: true,
+                guardianPhone: true,
+              },
+            },
+          },
+        });
+        const phone =
+          inv?.student?.guardianPhone || inv?.student?.fatherPhone;
+        if (phone && inv?.student && inv.tenantId) {
+          const { communicationRepository } = await import(
+            "@/infrastructure/database/repositories/communication-repository"
+          );
+          const body = `Nagad পেমেন্ট সফল: ${inv.student.nameBn || inv.student.name} (${inv.student.studentId}) — চালান ${inv.invoiceNumber}, ৳${inv.totalAmount.toLocaleString("en-BD")} পরিশোধিত। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: inv.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Nagad payment success",
+            body,
+            relatedType: "FEE_NAGAD",
+            relatedId: inv.id,
+          });
+        }
+      } catch (smsErr) {
+        console.error("nagad SMS", smsErr);
+      }
+    }
+
+return NextResponse.redirect(`${appUrl}/tenant/admin/finance?nagad=success`);
   } catch (e) {
     console.error(e);
     return NextResponse.redirect(`${appUrl}/tenant/admin/finance?nagad=error`);

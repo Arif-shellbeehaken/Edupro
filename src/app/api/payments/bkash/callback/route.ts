@@ -73,7 +73,47 @@ export async function GET(req: Request) {
       }
     }
 
-    return NextResponse.redirect(`${appUrl}/tenant/admin/finance?bkash=success`);
+    
+    // SMS guardian on successful bKash payment
+    if (invoiceNumber) {
+      try {
+        const inv = await prisma.invoice.findFirst({
+          where: { invoiceNumber },
+          include: {
+            student: {
+              select: {
+                name: true,
+                nameBn: true,
+                studentId: true,
+                fatherPhone: true,
+                guardianPhone: true,
+              },
+            },
+          },
+        });
+        const phone =
+          inv?.student?.guardianPhone || inv?.student?.fatherPhone;
+        if (phone && inv?.student && inv.tenantId) {
+          const { communicationRepository } = await import(
+            "@/infrastructure/database/repositories/communication-repository"
+          );
+          const body = `bKash পেমেন্ট সফল: ${inv.student.nameBn || inv.student.name} (${inv.student.studentId}) — চালান ${inv.invoiceNumber}, ৳${inv.totalAmount.toLocaleString("en-BD")} পরিশোধিত (trx ${executed.trxID || paymentID})। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: inv.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "bKash payment success",
+            body,
+            relatedType: "FEE_BKASH",
+            relatedId: inv.id,
+          });
+        }
+      } catch (smsErr) {
+        console.error("bkash SMS", smsErr);
+      }
+    }
+
+return NextResponse.redirect(`${appUrl}/tenant/admin/finance?bkash=success`);
   } catch (e) {
     console.error(e);
     return NextResponse.redirect(`${appUrl}/tenant/admin/finance?bkash=error`);
