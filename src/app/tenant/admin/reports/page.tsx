@@ -77,6 +77,33 @@ export default async function ReportsPage() {
         />
         <div className="space-y-6 p-6">
           <div className="flex flex-wrap gap-2">
+            <a
+              href="/tenant/admin/reports/export?type=students"
+              className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
+            >
+              BANBEIS শিক্ষার্থী CSV
+            </a>
+            <a
+              href="/tenant/admin/reports/export?type=staff"
+              className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
+            >
+              EMIS স্টাফ CSV
+            </a>
+            <a
+              href="/tenant/admin/reports/export?type=attendance"
+              className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
+            >
+              উপস্থিতি ৩০ দিন CSV
+            </a>
+            <Link
+              href="/tenant/admin/reports/absenteeism"
+              className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
+            >
+              ক্রনিক অনুপস্থিতি
+            </Link>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
             <Link
               href="/tenant/admin/reports/absenteeism"
               className="rounded-md border border-border bg-card px-3 py-2 text-sm hover:bg-muted"
@@ -187,7 +214,7 @@ export default async function ReportsPage() {
                 <li>আর্থিক সংগ্রহ সারসংক্ষেপ</li>
               </ul>
               <Button asChild>
-                <a href="/tenant/admin/reports/export" download>
+                <a href="/tenant/admin/reports/export?type=students" download>
                   BANBEIS Student CSV ডাউনলোড
                 </a>
               </Button>
