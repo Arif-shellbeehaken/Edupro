@@ -10,7 +10,7 @@ export function ModuleForm() {
   const [state, action, pending] = useActionState(createMaterialAction, {} as ExtState);
   return (
     <Card>
-      <CardHeader><CardTitle>নতুন এন্ট্রি</CardTitle></CardHeader>
+      <CardHeader><CardTitle>নতুন ম্যাটেরিয়াল · SMS</CardTitle></CardHeader>
       <CardContent>
         <form action={action} className="grid gap-2 sm:grid-cols-2">
           <input name="title" required placeholder="শিরোনাম *" className={inputClass} />
@@ -24,8 +24,12 @@ export function ModuleForm() {
           </select>
           <input name="url" placeholder="URL" className={inputClass + " sm:col-span-2"} />
           <textarea name="body" placeholder="বিবরণ" className={inputClass + " min-h-20 sm:col-span-2"} />
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" name="sendSms" />
+            অভিভাবকদের bulk SMS (সব / ক্লাস)
+          </label>
           <Button type="submit" disabled={pending} className="sm:col-span-2">
-            {pending ? "সংরক্ষণ…" : "সংরক্ষণ"}
+            {pending ? "সংরক্ষণ…" : "প্রকাশ"}
           </Button>
           {state.error && <p className="sm:col-span-2 text-sm text-destructive">{state.error}</p>}
           {state.success && <p className="sm:col-span-2 text-sm text-green-700">{state.success}</p>}

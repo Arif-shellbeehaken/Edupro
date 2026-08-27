@@ -10,7 +10,7 @@ export function ModuleForm() {
   const [state, action, pending] = useActionState(createAlumniAction, {} as ExtState);
   return (
     <Card>
-      <CardHeader><CardTitle>নতুন এন্ট্রি</CardTitle></CardHeader>
+      <CardHeader><CardTitle>নতুন অ্যালামনাই · SMS</CardTitle></CardHeader>
       <CardContent>
         <form action={action} className="grid gap-2 sm:grid-cols-2">
           <input name="name" required placeholder="নাম *" className={inputClass} />
@@ -21,6 +21,10 @@ export function ModuleForm() {
           <input name="lastClass" placeholder="শেষ ক্লাস" className={inputClass} />
           <input name="currentJob" placeholder="বর্তমান পেশা" className={inputClass} />
           <input name="organization" placeholder="প্রতিষ্ঠান" className={inputClass} />
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" name="sendSms" defaultChecked />
+            ফোনে স্বাগতম SMS
+          </label>
           <Button type="submit" disabled={pending} className="sm:col-span-2">
             {pending ? "সংরক্ষণ…" : "সংরক্ষণ"}
           </Button>

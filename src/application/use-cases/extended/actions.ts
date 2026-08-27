@@ -24,19 +24,51 @@ export async function createAlumniAction(_p: ExtState, fd: FormData): Promise<Ex
   if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
   const name = String(fd.get("name") || "").trim();
   if (!name) return { error: "নাম প্রয়োজন" };
-  await extendedOpsRepository.createAlumni({
+  const phone = String(fd.get("phone") || "").trim() || undefined;
+  const sendSms = fd.get("sendSms") === "on";
+  const graduationYear = Number(fd.get("graduationYear") || 0) || undefined;
+
+  const alumni = await extendedOpsRepository.createAlumni({
     tenantId: s.user.tenantId,
     name,
     nameBn: String(fd.get("nameBn") || "") || undefined,
-    phone: String(fd.get("phone") || "") || undefined,
+    phone,
     email: String(fd.get("email") || "") || undefined,
-    graduationYear: Number(fd.get("graduationYear") || 0) || undefined,
+    graduationYear,
     lastClass: String(fd.get("lastClass") || "") || undefined,
     currentJob: String(fd.get("currentJob") || "") || undefined,
     organization: String(fd.get("organization") || "") || undefined,
   });
+
+  let smsNote = "";
+  if (sendSms && phone) {
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const year = graduationYear ? ` ব্যাচ ${graduationYear}` : "";
+      const body = `অ্যালামনাই রেজিস্ট্রি: ${name}${year} — আমাদের নেটওয়ার্কে স্বাগতম। — Edupro`;
+      await communicationRepository.sendMessage({
+        tenantId: s.user.tenantId,
+        channel: "SMS",
+        recipient: phone,
+        subject: "Alumni welcome",
+        body,
+        relatedType: "ALUMNI",
+        relatedId:
+          typeof alumni === "object" && alumni && "id" in alumni
+            ? String((alumni as { id: string }).id)
+            : undefined,
+      });
+      smsNote = " · SMS";
+    } catch (e) {
+      console.error("alumni SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/alumni");
-  return { success: "অ্যালামনাই যোগ হয়েছে" };
+  revalidatePath("/tenant/admin/communication");
+  return { success: `অ্যালামনাই যোগ হয়েছে${smsNote}` };
 }
 
 export async function upsertHealthAction(_p: ExtState, fd: FormData): Promise<ExtState> {
@@ -294,20 +326,160 @@ export async function createClubAction(_p: ExtState, fd: FormData): Promise<ExtS
   return { success: "ক্লাব তৈরি" };
 }
 
+export async function addClubMemberAction(_p: ExtState, fd: FormData): Promise<ExtState> {
+  const s = await withTenant();
+  if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
+  const clubId = String(fd.get("clubId") || "");
+  const studentId = String(fd.get("studentId") || "");
+  if (!clubId || !studentId) return { error: "ক্লাব ও শিক্ষার্থী বাছুন" };
+  const sendSms = fd.get("sendSms") === "on";
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const [club, student] = await Promise.all([
+      prisma.club.findFirst({
+        where: { id: clubId, tenantId: s.user.tenantId },
+      }),
+      prisma.student.findFirst({
+        where: { id: studentId, tenantId: s.user.tenantId, deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          nameBn: true,
+          studentId: true,
+          fatherPhone: true,
+          guardianPhone: true,
+        },
+      }),
+    ]);
+    if (!club) return { error: "ক্লাব পাওয়া যায়নি" };
+    if (!student) return { error: "শিক্ষার্থী পাওয়া যায়নি" };
+
+    const member = await extendedOpsRepository.addClubMember({
+      tenantId: s.user.tenantId,
+      clubId,
+      studentId,
+      role: String(fd.get("role") || "MEMBER") || "MEMBER",
+    });
+
+    let smsNote = "";
+    const phone = student.guardianPhone || student.fatherPhone;
+    if (sendSms && phone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const clubName = club.nameBn || club.name;
+        const body = `ক্লাব সদস্যপদ: ${student.nameBn || student.name} (${student.studentId}) — "${clubName}" ক্লাবে যোগ হয়েছে। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Club membership",
+          body,
+          relatedType: "CLUB",
+          relatedId:
+            typeof member === "object" && member && "id" in member
+              ? String((member as { id: string }).id)
+              : clubId,
+        });
+        smsNote = " · অভিভাবক SMS";
+      } catch (e) {
+        console.error("club SMS", e);
+      }
+    }
+
+    revalidatePath("/tenant/admin/clubs");
+    revalidatePath("/tenant/admin/communication");
+    return { success: `সদস্য যোগ${smsNote}` };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.includes("Unique") || msg.includes("unique")) {
+      return { error: "ইতিমধ্যে এই ক্লাবের সদস্য" };
+    }
+    return { error: "সদস্য যোগ ব্যর্থ" };
+  }
+}
+
 export async function createMaterialAction(_p: ExtState, fd: FormData): Promise<ExtState> {
   const s = await withTenant();
   if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
   const title = String(fd.get("title") || "").trim();
   if (!title) return { error: "শিরোনাম প্রয়োজন" };
-  await extendedOpsRepository.createMaterial({
+  const className = String(fd.get("className") || "").trim() || undefined;
+  const subject = String(fd.get("subject") || "").trim() || undefined;
+  const sendSms = fd.get("sendSms") === "on";
+  const classId = String(fd.get("classId") || "").trim() || undefined;
+
+  const material = await extendedOpsRepository.createMaterial({
     tenantId: s.user.tenantId,
     title,
-    className: String(fd.get("className") || "") || undefined,
-    subject: String(fd.get("subject") || "") || undefined,
+    className,
+    subject,
     materialType: String(fd.get("materialType") || "NOTE"),
     url: String(fd.get("url") || "") || undefined,
     body: String(fd.get("body") || "") || undefined,
   });
+
+  let smsNote = "";
+  if (sendSms) {
+    try {
+      const { prisma } = await import("@/infrastructure/database/prisma");
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const where: {
+        tenantId: string;
+        deletedAt: null;
+        status: string;
+        currentClassId?: string;
+      } = {
+        tenantId: s.user.tenantId,
+        deletedAt: null,
+        status: "ACTIVE",
+      };
+      if (classId) where.currentClassId = classId;
+
+      const students = await prisma.student.findMany({
+        where,
+        select: { fatherPhone: true, guardianPhone: true },
+        take: classId ? 300 : 200,
+      });
+      const phones = new Set<string>();
+      for (const st of students) {
+        const ph = st.guardianPhone || st.fatherPhone;
+        if (ph) phones.add(ph);
+      }
+      const subj = subject ? ` (${subject})` : "";
+      const cls = className ? ` · ${className}` : "";
+      const smsBody = `নতুন LMS ম্যাটেরিয়াল: ${title}${subj}${cls}। পোর্টালে দেখুন। — Edupro`;
+      let sent = 0;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: s.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: title,
+            body: smsBody,
+            relatedType: "LMS",
+            relatedId:
+              typeof material === "object" && material && "id" in material
+                ? String((material as { id: string }).id)
+                : undefined,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+      smsNote = ` · SMS ${sent}`;
+    } catch (e) {
+      console.error("lms SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/lms");
-  return { success: "ম্যাটেরিয়াল যোগ হয়েছে" };
+  revalidatePath("/tenant/admin/communication");
+  return { success: `ম্যাটেরিয়াল যোগ হয়েছে${smsNote}` };
 }
