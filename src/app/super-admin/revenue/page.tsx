@@ -60,6 +60,14 @@ export default async function RevenuePage() {
   const mrr = activeTenants.reduce((s, t) => s + planPrice(t.plan), 0);
   const arr = mrr * 12;
   const trialValue = trialTenants.reduce((s, t) => s + planPrice(t.plan), 0);
+  const totalOrgs = tenants.length || 1;
+  const conversionRate = Math.round((activeTenants.length / totalOrgs) * 1000) / 10;
+  const arpu = activeTenants.length
+    ? Math.round(mrr / activeTenants.length)
+    : 0;
+  const suspendedRate =
+    Math.round((suspended.length / totalOrgs) * 1000) / 10;
+
 
   // Plan breakdown
   const byPlan = new Map<string, { count: number; mrr: number }>();
@@ -97,7 +105,7 @@ export default async function RevenuePage() {
           userRole={session.user.role}
         />
         <div className="space-y-6 p-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">MRR</CardTitle>
@@ -116,6 +124,26 @@ export default async function RevenuePage() {
               <CardContent>
                 <div className="text-2xl font-bold">৳{arr.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">বার্ষিক রান-রেট</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">ARPU</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">৳{arpu.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">প্রতি active tenant</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-muted-foreground">কনভার্সন</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{conversionRate}%</div>
+                <p className="text-xs text-muted-foreground">
+                  Active {activeTenants.length}/{tenants.length} · Trial ৳{trialValue.toLocaleString()} · Suspended {suspendedRate}%
+                </p>
               </CardContent>
             </Card>
             <Card>

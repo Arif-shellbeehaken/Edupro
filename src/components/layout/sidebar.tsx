@@ -45,6 +45,7 @@ import {
   Wrench,
   Scale,
   CalendarRange,
+  Activity,
 } from "lucide-react";
 
 
@@ -109,6 +110,7 @@ const tenantAdminNav: NavItem[] = [
   { title: "সিকিউরিটি", href: "/tenant/admin/security", icon: Lock },
   { title: "লেজার", href: "/tenant/admin/ledger", icon: Scale },
   { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
+  { title: "সিস্টেম স্ট্যাটাস", href: "/tenant/admin/system", icon: Activity },
   { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
 ];
 

@@ -137,3 +137,26 @@ server {
 - DB: connection pooler (PgBouncer) for > few workers.
 - Multi-tenant isolation: all queries filtered by `tenantId` + server-side context.
 - SMS/WhatsApp: plug provider in `communication-repository.ts`.
+
+
+---
+
+## Docker verify
+
+```bash
+# Build & start
+export AUTH_SECRET=$(openssl rand -base64 32)
+docker compose up -d --build
+
+# Wait for healthy
+docker compose ps
+curl -s http://localhost:3000/api/health | jq .
+
+# Logs
+docker compose logs -f app
+
+# Stop
+docker compose down
+```
+
+App service depends on Postgres healthcheck; app exposes `/api/health` for LB probes.
