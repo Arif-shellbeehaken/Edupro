@@ -55,9 +55,47 @@ export async function markStaffAttendanceAction(
       remarks: parsed.data.remarks,
       markedById: session.user.id,
     });
+
+    let smsNote = "";
+    if (parsed.data.status === "LATE" || parsed.data.status === "ABSENT") {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const staff = await prisma.staff.findFirst({
+          where: { id: parsed.data.staffId, tenantId: session.user.tenantId },
+          select: {
+            name: true,
+            nameBn: true,
+            employeeId: true,
+            phone: true,
+          },
+        });
+        if (staff?.phone) {
+          const statusBn =
+            parsed.data.status === "LATE" ? "লেট" : "অনুপস্থিত";
+          const body = `স্টাফ উপস্থিতি: ${staff.nameBn || staff.name} (${staff.employeeId}) — ${parsed.data.date}: ${statusBn}${parsed.data.remarks ? ". " + parsed.data.remarks : ""}। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: staff.phone,
+            subject: `Staff ${parsed.data.status}`,
+            body,
+            relatedType: "STAFF_ATTENDANCE",
+            relatedId: staff.employeeId,
+          });
+          smsNote = " · SMS";
+        }
+      } catch (smsErr) {
+        console.error("staff attendance SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/hr/attendance");
     revalidatePath("/tenant/admin/hr");
-    return { success: "উপস্থিতি সংরক্ষিত" };
+    revalidatePath("/tenant/admin/communication");
+    return { success: `উপস্থিতি সংরক্ষিত${smsNote}` };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "ত্রুটি" };
   }

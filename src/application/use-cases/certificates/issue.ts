@@ -89,7 +89,7 @@ export async function issueCertificateAction(
           BONAFIDE: "বোনাফাইড",
         };
         const typeBn = TYPE_BN[certType] || certType;
-        const body = `সার্টিফিকেট ইস্যু: ${studentNameBn || studentName} — ${typeBn}, নং ${cert.certificateNo}। — Edupro`;
+        const body = `সার্টিফিকেট প্রস্তুত: ${studentNameBn || studentName} — ${typeBn}, নং ${cert.certificateNo}। প্রিন্ট রেডি। — Edupro`;
         await communicationRepository.sendMessage({
           tenantId: session.user.tenantId,
           channel: "SMS",
@@ -99,7 +99,7 @@ export async function issueCertificateAction(
           relatedType: "CERTIFICATE",
           relatedId: cert.id,
         });
-        smsNote = " · অভিভাবক SMS";
+        smsNote = " · প্রিন্ট-রেডি SMS";
       } catch (smsErr) {
         console.error("cert SMS", smsErr);
       }
