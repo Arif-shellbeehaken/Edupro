@@ -44,6 +44,10 @@ export function ExamResultNotifyForm({
       {state.success && (
         <p className="text-sm text-emerald-700">{state.message}</p>
       )}
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="includeRemark" defaultChecked />
+        শিক্ষকের AI মন্তব্য যোগ করুন
+      </label>
       <Button type="submit" disabled={pending || exams.length === 0}>
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "ফলাফল প্রকাশ + SMS"}
       </Button>

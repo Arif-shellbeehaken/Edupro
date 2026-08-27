@@ -165,9 +165,62 @@ export async function checkOutVisitorAction(
   const id = formData.get("visitorId") as string;
   if (!id) return { error: "আইডি দরকার" };
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const log = await prisma.visitorLog.findFirst({
+      where: { id, tenantId: s.user.tenantId },
+    });
     await extendedRepository.checkOutVisitor(id, s.user.tenantId);
+
+    let smsNote = "";
+    if (log) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const durationMin = log.checkInAt
+          ? Math.max(
+              1,
+              Math.round((Date.now() - log.checkInAt.getTime()) / 60000)
+            )
+          : 0;
+        const body = `গেট চেক-আউট: ${log.visitorName}${log.purpose ? " (" + log.purpose + ")" : ""} — অবস্থান ~${durationMin} মিনিট। নিরাপদ যাত্রা। — Edupro`;
+        const phones = new Set<string>();
+        if (log.visitorPhone) phones.add(log.visitorPhone);
+        // host student guardian if linked
+        if (log.studentId) {
+          const st = await prisma.student.findFirst({
+            where: { id: log.studentId, tenantId: s.user.tenantId },
+            select: { guardianPhone: true, fatherPhone: true },
+          });
+          const ph = st?.guardianPhone || st?.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+        let sent = 0;
+        for (const phone of phones) {
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: s.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: "Visitor checkout",
+              body,
+              relatedType: "VISITOR_OUT",
+              relatedId: log.id,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        if (sent) smsNote = ` · SMS ${sent}`;
+      } catch (smsErr) {
+        console.error("checkout SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/gate");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `চেক-আউট সম্পন্ন${smsNote}` };
   } catch (e) {
     return { error: "চেক-আউট ব্যর্থ" };
   }
@@ -566,5 +619,101 @@ export async function notifyGrievanceSlaOverdueAction(
   } catch (e) {
     console.error(e);
     return { error: "SLA নোটিশ ব্যর্থ" };
+  }
+}
+
+
+/** Launch donation campaign SMS to parents and/or staff */
+export async function launchDonationCampaignAction(
+  _p: ExtState,
+  formData: FormData
+): Promise<ExtState> {
+  const s = await session();
+  if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const title = String(formData.get("title") || "").trim();
+  const message = String(formData.get("message") || "").trim();
+  const category = String(formData.get("category") || "GENERAL");
+  const audience = String(formData.get("audience") || "PARENTS"); // PARENTS | STAFF | BOTH
+  if (!title || !message) return { error: "শিরোনাম ও বার্তা দিন" };
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: s.user.tenantId,
+        userId: s.user.id,
+        action: "DONATION_CAMPAIGN",
+        entityType: "Donation",
+        newValues: { title, category, audience },
+      },
+    });
+
+    const phones = new Set<string>();
+    if (audience === "PARENTS" || audience === "BOTH") {
+      const students = await prisma.student.findMany({
+        where: {
+          tenantId: s.user.tenantId,
+          deletedAt: null,
+          status: "ACTIVE",
+        },
+        select: { fatherPhone: true, guardianPhone: true },
+        take: 500,
+      });
+      for (const st of students) {
+        const ph = st.guardianPhone || st.fatherPhone;
+        if (ph) phones.add(ph);
+      }
+    }
+    if (audience === "STAFF" || audience === "BOTH") {
+      const staff = await prisma.staff.findMany({
+        where: {
+          tenantId: s.user.tenantId,
+          deletedAt: null,
+          status: "ACTIVE",
+        },
+        select: { phone: true },
+        take: 200,
+      });
+      for (const st of staff) {
+        if (st.phone) phones.add(st.phone);
+      }
+    }
+
+    const body = `দান ক্যাম্পেইন: ${title} — ${message} (${category})। — Edupro`.slice(
+      0,
+      320
+    );
+    let sent = 0;
+    for (const phone of phones) {
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: title,
+          body,
+          relatedType: "DONATION_CAMPAIGN",
+          relatedId: s.user.tenantId,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/donations");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `ক্যাম্পেইন SMS ${sent}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "ক্যাম্পেইন ব্যর্থ" };
   }
 }

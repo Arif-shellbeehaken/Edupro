@@ -55,7 +55,7 @@ export function GateForms({
               </form>
             ))
           )}
-          {outState.success && <p className="text-xs text-emerald-600">চেক-আউট হয়েছে</p>}
+          {outState.success && <p className="text-xs text-emerald-600">{outState.message || "চেক-আউট হয়েছে"}</p>}
         </CardContent>
       </Card>
     </div>
