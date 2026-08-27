@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import {
   createRouteAction,
+  updateRouteAction,
   assignTransportAction,
   type OpsState,
 } from "@/application/use-cases/operations/actions";
@@ -31,6 +32,10 @@ export function TransportForms({
   );
   const [assignState, assignAction, assignPending] = useActionState(
     assignTransportAction,
+    {} as OpsState
+  );
+  const [updState, updAction, updPending] = useActionState(
+    updateRouteAction,
     {} as OpsState
   );
 
@@ -100,6 +105,50 @@ export function TransportForms({
             >
               {assignPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "অ্যাসাইন"}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-base">রুট আপডেট · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={updAction} className="grid gap-2 sm:grid-cols-2">
+            <select name="routeId" required className={inputClass} defaultValue="">
+              <option value="" disabled>
+                রুট *
+              </option>
+              {routes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+            <input name="vehicleNo" placeholder="গাড়ির নম্বর" className={inputClass} />
+            <input name="driverName" placeholder="ড্রাইভার নাম" className={inputClass} />
+            <input name="driverPhone" placeholder="ড্রাইভার ফোন" className={inputClass} />
+            <input
+              name="monthlyFee"
+              type="number"
+              placeholder="মাসিক ফি"
+              className={inputClass}
+            />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="notify" defaultChecked />
+              অ্যাসাইনড অভিভাবক + ড্রাইভার SMS
+            </label>
+            <Button type="submit" disabled={updPending || routes.length === 0}>
+              {updPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "আপডেট"}
+            </Button>
+            {updState.error && (
+              <p className="text-xs text-red-600 sm:col-span-2">{updState.error}</p>
+            )}
+            {updState.success && (
+              <p className="text-xs text-emerald-600 sm:col-span-2">
+                {updState.message}
+              </p>
+            )}
           </form>
         </CardContent>
       </Card>

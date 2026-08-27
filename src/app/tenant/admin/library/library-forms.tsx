@@ -88,6 +88,10 @@ export function LibraryForms({
             {issueState.success && (
               <p className="text-xs text-emerald-600">{issueState.message}</p>
             )}
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="notify" defaultChecked />
+              অভিভাবককে ইস্যু SMS
+            </label>
             <Button type="submit" className="w-full" disabled={issuePending}>
               {issuePending ? <Loader2 className="h-4 w-4 animate-spin" /> : "ইস্যু"}
             </Button>

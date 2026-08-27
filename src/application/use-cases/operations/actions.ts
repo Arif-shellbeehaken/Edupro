@@ -61,15 +61,67 @@ export async function issueBookAction(
   const studentId = (formData.get("studentId") as string) || undefined;
   if (!bookId) return { error: "বই সিলেক্ট করুন" };
 
+  const days = Number(formData.get("days") || 14);
+  const notify = formData.get("notify") !== "off";
+
   try {
-    await operationsRepository.issueBook({
+    const issue = await operationsRepository.issueBook({
       tenantId: session.user.tenantId,
       bookId,
       studentId,
-      days: Number(formData.get("days") || 14),
+      days,
     });
+
+    let smsNote = "";
+    if (notify && studentId) {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const [student, book] = await Promise.all([
+          prisma.student.findFirst({
+            where: { id: studentId, tenantId: session.user.tenantId },
+            select: {
+              name: true,
+              nameBn: true,
+              studentId: true,
+              fatherPhone: true,
+              guardianPhone: true,
+            },
+          }),
+          prisma.book.findFirst({
+            where: { id: bookId },
+            select: { title: true, titleBn: true },
+          }),
+        ]);
+        const phone = student?.guardianPhone || student?.fatherPhone;
+        if (phone && student && book) {
+          const due = new Date();
+          due.setDate(due.getDate() + days);
+          const body = `লাইব্রেরি ইস্যু: ${student.nameBn || student.name} (${student.studentId}) — "${book.titleBn || book.title}", ডিউ ${due.toLocaleDateString("en-GB")}। সময়মতো ফেরত দিন। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Book issued",
+            body,
+            relatedType: "LIBRARY_ISSUE",
+            relatedId:
+              typeof issue === "object" && issue && "id" in issue
+                ? String((issue as { id: string }).id)
+                : undefined,
+          });
+          smsNote = " · SMS";
+        }
+      } catch (smsErr) {
+        console.error("library issue SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/library");
-    return { success: true, message: "বই ইস্যু হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `বই ইস্যু হয়েছে${smsNote}` };
   } catch (e: unknown) {
     return { error: e instanceof Error ? e.message : "ইস্যু ব্যর্থ" };
   }
@@ -233,6 +285,110 @@ export async function createRouteAction(
   } catch (e) {
     console.error(e);
     return { error: "রুট যোগ করা যায়নি" };
+  }
+}
+
+
+/** Update route details and SMS assigned guardians + driver */
+export async function updateRouteAction(
+  _p: OpsState,
+  formData: FormData
+): Promise<OpsState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const routeId = String(formData.get("routeId") || "");
+  if (!routeId) return { error: "রুট বাছুন" };
+
+  const name = String(formData.get("name") || "").trim() || undefined;
+  const vehicleNo = String(formData.get("vehicleNo") || "") || undefined;
+  const driverName = String(formData.get("driverName") || "") || undefined;
+  const driverPhone = String(formData.get("driverPhone") || "") || undefined;
+  const monthlyFeeRaw = formData.get("monthlyFee");
+  const monthlyFee =
+    monthlyFeeRaw !== null && monthlyFeeRaw !== ""
+      ? Number(monthlyFeeRaw)
+      : undefined;
+  const notify = formData.get("notify") !== "off";
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const route = await prisma.transportRoute.findFirst({
+      where: { id: routeId, tenantId: session.user.tenantId },
+      include: { assignments: { select: { studentId: true } } },
+    });
+    if (!route) return { error: "রুট পাওয়া যায়নি" };
+
+    const updated = await prisma.transportRoute.update({
+      where: { id: routeId },
+      data: {
+        ...(name ? { name } : {}),
+        ...(formData.get("nameBn")
+          ? { nameBn: String(formData.get("nameBn")) }
+          : {}),
+        ...(vehicleNo !== undefined ? { vehicleNo } : {}),
+        ...(driverName !== undefined ? { driverName } : {}),
+        ...(driverPhone !== undefined ? { driverPhone } : {}),
+        ...(monthlyFee !== undefined && !Number.isNaN(monthlyFee)
+          ? { monthlyFee }
+          : {}),
+      },
+    });
+
+    let smsNote = "";
+    if (notify) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const studentIds = route.assignments
+          .map((a) => a.studentId)
+          .filter(Boolean);
+        const students = studentIds.length
+          ? await prisma.student.findMany({
+              where: { id: { in: studentIds }, tenantId: session.user.tenantId },
+              select: { fatherPhone: true, guardianPhone: true },
+            })
+          : [];
+        const phones = new Set<string>();
+        for (const st of students) {
+          const ph = st.guardianPhone || st.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+        const dPhone = driverPhone || updated.driverPhone;
+        if (dPhone) phones.add(dPhone);
+
+        const label = updated.nameBn || updated.name;
+        const body = `ট্রান্সপোর্ট রুট আপডেট: ${label}${updated.vehicleNo ? " · গাড়ি " + updated.vehicleNo : ""}${updated.driverName ? " · ড্রাইভার " + updated.driverName : ""}${updated.monthlyFee ? " · ফি ৳" + updated.monthlyFee : ""}। — Edupro`;
+        let sent = 0;
+        for (const phone of phones) {
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: "Transport route update",
+              body,
+              relatedType: "TRANSPORT_ROUTE",
+              relatedId: routeId,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = ` · SMS ${sent}`;
+      } catch (smsErr) {
+        console.error("route update SMS", smsErr);
+      }
+    }
+
+    revalidatePath("/tenant/admin/transport");
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `রুট আপডেট${smsNote}` };
+  } catch (e) {
+    console.error(e);
+    return { error: "রুট আপডেট ব্যর্থ" };
   }
 }
 

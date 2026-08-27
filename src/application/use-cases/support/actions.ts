@@ -18,7 +18,7 @@ export async function createSupportTicketAction(
   if (!subject || !description) return { error: "বিষয় ও বিবরণ দিন" };
 
   try {
-    await prisma.supportTicket.create({
+    const ticket = await prisma.supportTicket.create({
       data: {
         tenantId: session.user.tenantId,
         createdById: session.user.id,
@@ -29,9 +29,52 @@ export async function createSupportTicketAction(
         status: "OPEN",
       },
     });
+
+    // Notify platform super-admins with phone
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const supers = await prisma.user.findMany({
+        where: { role: "SUPER_ADMIN", isActive: true },
+        select: { phone: true },
+        take: 10,
+      });
+      const phones = new Set<string>();
+      for (const u of supers) {
+        if (u.phone) phones.add(u.phone);
+      }
+      if (session.user.tenantId) {
+        const tenant = await prisma.tenant.findUnique({
+          where: { id: session.user.tenantId },
+          select: { phone: true, name: true },
+        });
+        // also no tenant self-notify on create
+      }
+      const body = `নতুন সাপোর্ট টিকিট: "${subject}" (${(formData.get("priority") as string) || "MEDIUM"})। — Edupro`;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId || "platform",
+            channel: "SMS",
+            recipient: phone,
+            subject,
+            body,
+            relatedType: "SUPPORT_ASSIGN",
+            relatedId: ticket.id,
+          });
+        } catch {
+          /* continue */
+        }
+      }
+    } catch (e) {
+      console.error("ticket create SMS", e);
+    }
+
     revalidatePath("/super-admin/support");
     revalidatePath("/tenant/admin/settings");
-    return { success: true, message: "টিকিট জমা হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: "টিকিট জমা হয়েছে · সাপোর্ট নোটিফাইড" };
   } catch (e) {
     console.error(e);
     return { error: "টিকিট তৈরি ব্যর্থ" };
@@ -55,6 +98,8 @@ export async function updateSupportTicketAction(
     const ticket = await prisma.supportTicket.findUnique({ where: { id } });
     if (!ticket) return { error: "টিকিট পাওয়া যায়নি" };
 
+    const assigneePhone = String(formData.get("assigneePhone") || "").trim() || undefined;
+
     await prisma.supportTicket.update({
       where: { id },
       data: {
@@ -65,6 +110,25 @@ export async function updateSupportTicketAction(
           : {}),
       },
     });
+
+    if (assigneePhone) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        await communicationRepository.sendMessage({
+          tenantId: ticket.tenantId || "platform",
+          channel: "SMS",
+          recipient: assigneePhone,
+          subject: ticket.subject,
+          body: `টিকিট অ্যাসাইন: "${ticket.subject}" — স্ট্যাটাস ${status}${assigneeNote ? ". " + assigneeNote : ""}। — Edupro`,
+          relatedType: "SUPPORT_ASSIGN",
+          relatedId: ticket.id,
+        });
+      } catch (e) {
+        console.error("assignee SMS", e);
+      }
+    }
 
     let smsNote = "";
     if (ticket.createdById) {

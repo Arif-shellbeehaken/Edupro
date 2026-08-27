@@ -93,6 +93,7 @@ export function SupportAdminForms({
                   placeholder="অ্যাডমিন নোট"
                   className="h-9 min-w-[160px] flex-1 rounded-lg border px-2 text-sm"
                 />
+            <input name="assigneePhone" placeholder="অ্যাসাইনি ফোন (SMS)" className="flex h-9 w-full rounded-md border px-2 text-sm" />
                 <Button type="submit" size="sm" disabled={pending}>
                   {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : "সেভ"}
                 </Button>
