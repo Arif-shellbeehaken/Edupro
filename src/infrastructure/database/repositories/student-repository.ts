@@ -136,8 +136,11 @@ export const studentRepository = {
         : {}),
     };
 
-    const count = await prisma.student.count({ where });
-    if (count === 0) return { promoted: 0, fromClass, toClass };
+    const toMove = await prisma.student.findMany({
+      where,
+      select: { id: true },
+    });
+    if (toMove.length === 0) return { promoted: 0, fromClass, toClass, studentIds: [] as string[] };
 
     await prisma.student.updateMany({
       where,
@@ -148,7 +151,12 @@ export const studentRepository = {
       },
     });
 
-    return { promoted: count, fromClass, toClass };
+    return {
+      promoted: toMove.length,
+      fromClass,
+      toClass,
+      studentIds: toMove.map((s) => s.id),
+    };
   },
 
   /** Move students back (or sideways) — same rules as promote, explicit name for UI. */

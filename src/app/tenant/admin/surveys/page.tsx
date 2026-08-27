@@ -1,3 +1,4 @@
+import { NpsSurveyForm } from "./nps-form";
 import { extendedOpsRepository } from "@/infrastructure/database/repositories/extended-ops-repository";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { auth } from "@/infrastructure/auth/auth";
@@ -19,6 +20,7 @@ export default async function SurveysPage() {
   try { rows = await extendedOpsRepository.listSurveys(); } catch { /* empty */ }
   return (
     <div className="space-y-6 p-6">
+      <NpsSurveyForm />
       <div>
         <h1 className="text-2xl font-semibold">ফিডব্যাক / সার্ভে</h1>
         <p className="text-sm text-muted-foreground">NPS · অভিভাবক সন্তুষ্টি</p>

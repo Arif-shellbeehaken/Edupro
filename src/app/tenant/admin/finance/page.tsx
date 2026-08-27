@@ -1,3 +1,4 @@
+import { MonthlyFeeForm } from "./monthly-fee-form";
 import { OverdueFineForm } from "./fine-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -30,11 +31,22 @@ export default async function FinancePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  let feeClasses: { id: string; name: string }[] = [];
   let tenantName = "প্রতিষ্ঠান";
   let summary = { totalBilled: 0, totalPaid: 0, outstanding: 0, invoiceCount: 0 };
   let invoices: Awaited<ReturnType<typeof financeRepository.listInvoices>> = [];
   let students: { id: string; name: string; studentId: string }[] = [];
 
+  if (session.user.tenantId) {
+    try {
+      const cls = await prisma.class.findMany({
+        where: { tenantId: session.user.tenantId },
+        select: { id: true, name: true, nameBn: true },
+        take: 50,
+      });
+      feeClasses = cls.map((c) => ({ id: c.id, name: c.nameBn || c.name }));
+    } catch { /* */ }
+  }
   if (session.user.tenantId) {
     setTenantContext({
       tenantId: session.user.tenantId,
@@ -83,6 +95,7 @@ export default async function FinancePage() {
 
         <div className="space-y-6 p-6">
           <OverdueFineForm />
+          <MonthlyFeeForm classes={feeClasses} />
           <div className="flex flex-wrap gap-2">
             <Link
               href="/tenant/admin/finance/reminders"

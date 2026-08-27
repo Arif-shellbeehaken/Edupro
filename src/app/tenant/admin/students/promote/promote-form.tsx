@@ -172,6 +172,10 @@ export function PromoteForm({
               <input type="checkbox" name="generateFees" />
               টার্গেট ক্লাসের ফি স্ট্রাকচার থেকে চালান অটো-জেনারেট করুন
             </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="notify" defaultChecked />
+            অভিভাবককে প্রমোট/ট্রান্সফার SMS
+          </label>
 
             {state.error && <p className="text-sm text-red-600">{state.error}</p>}
             {state.success && (

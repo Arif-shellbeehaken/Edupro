@@ -98,9 +98,75 @@ export async function promoteBatchAction(
       /* optional */
     }
 
+    const notify = formData.get("notify") !== "off";
+    let smsSent = 0;
+    if (notify && result.promoted > 0) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const fromNameSms = result.fromClass.nameBn || result.fromClass.name;
+        const toNameSms = result.toClass.nameBn || result.toClass.name;
+        const labelSms = direction === "demote" ? "ডিমোট" : "প্রমোট/ট্রান্সফার";
+        const movedIds = result.studentIds || [];
+        const students = movedIds.length
+          ? await prisma.student.findMany({
+              where: {
+                id: { in: movedIds },
+                tenantId,
+              },
+              select: {
+                name: true,
+                nameBn: true,
+                studentId: true,
+                fatherPhone: true,
+                guardianPhone: true,
+              },
+            })
+          : await prisma.student.findMany({
+              where: {
+                tenantId,
+                currentClassId: toClassId,
+                deletedAt: null,
+                status: "ACTIVE",
+              },
+              select: {
+                name: true,
+                nameBn: true,
+                studentId: true,
+                fatherPhone: true,
+                guardianPhone: true,
+              },
+              take: result.promoted,
+            });
+        for (const st of students) {
+          const phone = st.guardianPhone || st.fatherPhone;
+          if (!phone) continue;
+          const body = `ক্লাস ${labelSms}: ${st.nameBn || st.name} (${st.studentId}) — ${fromNameSms} → ${toNameSms}।${generateFees ? " নতুন ফি চালান তৈরি হতে পারে।" : ""} — Edupro`;
+          try {
+            await communicationRepository.sendMessage({
+              tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: "Class transfer",
+              body,
+              relatedType: "STUDENT_PROMOTE",
+              relatedId: st.studentId,
+            });
+            smsSent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+      } catch (e) {
+        console.error("promote SMS", e);
+      }
+    }
+
     revalidatePath("/tenant/admin/students");
     revalidatePath("/tenant/admin/students/promote");
     revalidatePath("/tenant/admin/finance");
+    revalidatePath("/tenant/admin/communication");
 
     const fromName = result.fromClass.nameBn || result.fromClass.name;
     const toName = result.toClass.nameBn || result.toClass.name;
@@ -109,6 +175,7 @@ export async function promoteBatchAction(
     if (generateFees) {
       message += ` · ${invoicesCreated} টি ফি চালান তৈরি`;
     }
+    if (notify) message += ` · SMS ${smsSent}`;
 
     return {
       success: true,
