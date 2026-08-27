@@ -156,13 +156,66 @@ export async function bulkImportStudentsAction(
       created++;
     }
 
+    // Notify admin / tenant phone of import completion
+    let smsNote = "";
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      const actor = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { phone: true },
+      });
+      if (actor?.phone) phones.add(actor.phone);
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: session.user.tenantId },
+        select: { phone: true },
+      });
+      if (tenant?.phone) phones.add(tenant.phone);
+      const admins = await prisma.user.findMany({
+        where: {
+          tenantId: session.user.tenantId,
+          role: { in: ["ADMIN", "SUPER_ADMIN", "ACCOUNTANT"] },
+        },
+        select: { phone: true },
+        take: 10,
+      });
+      for (const a of admins) {
+        if (a.phone) phones.add(a.phone);
+      }
+
+      if (phones.size > 0) {
+        const body = `বাল্ক ইমপোর্ট সম্পন্ন: ${created} জন শিক্ষার্থী যোগ, ${skipped} স্কিপ। — Edupro`;
+        for (const phone of phones) {
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: "Bulk import complete",
+              body,
+              relatedType: "BULK_IMPORT",
+              relatedId: session.user.tenantId,
+            });
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = " · অ্যাডমিন SMS";
+      }
+    } catch (smsErr) {
+      console.error("import SMS", smsErr);
+    }
+
     revalidatePath("/tenant/admin/students");
     revalidatePath("/tenant/admin/students/import");
+    revalidatePath("/tenant/admin/communication");
     return {
       success: true,
       created,
       skipped,
-      message: `${created} জন যোগ, ${skipped} স্কিপ`,
+      message: `${created} জন যোগ, ${skipped} স্কিপ${smsNote}`,
     };
   } catch (e) {
     console.error(e);

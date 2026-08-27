@@ -31,6 +31,88 @@ export async function createCampusAction(formData: FormData) {
   revalidatePath("/tenant/admin/campuses");
 }
 
+/** Mark campus as active working context + audit + optional SMS */
+export async function setActiveCampusAction(formData: FormData) {
+  const session = await ctx();
+  const campusId = String(formData.get("campusId") || "");
+  if (!campusId || !session.user.tenantId) return;
+
+  const { prisma } = await import("@/infrastructure/database/prisma");
+  const { cookies } = await import("next/headers");
+
+  const campus = await prisma.campus.findFirst({
+    where: { id: campusId, tenantId: session.user.tenantId },
+  });
+  if (!campus) return;
+
+  // Persist selection in cookie for UI filtering
+  const jar = await cookies();
+  jar.set("edupro_active_campus", campusId, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 90,
+    sameSite: "lax",
+  });
+
+  // Audit log
+  try {
+    await prisma.auditLog.create({
+      data: {
+        tenantId: session.user.tenantId,
+        userId: session.user.id,
+        action: "CAMPUS_SWITCH",
+        entityType: "Campus",
+        entityId: campusId,
+        newValues: {
+          campusId,
+          name: campus.name,
+          code: campus.code,
+        },
+      },
+    });
+  } catch (e) {
+    console.error("campus audit", e);
+  }
+
+  // Notify campus phone or tenant admins
+  try {
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+    const phones = new Set<string>();
+    if (campus.phone) phones.add(campus.phone);
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: session.user.tenantId },
+      select: { phone: true },
+    });
+    if (tenant?.phone) phones.add(tenant.phone);
+
+    const label = campus.nameBn || campus.name;
+    const body = `ক্যাম্পাস সুইচ: ${session.user.name || "Admin"} এখন "${label}"${campus.code ? " (" + campus.code + ")" : ""} কনটেক্সটে কাজ করছেন। — Edupro`;
+    for (const phone of phones) {
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Campus switch",
+          body,
+          relatedType: "CAMPUS",
+          relatedId: campusId,
+        });
+      } catch {
+        /* continue */
+      }
+    }
+  } catch (e) {
+    console.error("campus SMS", e);
+  }
+
+  revalidatePath("/tenant/admin/campuses");
+  revalidatePath("/tenant/admin/dashboard");
+  revalidatePath("/tenant/admin/audit");
+  revalidatePath("/tenant/admin/communication");
+}
+
 export async function createEmergencyAction(formData: FormData) {
   const session = await ctx();
   const title = String(formData.get("title") || "");

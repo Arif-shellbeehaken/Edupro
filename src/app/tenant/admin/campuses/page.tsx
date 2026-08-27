@@ -1,7 +1,7 @@
 import { auth } from "@/infrastructure/auth/auth";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { extendedOpsRepository } from "@/infrastructure/database/repositories/extended-ops-repository";
-import { createCampusAction } from "@/application/use-cases/extended/extended-actions";
+import { createCampusAction, setActiveCampusAction } from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export default async function CampusesPage() {
       <div>
         <h1 className="text-2xl font-semibold">মাল্টি-ক্যাম্পাস / শাখা</h1>
         <p className="text-sm text-muted-foreground">
-          এক প্রতিষ্ঠানের একাধিক শাখা এক ড্যাশবোর্ড থেকে
+          শাখা সুইচ · অডিট লগ · SMS নোটিফিকেশন
         </p>
       </div>
 
@@ -82,7 +82,15 @@ export default async function CampusesPage() {
                   {[r.code, r.address, r.phone].filter(Boolean).join(" · ")}
                 </p>
               </div>
-              {r.isMain && <Badge>মূল</Badge>}
+              <div className="flex items-center gap-2">
+                {r.isMain && <Badge>মূল</Badge>}
+                <form action={setActiveCampusAction}>
+                  <input type="hidden" name="campusId" value={r.id} />
+                  <Button type="submit" size="sm" variant="outline">
+                    সক্রিয় · অডিট/SMS
+                  </Button>
+                </form>
+              </div>
             </CardContent>
           </Card>
         ))}
