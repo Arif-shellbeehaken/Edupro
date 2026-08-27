@@ -1,3 +1,4 @@
+import { PublishDayForm } from "./publish-day-form";
 import { redirect } from "next/navigation";
 import { Calendar } from "lucide-react";
 import { auth } from "@/infrastructure/auth/auth";
@@ -74,6 +75,7 @@ export default async function TimetablePage() {
         />
 
         <div className="space-y-6 p-6">
+          <PublishDayForm classes={classes.map((c) => ({ id: c.id, name: c.nameBn || c.name }))} />
           <TimetableDigestForm classes={classes} />
           <div className="grid gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-1">

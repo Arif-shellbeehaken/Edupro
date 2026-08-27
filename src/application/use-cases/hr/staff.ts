@@ -30,7 +30,7 @@ const schema = z.object({
   emergencyContact: z.string().optional(),
 });
 
-export type CreateStaffState = { error?: string; success?: boolean };
+export type CreateStaffState = { error?: string; success?: boolean; message?: string };
 
 export async function createStaffAction(
   _prev: CreateStaffState,
@@ -81,9 +81,40 @@ export async function createStaffAction(
         ? new Date(parsed.data.joiningDate)
         : undefined,
     });
+
+    let smsNote = "";
+    const notify = formData.get("notify") !== "off";
+    if (notify && parsed.data.phone) {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const tenant = await prisma.tenant.findUnique({
+          where: { id: session.user.tenantId },
+          select: { name: true, nameBn: true },
+        });
+        const inst = tenant?.nameBn || tenant?.name || "প্রতিষ্ঠান";
+        const body = `স্বাগতম: ${parsed.data.nameBn || parsed.data.name} (${parsed.data.employeeId}) — ${inst}-এ ${parsed.data.designation} হিসেবে যোগদান।${parsed.data.joiningDate ? " যোগদান: " + parsed.data.joiningDate + "." : ""} সফল কর্মজীবন কামনা করি। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: parsed.data.phone,
+          subject: "Staff welcome",
+          body,
+          relatedType: "STAFF_WELCOME",
+          relatedId: parsed.data.employeeId,
+        });
+        smsNote = " · Welcome SMS";
+      } catch (e) {
+        console.error("staff welcome SMS", e);
+      }
+    }
+
     revalidatePath("/tenant/admin/hr");
     revalidatePath("/tenant/admin/staff");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `স্টাফ যোগ${smsNote}` };
   } catch (e: unknown) {
     console.error(e);
     const msg = e instanceof Error ? e.message : "";

@@ -154,7 +154,11 @@ export default function NewStaffPage() {
                 <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</div>
               )}
 
-              <Button type="submit" className="w-full" size="lg" disabled={pending}>
+              <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="notify" defaultChecked />
+            স্বাগতম SMS পাঠান
+          </label>
+          <Button type="submit" className="w-full" size="lg" disabled={pending}>
                 {pending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />

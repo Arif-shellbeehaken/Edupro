@@ -4,6 +4,7 @@ import { extendedOpsRepository } from "@/infrastructure/database/repositories/ex
 import {
   createEmergencyAction,
   resolveEmergencyAction,
+  scheduleEmergencyDrillAction,
 } from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,47 @@ export default async function EmergencyPage() {
         </p>
       </div>
 
+      
       <Card>
+        <CardHeader>
+          <CardTitle>ইমার্জেন্সি ড্রিল শিডিউল · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={scheduleEmergencyDrillAction} className="grid gap-2 sm:grid-cols-2">
+            <input
+              name="title"
+              required
+              placeholder="ড্রিল শিরোনাম *"
+              className="flex h-10 rounded-md border px-3 text-sm"
+              defaultValue="অগ্নি নির্বাপণ ড্রিল"
+            />
+            <input
+              name="drillAt"
+              type="datetime-local"
+              required
+              className="flex h-10 rounded-md border px-3 text-sm"
+            />
+            <select name="audience" className="flex h-10 rounded-md border px-3 text-sm" defaultValue="ALL">
+              <option value="ALL">সবাই</option>
+              <option value="STAFF">স্টাফ</option>
+              <option value="PARENTS">অভিভাবক</option>
+            </select>
+            <input
+              name="message"
+              placeholder="নির্দেশনা"
+              className="flex h-10 rounded-md border px-3 text-sm"
+            />
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" name="sendSMS" defaultChecked />
+              অডিয়েন্সকে SMS
+            </label>
+            <Button type="submit" className="sm:col-span-2">
+              ড্রিল শিডিউল
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+<Card>
         <CardHeader>
           <CardTitle>নতুন অ্যালার্ট</CardTitle>
         </CardHeader>

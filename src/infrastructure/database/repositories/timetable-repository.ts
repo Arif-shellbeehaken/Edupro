@@ -2,12 +2,13 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { requireTenantId } from "@/infrastructure/tenancy/tenant-context";
 
 export const timetableRepository = {
-  async listSlots(options?: { tenantId?: string; classId?: string }) {
+  async listSlots(options?: { tenantId?: string; classId?: string; dayOfWeek?: number }) {
     const tid = options?.tenantId ?? requireTenantId();
     return prisma.timetableSlot.findMany({
       where: {
         tenantId: tid,
         ...(options?.classId ? { classId: options.classId } : {}),
+        ...(options?.dayOfWeek !== undefined ? { dayOfWeek: options.dayOfWeek } : {}),
       },
       include: {
         subject: { select: { id: true, name: true, nameBn: true } },

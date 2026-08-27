@@ -528,3 +528,98 @@ export async function createVehicleLogAction(formData: FormData) {
   revalidatePath("/tenant/admin/vehicles");
   revalidatePath("/tenant/admin/communication");
 }
+
+
+/** Schedule a future emergency drill and SMS audience */
+export async function scheduleEmergencyDrillAction(formData: FormData) {
+  const session = await ctx();
+  const tid = session.user.tenantId;
+  if (!tid) return;
+
+  const title = String(formData.get("title") || "ইমার্জেন্সি ড্রিল").trim();
+  const message = String(formData.get("message") || "").trim();
+  const drillAt = String(formData.get("drillAt") || "").trim();
+  const audience = String(formData.get("audience") || "ALL");
+  const sendSMS = formData.get("sendSMS") !== "off";
+  if (!drillAt) return;
+
+  const { prisma } = await import("@/infrastructure/database/prisma");
+
+  const alert = await extendedOpsRepository.createEmergency({
+    tenantId: tid,
+    title: `[DRILL] ${title}`,
+    message:
+      message ||
+      `ড্রিল নির্ধারিত: ${new Date(drillAt).toLocaleString("en-GB")}। অংশগ্রহণ বাধ্যতামূলক।`,
+    severity: "MEDIUM",
+    audience,
+    createdById: session.user.id,
+  });
+
+  try {
+    await prisma.auditLog.create({
+      data: {
+        tenantId: tid,
+        userId: session.user.id,
+        action: "EMERGENCY_DRILL",
+        entityType: "EmergencyAlert",
+        entityId: alert.id,
+        newValues: { drillAt, audience, title },
+      },
+    });
+  } catch {
+    /* optional */
+  }
+
+  if (sendSMS) {
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      if (audience === "STAFF" || audience === "ALL") {
+        const staff = await prisma.staff.findMany({
+          where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
+          select: { phone: true },
+          take: 200,
+        });
+        for (const s of staff) {
+          if (s.phone) phones.add(s.phone);
+        }
+      }
+      if (audience === "PARENTS" || audience === "ALL") {
+        const students = await prisma.student.findMany({
+          where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
+          select: { guardianPhone: true, fatherPhone: true },
+          take: 400,
+        });
+        for (const s of students) {
+          const ph = s.guardianPhone || s.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+      }
+      const when = new Date(drillAt).toLocaleString("en-GB");
+      const body = `ইমার্জেন্সি ড্রিল: ${title} — সময় ${when}। ${message || "নিরাপত্তা নির্দেশনা অনুসরণ করুন।"} — Edupro`;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: tid,
+            channel: "SMS",
+            recipient: phone,
+            subject: title,
+            body: body.slice(0, 320),
+            relatedType: "EMERGENCY_DRILL",
+            relatedId: alert.id,
+          });
+        } catch {
+          /* continue */
+        }
+      }
+    } catch (e) {
+      console.error("drill SMS", e);
+    }
+  }
+
+  revalidatePath("/tenant/admin/emergency");
+  revalidatePath("/tenant/admin/communication");
+}
