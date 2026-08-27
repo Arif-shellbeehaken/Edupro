@@ -94,7 +94,15 @@ export default async function TenantSystemPage() {
         <CardHeader>
           <CardTitle className="text-base">চেকলিস্ট</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-1 text-sm text-muted-foreground">
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>
+            <a
+              href="/tenant/admin/system/backup"
+              className="font-medium text-emerald-700 underline"
+            >
+              টেনান্ট ব্যাকআপ JSON ডাউনলোড
+            </a>
+          </p>
           <p>
             · Health: <code>/api/health</code>
           </p>

@@ -172,9 +172,28 @@ export const extendedRepository = {
 
 
   // ─── Audit ─────────────────────────────────────────────────
-  async listAudit(tenantId?: string, take = 50) {
+  async listAudit(
+    tenantId?: string,
+    take = 50,
+    filters?: { action?: string; entityType?: string; q?: string }
+  ) {
     return prisma.auditLog.findMany({
-      where: tenantId ? { tenantId } : {},
+      where: {
+        ...(tenantId ? { tenantId } : {}),
+        ...(filters?.action ? { action: filters.action } : {}),
+        ...(filters?.entityType
+          ? { entityType: filters.entityType }
+          : {}),
+        ...(filters?.q
+          ? {
+              OR: [
+                { action: { contains: filters.q } },
+                { entityType: { contains: filters.q } },
+                { entityId: { contains: filters.q } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { createdAt: "desc" },
       take,
     });
