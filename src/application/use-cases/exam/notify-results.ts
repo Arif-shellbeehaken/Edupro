@@ -48,9 +48,17 @@ export async function notifyExamResultsAction(
 
     for (const r of results) {
       if (!r.phone) continue;
+      const pct = Number(r.pct) || 0;
+      let grade = "F";
+      if (pct >= 80) grade = "A+";
+      else if (pct >= 70) grade = "A";
+      else if (pct >= 60) grade = "A-";
+      else if (pct >= 50) grade = "B";
+      else if (pct >= 40) grade = "C";
+      else if (pct >= 33) grade = "D";
       const body =
         customBody ||
-        `ফলাফল: ${r.name} (${r.code}) — ${examName}: ${r.obtained}/${r.full} (${r.pct}%), বিষয় ${r.subjects}টি। বিস্তারিত মার্কশিট পোর্টালে দেখুন। — Edupro`;
+        `ফলাফল প্রকাশ: ${r.name} (${r.code}) — ${examName}: ${r.obtained}/${r.full} (${pct}%, গ্রেড ${grade}), বিষয় ${r.subjects}টি। মার্কশিট: /tenant/admin/exams/marksheet — Edupro`;
 
       try {
         await communicationRepository.sendMessage({
@@ -75,7 +83,7 @@ export async function notifyExamResultsAction(
     return {
       success: true,
       sent,
-      message: `${sent}/${results.length} জন অভিভাবককে ফলাফল SMS পাঠানো হয়েছে`,
+      message: `ফলাফল প্রকাশ · SMS ${sent}/${results.length} (গ্রেডসহ)`,
     };
   } catch (e) {
     console.error(e);

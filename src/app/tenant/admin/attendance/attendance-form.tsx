@@ -39,7 +39,7 @@ export function AttendanceForm({
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="notifyAbsent" />
-          অনুপস্থিতদের অভিভাবককে SMS
+          অনুপস্থিত/লেট অভিভাবককে SMS
         </label>
         <Button type="submit" disabled={pending}>
           {pending ? (

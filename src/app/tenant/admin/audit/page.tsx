@@ -1,3 +1,4 @@
+import { AuditExportForm } from "./export-form";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -27,6 +28,7 @@ export default async function AuditPage() {
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="অডিট লগ" subtitle="Enterprise activity trail" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
         <div className="space-y-6 p-6">
+          <AuditExportForm />
           <Card>
             <CardHeader>
               <CardTitle>সাম্প্রতিক অ্যাকশন</CardTitle>

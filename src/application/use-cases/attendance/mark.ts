@@ -67,8 +67,11 @@ export async function markAttendanceAction(
     let smsSent = 0;
     if (notifyAbsent) {
       const absentIds = entries
-        .filter((e) => e.status === "ABSENT")
+        .filter((e) => e.status === "ABSENT" || e.status === "LATE")
         .map((e) => e.studentId);
+      const statusByStudent = new Map(
+        entries.map((e) => [e.studentId, e.status])
+      );
 
       if (absentIds.length > 0) {
         const students = await prisma.student.findMany({
@@ -91,13 +94,15 @@ export async function markAttendanceAction(
         for (const s of students) {
           const phone = s.guardianPhone || s.fatherPhone;
           if (!phone) continue;
-          const body = `অনুপস্থিতি নোটিশ: ${s.nameBn || s.name} (${s.studentId}) আজ ${dateLabel} অনুপস্থিত। — Edupro`;
+          const st = statusByStudent.get(s.id) || "ABSENT";
+          const label = st === "LATE" ? "লেট" : "অনুপস্থিত";
+          const body = `উপস্থিতি নোটিশ: ${s.nameBn || s.name} (${s.studentId}) আজ ${dateLabel} — ${label}। — Edupro`;
           try {
             await communicationRepository.sendMessage({
               tenantId: session.user.tenantId,
               channel: "SMS",
               recipient: phone,
-              subject: "Absence notice",
+              subject: st === "LATE" ? "Late notice" : "Absence notice",
               body,
               relatedType: "ATTENDANCE",
               relatedId: s.id,
@@ -118,7 +123,7 @@ export async function markAttendanceAction(
       count: entries.length,
       smsSent,
       message: notifyAbsent
-        ? `${entries.length} জন সংরক্ষিত · অনুপস্থিত SMS ${smsSent} টি`
+        ? `${entries.length} জন সংরক্ষিত · অনুপস্থিত/লেট SMS ${smsSent} টি`
         : undefined,
     };
   } catch (e) {

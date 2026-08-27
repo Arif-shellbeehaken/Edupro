@@ -37,7 +37,7 @@ export function ExamResultNotifyForm({
       </label>
       <textarea
         name="body"
-        placeholder="কাস্টম মেসেজ (খালি = নাম, মোট নম্বর, % সহ ডিফল্ট)"
+        placeholder="কাস্টম মেসেজ (খালি = নাম, নম্বর, %, গ্রেড সহ ডিফল্ট)"
         className="min-h-[80px] w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
       />
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
@@ -45,7 +45,7 @@ export function ExamResultNotifyForm({
         <p className="text-sm text-emerald-700">{state.message}</p>
       )}
       <Button type="submit" disabled={pending || exams.length === 0}>
-        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "ফলাফল SMS পাঠান"}
+        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "ফলাফল প্রকাশ + SMS"}
       </Button>
     </form>
   );
