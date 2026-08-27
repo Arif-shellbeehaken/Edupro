@@ -6,6 +6,48 @@
 
 ---
 
+
+---
+
+## 🚀 Quickstart (local)
+
+```bash
+# 1. Clone & install
+git clone https://github.com/Arif-shellbeehaken/Edupro.git
+cd Edupro
+cp .env.example .env
+npm install
+
+# 2. Database (SQLite dev OR Postgres)
+# SQLite: set DATABASE_URL="file:./dev.db" in .env and prisma/schema provider = "sqlite"
+npx prisma generate
+npx prisma db push
+npm run db:seed
+
+# 3. Run
+npm run dev
+# → http://localhost:3000
+```
+
+**Demo logins** (from seed):
+
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | `super@edupro.app` | `Super@1234` |
+| Institution Admin | `admin@demo-madrasah.edu.bd` | `Admin@1234` |
+| Parent OTP | `/parent/login` | phone linked to student |
+
+**Docker**
+
+```bash
+export AUTH_SECRET=$(openssl rand -base64 32)
+docker compose up -d --build
+curl -s http://localhost:3000/api/health
+```
+
+See `docs/PRODUCTION.md` for production deploy and `docs/SMS_CATALOG.md` for SMS types.
+
+
 ## 🎯 Vision
 
 A single production-ready SaaS core that serves:

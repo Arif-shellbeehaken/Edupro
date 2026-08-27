@@ -48,6 +48,11 @@ export default async function ParentPortalPage() {
       currentClass: { select: { name: true, nameBn: true } },
       hifzProgress: true,
       invoices: { take: 3, orderBy: { issueDate: "desc" } },
+      attendances: {
+        take: 14,
+        orderBy: { date: "desc" },
+        select: { status: true, date: true },
+      },
     },
     take: 20,
   });
@@ -60,6 +65,11 @@ export default async function ParentPortalPage() {
         currentClass: { select: { name: true, nameBn: true } },
         hifzProgress: true,
         invoices: { take: 3, orderBy: { issueDate: "desc" } },
+      attendances: {
+        take: 14,
+        orderBy: { date: "desc" },
+        select: { status: true, date: true },
+      },
       },
       take: 6,
     });
@@ -117,32 +127,35 @@ export default async function ParentPortalPage() {
                     : ""}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-xs text-muted-foreground">হিফজ জুজ</p>
-                  <p className="text-lg font-bold">
-                    {s.hifzProgress?.totalJuzCompleted ?? "—"}
-                  </p>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg bg-emerald-50 p-3">
+                    <p className="text-xs text-muted-foreground">হিফজ জুজ</p>
+                    <p className="text-lg font-bold text-emerald-800">
+                      {s.hifzProgress?.totalJuzCompleted ?? "—"}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-amber-50 p-3">
+                    <p className="text-xs text-muted-foreground">বকেয়া চালান</p>
+                    <p className="text-lg font-bold text-amber-800">
+                      {
+                        s.invoices.filter(
+                          (i) => i.status !== "PAID" && i.status !== "CANCELLED"
+                        ).length
+                      }
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground">স্ট্যাটাস</p>
+                    <p className="text-lg font-bold">{s.status}</p>
+                  </div>
                 </div>
-                <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-xs text-muted-foreground">বকেয়া চালান</p>
-                  <p className="text-lg font-bold">
-                    {
-                      s.invoices.filter(
-                        (i) => i.status !== "PAID" && i.status !== "CANCELLED"
-                      ).length
-                    }
-                  </p>
-                  <Link
-                    href={`/parent/fees?studentId=${s.id}`}
-                    className="mt-1 inline-block text-xs text-emerald-700 underline"
-                  >
-                    ফি পাসবুক
-                  </Link>
-                </div>
-                <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-xs text-muted-foreground">স্ট্যাটাস</p>
-                  <p className="text-lg font-bold">{s.status}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/parent/fees?studentId=${s.id}`}>
+                      ফি পাসবুক
+                    </Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -29,7 +29,7 @@ export function AppShell({
         primaryColor={primaryColor}
         logoUrl={logoUrl}
       />
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden pt-14 md:pt-0">
         {children}
       </div>
     </div>

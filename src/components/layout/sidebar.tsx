@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -47,6 +47,8 @@ import {
   Scale,
   CalendarRange,
   Activity,
+  Menu,
+  X,
 } from "lucide-react";
 
 
@@ -200,6 +202,12 @@ export function Sidebar({
   const sections = isSuper ? [] : tenantAdminSections;
   const brand = primaryColor || "#059669";
   const [navQuery, setNavQuery] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+
   const q = navQuery.trim().toLowerCase();
   const filteredSections = useMemo(() => {
     if (!q) return sections;
@@ -217,8 +225,38 @@ export function Sidebar({
 
 
   return (
+    <>
+      {/* Mobile top bar */}
+      <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-card px-3 md:hidden">
+        <button
+          type="button"
+          aria-label="মেনু"
+          onClick={() => setMobileOpen(true)}
+          className="rounded-lg p-2 hover:bg-muted"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <span className="text-sm font-bold">Edupro</span>
+        {type === "tenant" && institutionName && (
+          <span className="truncate text-xs text-muted-foreground">
+            {institutionName}
+          </span>
+        )}
+      </div>
+      {/* Backdrop */}
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="বন্ধ"
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
     <aside
-      className="flex h-screen w-64 flex-col border-r border-border bg-card"
+      className={
+        "fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-border bg-card transition-transform duration-200 md:static md:z-auto md:translate-x-0 " +
+        (mobileOpen ? "translate-x-0" : "-translate-x-full")
+      }
       style={
         {
           ["--brand" as string]: brand,
@@ -254,6 +292,14 @@ export function Sidebar({
             <span className="text-[10px] text-muted-foreground">Platform Admin</span>
           )}
         </div>
+        <button
+          type="button"
+          className="ml-auto rounded-lg p-1.5 hover:bg-muted md:hidden"
+          aria-label="বন্ধ"
+          onClick={() => setMobileOpen(false)}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -349,5 +395,6 @@ export function Sidebar({
         </form>
       </div>
     </aside>
+    </>
   );
 }

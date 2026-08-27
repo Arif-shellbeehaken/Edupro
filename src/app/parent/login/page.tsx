@@ -42,10 +42,10 @@ export default function ParentLoginPage() {
   }, [verState, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-emerald-50 to-zinc-50 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
-          <CardTitle>অভিভাবক লগইন</CardTitle>
+          <CardTitle className="text-emerald-800">অভিভাবক লগইন</CardTitle>
           <CardDescription>
             শিক্ষার্থীর সাথে লিংকড মোবাইলে OTP পাঠানো হবে
           </CardDescription>
