@@ -1,3 +1,4 @@
+import { PrintQueueForm } from "./print-queue-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
@@ -71,6 +72,7 @@ export default async function CertificatesPage() {
           tenantName={tenantName}
         />
         <div className="space-y-6 p-6">
+          <PrintQueueForm certs={certs.map((c) => ({ id: c.id, certificateNo: c.certificateNo, studentName: c.studentName, certType: c.certType }))} />
           <CertificateForms students={students} />
 
           <Card>

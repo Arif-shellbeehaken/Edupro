@@ -458,3 +458,83 @@ export async function notifyLowStockAction(
     return { error: "লো-স্টক অ্যালার্ট ব্যর্থ" };
   }
 }
+
+
+/** Record purchase order as stock IN + SMS vendor/admin */
+export async function createPurchaseOrderAction(
+  _p: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const itemId = String(formData.get("itemId") || "");
+  const quantity = Number(formData.get("quantity") || 0);
+  const vendorName = String(formData.get("vendorName") || "").trim();
+  const vendorPhone = String(formData.get("vendorPhone") || "").trim() || undefined;
+  const unitCost = Number(formData.get("unitCost") || 0);
+  const note = String(formData.get("note") || "").trim();
+  if (!itemId || quantity <= 0) return { error: "আইটেম ও পরিমাণ দিন" };
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    await inventoryRepository.stockTxn({
+      tenantId: session.user.tenantId,
+      itemId,
+      type: "IN",
+      quantity,
+      note: `PO${vendorName ? " · " + vendorName : ""}${unitCost ? " · ৳" + unitCost + "/unit" : ""}${note ? " · " + note : ""}`,
+      performedById: session.user.id,
+    });
+
+    const item = await prisma.inventoryItem.findFirst({
+      where: { id: itemId, tenantId: session.user.tenantId },
+    });
+
+    let smsNote = "";
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      if (vendorPhone) phones.add(vendorPhone);
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: session.user.tenantId },
+        select: { phone: true },
+      });
+      if (tenant?.phone) phones.add(tenant.phone);
+
+      const total = unitCost > 0 ? quantity * unitCost : 0;
+      const body = `ক্রয় অর্ডার: ${item?.nameBn || item?.name || "আইটেম"} × ${quantity}${vendorName ? " · " + vendorName : ""}${total ? " · ৳" + total.toLocaleString("en-BD") : ""}। — Edupro`;
+      let sent = 0;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Purchase order",
+            body,
+            relatedType: "INVENTORY_PO",
+            relatedId: itemId,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+      if (sent) smsNote = ` · SMS ${sent}`;
+    } catch (e) {
+      console.error("PO SMS", e);
+    }
+
+    revalidatePath("/tenant/admin/inventory");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `PO রেকর্ড (স্টক ইন)${smsNote}`,
+    };
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : "PO ব্যর্থ" };
+  }
+}

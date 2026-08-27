@@ -6,6 +6,10 @@ import {
   notifyChronicAbsenteesAction,
   type NotifyChronicState,
 } from "@/application/use-cases/attendance/notify-chronic";
+import {
+  sendChronicAdminDigestAction,
+  type ChronicDigestState,
+} from "@/application/use-cases/attendance/chronic-admin-digest";
 import { Button } from "@/components/ui/button";
 
 export function NotifyChronicForm({
@@ -25,8 +29,13 @@ export function NotifyChronicForm({
     notifyChronicAbsenteesAction,
     {} as NotifyChronicState
   );
+  const [dState, dAction, dPending] = useActionState(
+    sendChronicAdminDigestAction,
+    {} as ChronicDigestState
+  );
 
   return (
+    <div className="space-y-4">
     <form action={action} className="space-y-3 rounded-lg border border-border bg-card p-4">
       <input type="hidden" name="from" value={from} />
       <input type="hidden" name="to" value={to} />
@@ -52,5 +61,18 @@ export function NotifyChronicForm({
         )}
       </Button>
     </form>
+    <form action={dAction} className="flex flex-wrap items-end gap-2 rounded-lg border border-border bg-card p-4">
+      <input type="hidden" name="days" value="7" />
+      <input type="hidden" name="threshold" value={threshold} />
+      <p className="w-full text-sm font-medium">সাপ্তাহিক অ্যাডমিন ডাইজেস্ট</p>
+      <Button type="submit" size="sm" variant="outline" disabled={dPending}>
+        {dPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "অ্যাডমিন SMS ডাইজেস্ট"}
+      </Button>
+      {dState.error && <p className="text-sm text-red-600">{dState.error}</p>}
+      {dState.success && (
+        <p className="text-sm text-emerald-700">{dState.message}</p>
+      )}
+    </form>
+    </div>
   );
 }

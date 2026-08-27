@@ -12,6 +12,7 @@ import {
 import {
   createInventoryItemAction,
   stockTxnAction,
+  createPurchaseOrderAction,
   type ActionState,
 } from "@/application/use-cases/crm/actions";
 
@@ -27,7 +28,8 @@ export function InventoryForms({
     createInventoryItemAction,
     {} as ActionState
   );
-  const [txnState, txnAction, txnPending] = useActionState(stockTxnAction, {} as ActionState);
+  const [txnState, txnAction, txnPending] = useActionState(stockTxnAction,
+  createPurchaseOrderAction, {} as ActionState);
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -91,6 +93,38 @@ export function InventoryForms({
             <Button type="submit" className="w-full" disabled={txnPending || items.length === 0}>
               {txnPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "আপডেট"}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-base">ক্রয় অর্ডার (PO) · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={poAction} className="grid gap-2 sm:grid-cols-2">
+            <select name="itemId" required className={inputClass} defaultValue="">
+              <option value="" disabled>
+                আইটেম *
+              </option>
+              {items.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name} (স্টক {i.quantity})
+                </option>
+              ))}
+            </select>
+            <input name="quantity" type="number" min={1} required defaultValue={1} className={inputClass} />
+            <input name="vendorName" placeholder="ভেন্ডর নাম" className={inputClass} />
+            <input name="vendorPhone" placeholder="ভেন্ডর ফোন (SMS)" className={inputClass} />
+            <input name="unitCost" type="number" min={0} placeholder="একক মূল্য ৳" className={inputClass} />
+            <input name="note" placeholder="নোট" className={inputClass} />
+            <Button type="submit" disabled={poPending || items.length === 0} className="sm:col-span-2">
+              {poPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "PO + স্টক ইন"}
+            </Button>
+            {poState.error && <p className="text-xs text-red-600 sm:col-span-2">{poState.error}</p>}
+            {poState.success && (
+              <p className="text-xs text-emerald-600 sm:col-span-2">{poState.message}</p>
+            )}
           </form>
         </CardContent>
       </Card>
