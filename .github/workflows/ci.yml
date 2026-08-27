@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  quality:
+    name: Lint · Typecheck · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma generate
+        run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./ci.db"
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+        env:
+          DATABASE_URL: "file:./ci.db"
+        continue-on-error: true
+
+      - name: Lint
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: "file:./ci.db"
+          AUTH_SECRET: "ci-auth-secret-at-least-32-characters-long"
+          AUTH_URL: "http://localhost:3000"
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+          ROOT_DOMAIN: "localhost:3000"
+          DOCKER_BUILD: "0"

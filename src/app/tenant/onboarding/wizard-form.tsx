@@ -26,6 +26,9 @@ export function OnboardingWizard({
 }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [livePrimary, setLivePrimary] = useState(
+    defaults.primaryColor || "#059669"
+  );
   const [state, action, pending] = useActionState(
     completeOnboardingAction,
     {} as WizardState
@@ -59,15 +62,24 @@ export function OnboardingWizard({
         <CardDescription>
           ৩ ধাপে প্রতিষ্ঠান চালু — সেশন, ক্লাস/সেকশন, ফি · পরে Settings থেকে সম্পাদনা
         </CardDescription>
-        <div className="flex gap-1 pt-2">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`h-1.5 flex-1 rounded-full ${
-                s <= step ? "bg-emerald-500" : "bg-zinc-200"
-              }`}
-            />
-          ))}
+        <div className="space-y-1 pt-2">
+          <div className="flex gap-1">
+            {[1, 2, 3].map((s) => (
+              <div
+                key={s}
+                className="h-1.5 flex-1 rounded-full transition-colors"
+                style={{
+                  backgroundColor:
+                    s <= step ? livePrimary || "#059669" : "#e4e4e7",
+                }}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground">
+            <span>প্রতিষ্ঠান</span>
+            <span>একাডেমিক</span>
+            <span>ফি</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -94,7 +106,8 @@ export function OnboardingWizard({
               <input
                 type="color"
                 name="primaryColor"
-                defaultValue={defaults.primaryColor}
+                value={livePrimary}
+                onChange={(e) => setLivePrimary(e.target.value)}
                 className="h-10 w-14 cursor-pointer rounded border"
               />
             </div>
