@@ -45,6 +45,36 @@ docker compose up -d --build
 curl -s http://localhost:3000/api/health
 ```
 
+
+## 🏭 Production quickstart
+
+```bash
+# 1. Env
+cp .env.example .env
+# Set DATABASE_URL (Postgres), AUTH_SECRET, AUTH_URL, NEXT_PUBLIC_APP_URL, ROOT_DOMAIN
+
+# 2. Prisma → PostgreSQL in prisma/schema.prisma, then:
+npx prisma generate
+npx prisma migrate deploy   # or db push
+npm run db:seed
+
+# 3a. Node process
+npm run build && npm run start:prod
+
+# 3b. Docker (recommended)
+export AUTH_SECRET=$(openssl rand -base64 32)
+docker compose up -d --build
+curl -sf http://localhost:3000/api/health
+
+# 4. First login
+# Super Admin → provision tenants from /super-admin
+# Tenant Admin → onboarding wizard, fee structure, classes
+```
+
+**Health:** `GET /api/health` · **SMS types:** `docs/SMS_CATALOG.md` · **Deploy:** `docs/PRODUCTION.md`
+
+Parent portal (OTP): `/parent/login` — guardian phone linked on student record.
+
 See `docs/PRODUCTION.md` for production deploy and `docs/SMS_CATALOG.md` for SMS types.
 
 

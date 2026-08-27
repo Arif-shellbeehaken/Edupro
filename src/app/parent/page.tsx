@@ -1,53 +1,36 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  requireParentSession,
+  parentLogoutAction,
+} from "@/application/use-cases/portal/parent-session";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-/**
- * Parent Portal — read-only view of linked children.
- * Links students by guardianPhone / fatherPhone matching user.phone when available;
- * falls back to all active students of the tenant for demo accounts.
- */
 export default async function ParentPortalPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login");
+  const session = await requireParentSession();
 
-  const tenantId = session.user.tenantId;
-  if (!tenantId) {
-    return (
-      <div className="mx-auto max-w-lg p-8 text-center">
-        <p className="text-muted-foreground">কোনো প্রতিষ্ঠানের সাথে লিংক নেই</p>
-        <Button className="mt-4" asChild><Link href="/login">লগইন</Link></Button>
-      </div>
-    );
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { phone: true, name: true },
-  });
-
-  let students = await prisma.student.findMany({
+  const students = await prisma.student.findMany({
     where: {
-      tenantId,
+      tenantId: session.tenantId,
       deletedAt: null,
       status: "ACTIVE",
-      ...(user?.phone
-        ? {
-            OR: [
-              { guardianPhone: user.phone },
-              { fatherPhone: user.phone },
-            ],
-          }
-        : {}),
+      OR: [
+        { guardianPhone: session.phone },
+        { fatherPhone: session.phone },
+      ],
     },
     include: {
       currentClass: { select: { name: true, nameBn: true } },
       hifzProgress: true,
-      invoices: { take: 3, orderBy: { issueDate: "desc" } },
+      invoices: { take: 5, orderBy: { issueDate: "desc" } },
       attendances: {
         take: 14,
         orderBy: { date: "desc" },
@@ -57,109 +40,157 @@ export default async function ParentPortalPage() {
     take: 20,
   });
 
-  // Demo fallback: if no phone match, show first few students
-  if (students.length === 0) {
-    students = await prisma.student.findMany({
-      where: { tenantId, deletedAt: null, status: "ACTIVE" },
-      include: {
-        currentClass: { select: { name: true, nameBn: true } },
-        hifzProgress: true,
-        invoices: { take: 3, orderBy: { issueDate: "desc" } },
-      attendances: {
-        take: 14,
-        orderBy: { date: "desc" },
-        select: { status: true, date: true },
-      },
-      },
-      take: 6,
-    });
-  }
-
   const tenant = await prisma.tenant.findUnique({
-    where: { id: tenantId },
+    where: { id: session.tenantId },
     select: { name: true, nameBn: true },
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <header className="border-b bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/80 to-background">
+      <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
           <div>
-            <h1 className="text-lg font-bold text-emerald-800">অভিভাবক পোর্টাল</h1>
+            <p className="text-sm font-semibold text-emerald-800">
+              অভিভাবক পোর্টাল
+            </p>
             <p className="text-xs text-muted-foreground">
-              {tenant?.nameBn || tenant?.name} · {session.user.name}
+              {tenant?.nameBn || tenant?.name || "প্রতিষ্ঠান"} · {session.phone}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/tenant/admin/dashboard">অ্যাডমিন</Link>
+          <form action={parentLogoutAction}>
+            <Button type="submit" variant="outline" size="sm">
+              লগআউট
             </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/login">লগআউট</Link>
-            </Button>
-          </div>
+          </form>
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-6 p-6">
+      <main className="mx-auto max-w-3xl space-y-4 p-4 pb-10">
         <p className="text-sm text-muted-foreground">
-          সন্তানের উপস্থিতি, ফি ও হিফজ অগ্রগতি (রিড-অনলি)
+          সন্তানের উপস্থিতি, ফি ও হিফজ — রিড-অনলি
         </p>
 
         {students.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              কোনো শিক্ষার্থী লিংক নেই
+            <CardContent className="py-10 text-center text-muted-foreground">
+              এই নম্বরে কোনো সক্রিয় শিক্ষার্থী লিংক নেই
             </CardContent>
           </Card>
         ) : (
-          students.map((s) => (
-            <Card key={s.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{s.nameBn || s.name}</span>
-                  {s.isHifzStudent && <Badge variant="success">হিফজ</Badge>}
-                </CardTitle>
-                <CardDescription>
-                  {s.studentId}
-                  {s.currentClass
-                    ? ` · ${s.currentClass.nameBn || s.currentClass.name}`
-                    : ""}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-lg bg-emerald-50 p-3">
-                    <p className="text-xs text-muted-foreground">হিফজ জুজ</p>
-                    <p className="text-lg font-bold text-emerald-800">
-                      {s.hifzProgress?.totalJuzCompleted ?? "—"}
-                    </p>
+          students.map((s) => {
+            const unpaid = s.invoices.filter(
+              (i) => i.status !== "PAID" && i.status !== "CANCELLED"
+            ).length;
+            const present = s.attendances.filter(
+              (a) => a.status === "PRESENT" || a.status === "LATE"
+            ).length;
+            const totalAtt = s.attendances.length;
+            return (
+              <Card key={s.id} className="overflow-hidden shadow-sm">
+                <CardHeader className="bg-card pb-3">
+                  <CardTitle className="flex flex-wrap items-center justify-between gap-2 text-lg">
+                    <span>{s.nameBn || s.name}</span>
+                    {s.isHifzStudent && (
+                      <Badge variant="success">হিফজ</Badge>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    {s.studentId}
+                    {s.currentClass
+                      ? ` · ${s.currentClass.nameBn || s.currentClass.name}`
+                      : ""}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-xl bg-emerald-50 p-3 text-center">
+                      <p className="text-[10px] text-muted-foreground">
+                        হিফজ জুজ
+                      </p>
+                      <p className="text-xl font-bold text-emerald-800">
+                        {s.hifzProgress?.totalJuzCompleted ?? "—"}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-amber-50 p-3 text-center">
+                      <p className="text-[10px] text-muted-foreground">
+                        বকেয়া চালান
+                      </p>
+                      <p className="text-xl font-bold text-amber-800">
+                        {unpaid}
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-sky-50 p-3 text-center">
+                      <p className="text-[10px] text-muted-foreground">
+                        উপস্থিতি ১৪ দিন
+                      </p>
+                      <p className="text-xl font-bold text-sky-800">
+                        {totalAtt ? `${present}/${totalAtt}` : "—"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="rounded-lg bg-amber-50 p-3">
-                    <p className="text-xs text-muted-foreground">বকেয়া চালান</p>
-                    <p className="text-lg font-bold text-amber-800">
-                      {
-                        s.invoices.filter(
-                          (i) => i.status !== "PAID" && i.status !== "CANCELLED"
-                        ).length
-                      }
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-3">
-                    <p className="text-xs text-muted-foreground">স্ট্যাটাস</p>
-                    <p className="text-lg font-bold">{s.status}</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" asChild>
+
+                  {s.attendances.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">
+                        সাম্প্রতিক উপস্থিতি
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {[...s.attendances].reverse().map((a, i) => {
+                          const color =
+                            a.status === "PRESENT"
+                              ? "bg-emerald-500"
+                              : a.status === "LATE"
+                                ? "bg-amber-400"
+                                : a.status === "ABSENT"
+                                  ? "bg-red-400"
+                                  : "bg-zinc-300";
+                          return (
+                            <span
+                              key={i}
+                              title={`${a.date.toISOString().slice(0, 10)} · ${a.status}`}
+                              className={`h-3 w-3 rounded-full ${color}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {s.invoices.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        সাম্প্রতিক চালান
+                      </p>
+                      {s.invoices.slice(0, 3).map((inv) => (
+                        <div
+                          key={inv.id}
+                          className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                        >
+                          <span>{inv.invoiceNumber}</span>
+                          <span className="font-medium">
+                            ৳{inv.totalAmount.toLocaleString("en-BD")}
+                          </span>
+                          <Badge
+                            variant={
+                              inv.status === "PAID" ? "success" : "warning"
+                            }
+                          >
+                            {inv.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                     <Link href={`/parent/fees?studentId=${s.id}`}>
-                      ফি পাসবুক
+                      ফি পাসবুক দেখুন
                     </Link>
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </main>
     </div>

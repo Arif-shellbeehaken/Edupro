@@ -207,6 +207,14 @@ export function Sidebar({
     setMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
 
   const q = navQuery.trim().toLowerCase();
   const filteredSections = useMemo(() => {
