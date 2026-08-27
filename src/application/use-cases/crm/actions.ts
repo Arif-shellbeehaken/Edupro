@@ -179,8 +179,71 @@ export async function stockTxnAction(
       note: (formData.get("note") as string) || undefined,
       performedById: session.user.id,
     });
+
+    let smsNote = "";
+    if (type === "OUT" || type === "ADJUST") {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const item = await prisma.inventoryItem.findFirst({
+          where: { id: itemId, tenantId: session.user.tenantId },
+        });
+        if (item && item.quantity <= item.minStock) {
+          const phones = new Set<string>();
+          const staff = await prisma.staff.findMany({
+            where: {
+              tenantId: session.user.tenantId,
+              deletedAt: null,
+              status: "ACTIVE",
+            },
+            select: { phone: true, roleType: true },
+            take: 40,
+          });
+          for (const s of staff) {
+            if (
+              s.phone &&
+              (!s.roleType ||
+                ["ADMIN", "ACCOUNTANT", "SUPPORT", "STORE"].includes(s.roleType))
+            ) {
+              phones.add(s.phone);
+            }
+          }
+          const tenant = await prisma.tenant.findUnique({
+            where: { id: session.user.tenantId },
+            select: { phone: true },
+          });
+          if (tenant?.phone) phones.add(tenant.phone);
+
+          const body = `স্টক-আউট অ্যালার্ট: ${item.nameBn || item.name} এখন ${item.quantity} (মিন ${item.minStock})। পুনরায় অর্ডার করুন। — Edupro`;
+          let sent = 0;
+          for (const phone of phones) {
+            try {
+              await communicationRepository.sendMessage({
+                tenantId: session.user.tenantId,
+                channel: "SMS",
+                recipient: phone,
+                subject: "Stock out",
+                body,
+                relatedType: "INVENTORY_STOCKOUT",
+                relatedId: item.id,
+              });
+              sent += 1;
+            } catch {
+              /* continue */
+            }
+          }
+          if (sent > 0) smsNote = ` · লো-স্টক SMS ${sent}`;
+        }
+      } catch (smsErr) {
+        console.error("stockout SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/inventory");
-    return { success: true, message: "স্টক আপডেট হয়েছে" };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `স্টক আপডেট হয়েছে${smsNote}` };
   } catch (e: unknown) {
     return { error: e instanceof Error ? e.message : "স্টক আপডেট ব্যর্থ" };
   }

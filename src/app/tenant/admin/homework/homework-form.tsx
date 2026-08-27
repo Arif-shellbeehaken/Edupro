@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   createHomeworkAction,
   notifyHomeworkAction,
+  notifyDueHomeworkAction,
   type ExtState,
 } from "@/application/use-cases/donations/actions";
 
@@ -26,6 +27,10 @@ export function HomeworkForm({
   );
   const [nState, nAction, nPending] = useActionState(
     notifyHomeworkAction,
+    {} as ExtState
+  );
+  const [dState, dAction, dPending] = useActionState(
+    notifyDueHomeworkAction,
     {} as ExtState
   );
 
@@ -120,6 +125,34 @@ export function HomeworkForm({
                 "রিমাইন্ডার পাঠান"
               )}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-base">আসন্ন ডিউ রিমাইন্ডার</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={dAction} className="flex flex-wrap items-end gap-2">
+            <label className="text-sm">
+              দিন
+              <input
+                name="days"
+                type="number"
+                defaultValue={2}
+                min={1}
+                max={14}
+                className={inputClass + " w-20"}
+              />
+            </label>
+            <Button type="submit" disabled={dPending}>
+              {dPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "ডিউ SMS পাঠান"}
+            </Button>
+            {dState.error && <p className="text-xs text-red-600">{dState.error}</p>}
+            {dState.success && (
+              <p className="text-xs text-emerald-600">{dState.message}</p>
+            )}
           </form>
         </CardContent>
       </Card>

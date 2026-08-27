@@ -1,3 +1,4 @@
+import { ExpiryNotifyForm } from "./expiry-notify";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -67,6 +68,7 @@ export default async function SubscriptionsPage() {
           userRole={session.user.role}
         />
         <div className="space-y-6 p-6">
+      <ExpiryNotifyForm />
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">

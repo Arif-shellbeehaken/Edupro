@@ -367,3 +367,93 @@ export async function notifyHomeworkAction(
     return { error: "হোমওয়ার্ক SMS ব্যর্থ" };
   }
 }
+
+
+/** SMS guardians for all ACTIVE homework due within N days (default 2) */
+export async function notifyDueHomeworkAction(
+  _p: ExtState,
+  formData: FormData
+): Promise<ExtState> {
+  const s = await session();
+  if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const days = Math.min(14, Math.max(1, Number(formData.get("days") || 2)));
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const now = new Date();
+    const until = new Date();
+    until.setDate(until.getDate() + days);
+    until.setHours(23, 59, 59, 999);
+
+    const list = await prisma.homework.findMany({
+      where: {
+        tenantId: s.user.tenantId,
+        status: "ACTIVE",
+        dueDate: { gte: now, lte: until },
+      },
+      take: 50,
+    });
+    if (list.length === 0) {
+      return { error: `আগামী ${days} দিনে ডিউ কোনো হোমওয়ার্ক নেই` };
+    }
+
+    let sent = 0;
+    let targets = 0;
+    for (const hw of list) {
+      const students = await prisma.student.findMany({
+        where: {
+          tenantId: s.user.tenantId,
+          deletedAt: null,
+          status: "ACTIVE",
+          ...(hw.classId ? { currentClassId: hw.classId } : {}),
+        },
+        select: {
+          name: true,
+          nameBn: true,
+          studentId: true,
+          fatherPhone: true,
+          guardianPhone: true,
+        },
+        take: 400,
+      });
+      const due = hw.dueDate
+        ? hw.dueDate.toLocaleDateString("en-GB")
+        : "শীঘ্রই";
+      for (const st of students) {
+        targets += 1;
+        const phone = st.guardianPhone || st.fatherPhone;
+        if (!phone) continue;
+        const body = `ডিউ রিমাইন্ডার: ${hw.title}${hw.subjectName ? " (" + hw.subjectName + ")" : ""} — ${st.nameBn || st.name} (${st.studentId}), ডিউ ${due}। স্টুডেন্ট পোর্টাল: /student — Edupro`;
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: s.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: hw.title,
+            body,
+            relatedType: "HOMEWORK_DUE",
+            relatedId: hw.id,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+    }
+
+    revalidatePath("/tenant/admin/homework");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `${list.length} হোমওয়ার্ক · SMS ${sent}/${targets}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "ডিউ রিমাইন্ডার ব্যর্থ" };
+  }
+}
