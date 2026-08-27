@@ -1,3 +1,4 @@
+import { OverdueFineForm } from "./fine-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Wallet } from "lucide-react";
@@ -81,6 +82,7 @@ export default async function FinancePage() {
         />
 
         <div className="space-y-6 p-6">
+          <OverdueFineForm />
           <div className="flex flex-wrap gap-2">
             <Link
               href="/tenant/admin/finance/reminders"

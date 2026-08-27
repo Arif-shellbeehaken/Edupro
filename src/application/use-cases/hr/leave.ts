@@ -14,7 +14,7 @@ const createSchema = z.object({
   reason: z.string().optional(),
 });
 
-export type LeaveState = { error?: string; success?: boolean };
+export type LeaveState = { error?: string; success?: boolean; message?: string };
 
 export async function createLeaveAction(
   _prev: LeaveState,
@@ -161,5 +161,103 @@ export async function reviewLeaveAction(
   } catch (e) {
     console.error(e);
     return { error: "রিভিউ ব্যর্থ" };
+  }
+}
+
+
+/** SMS staff their remaining leave balance for the calendar year */
+export async function notifyLeaveBalanceAction(
+  _prev: LeaveState,
+  formData: FormData
+): Promise<LeaveState> {
+  const session = await requireTenantContext().catch(() => null);
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  setTenantContext({
+    tenantId: session.user.tenantId,
+    userId: session.user.id,
+    role: session.user.role,
+    isSuperAdmin: false,
+  });
+
+  const staffId = String(formData.get("staffId") || "") || undefined;
+  const year = Number(formData.get("year") || new Date().getFullYear());
+  const quotaCasual = Number(formData.get("quotaCasual") || 14);
+  const quotaSick = Number(formData.get("quotaSick") || 10);
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31, 23, 59, 59);
+
+    const staffList = await prisma.staff.findMany({
+      where: {
+        tenantId: session.user.tenantId,
+        deletedAt: null,
+        status: "ACTIVE",
+        ...(staffId ? { id: staffId } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        nameBn: true,
+        employeeId: true,
+        phone: true,
+      },
+      take: staffId ? 1 : 200,
+    });
+
+    let sent = 0;
+    for (const st of staffList) {
+      if (!st.phone) continue;
+      const approved = await prisma.leaveRequest.findMany({
+        where: {
+          tenantId: session.user.tenantId,
+          staffId: st.id,
+          status: "APPROVED",
+          startDate: { gte: yearStart, lte: yearEnd },
+        },
+        select: { leaveType: true, days: true },
+      });
+      let usedCasual = 0;
+      let usedSick = 0;
+      let usedOther = 0;
+      for (const lv of approved) {
+        if (lv.leaveType === "CASUAL") usedCasual += lv.days;
+        else if (lv.leaveType === "SICK") usedSick += lv.days;
+        else usedOther += lv.days;
+      }
+      const remCasual = Math.max(0, quotaCasual - usedCasual);
+      const remSick = Math.max(0, quotaSick - usedSick);
+      const body = `ছুটি ব্যালেন্স ${year}: ${st.nameBn || st.name} (${st.employeeId}) — ক্যাজুয়াল বাকি ${remCasual}/${quotaCasual}, সিক বাকি ${remSick}/${quotaSick}${usedOther ? ", অন্যান্য ব্যবহৃত " + usedOther : ""} দিন। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: st.phone,
+          subject: "Leave balance",
+          body,
+          relatedType: "LEAVE_BALANCE",
+          relatedId: st.id,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/hr/leave");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `ছুটি ব্যালেন্স SMS ${sent}/${staffList.length}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "ব্যালেন্স SMS ব্যর্থ" };
   }
 }

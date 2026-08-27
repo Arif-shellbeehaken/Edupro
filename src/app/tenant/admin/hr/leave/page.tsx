@@ -1,3 +1,4 @@
+import { LeaveBalanceForm } from "./balance-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
@@ -29,7 +30,7 @@ export default async function LeavePage() {
   if (!session?.user) redirect("/login");
 
   let tenantName = "প্রতিষ্ঠান";
-  let staff: { id: string; name: string; employeeId: string }[] = [];
+  let staff: { id: string; name: string; nameBn: string | null; employeeId: string }[] = [];
   let leaves: Awaited<ReturnType<typeof hrRepository.listLeaves>> = [];
 
   if (session.user.tenantId) {
@@ -48,7 +49,8 @@ export default async function LeavePage() {
       const s = await hrRepository.listStaff({ status: "ACTIVE", take: 100 });
       staff = s.map((x) => ({
         id: x.id,
-        name: x.nameBn || x.name,
+        name: x.name,
+        nameBn: x.nameBn ?? null,
         employeeId: x.employeeId,
       }));
       leaves = await hrRepository.listLeaves({ take: 50 });
@@ -69,6 +71,7 @@ export default async function LeavePage() {
         />
 
         <div className="space-y-6 p-6">
+          <LeaveBalanceForm staff={staff} />
           <Link href="/tenant/admin/hr" className="text-sm text-emerald-600 hover:underline">
             ← HR ড্যাশবোর্ড
           </Link>

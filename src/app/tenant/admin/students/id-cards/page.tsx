@@ -1,3 +1,4 @@
+import { IdCardNotifyForm } from "./notify-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
@@ -74,7 +75,24 @@ export default async function StudentIdCardsPage({
             প্রিন্ট-রেডি · QR-ready code · {list.length} কার্ড
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <IdCardNotifyForm
+            classes={
+              Array.from(
+                new Map(
+                  students
+                    .filter((s) => s.currentClassId && s.currentClass)
+                    .map((s) => [
+                      s.currentClassId!,
+                      {
+                        id: s.currentClassId!,
+                        name: s.currentClass?.nameBn || s.currentClass?.name || "",
+                      },
+                    ])
+                ).values()
+              )
+            }
+          />
           <Link href="/tenant/admin/students" className="text-sm underline">
             শিক্ষার্থী তালিকা
           </Link>
