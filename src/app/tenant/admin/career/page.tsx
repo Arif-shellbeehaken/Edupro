@@ -34,7 +34,7 @@ export default async function CareerPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>নতুন পোস্টিং</CardTitle>
+          <CardTitle>নতুন পোস্টিং · অ্যালামনাই SMS</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createJobAction} className="grid gap-3 sm:grid-cols-2">
@@ -74,6 +74,10 @@ export default async function CareerPage() {
               rows={3}
               className="sm:col-span-2 rounded-md border border-border bg-background px-3 py-2 text-sm"
             />
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" name="sendSms" defaultChecked />
+              অ্যালামনাই/অভিভাবককে bulk SMS
+            </label>
             <Button type="submit">পোস্ট করুন</Button>
           </form>
         </CardContent>

@@ -115,32 +115,139 @@ export async function resolveEmergencyAction(id: string) {
 
 export async function createJobAction(formData: FormData) {
   const session = await ctx();
-  await extendedOpsRepository.createJob({
+  const title = String(formData.get("title") || "");
+  const company = String(formData.get("company") || "") || undefined;
+  const location = String(formData.get("location") || "") || undefined;
+  const jobType = String(formData.get("jobType") || "FULL_TIME");
+  const description = String(formData.get("description") || "") || undefined;
+  const applyUrl = String(formData.get("applyUrl") || "") || undefined;
+  const sendSms = formData.get("sendSms") === "on";
+
+  const job = await extendedOpsRepository.createJob({
     tenantId: session.user.tenantId!,
-    title: String(formData.get("title") || ""),
-    company: String(formData.get("company") || "") || undefined,
-    location: String(formData.get("location") || "") || undefined,
-    jobType: String(formData.get("jobType") || "FULL_TIME"),
-    description: String(formData.get("description") || "") || undefined,
-    applyUrl: String(formData.get("applyUrl") || "") || undefined,
+    title,
+    company,
+    location,
+    jobType,
+    description,
+    applyUrl,
   });
+
+  if (sendSms && session.user.tenantId) {
+    try {
+      const { prisma } = await import("@/infrastructure/database/prisma");
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      // Prefer alumni phones; fallback guardian phones of senior students
+      const alumni = await prisma.alumni.findMany({
+        where: { tenantId: session.user.tenantId },
+        select: { phone: true },
+        take: 300,
+      });
+      for (const a of alumni) {
+        if (a.phone) phones.add(a.phone);
+      }
+      if (phones.size < 5) {
+        const students = await prisma.student.findMany({
+          where: {
+            tenantId: session.user.tenantId,
+            deletedAt: null,
+            status: "ACTIVE",
+          },
+          select: { fatherPhone: true, guardianPhone: true },
+          take: 200,
+        });
+        for (const s of students) {
+          const ph = s.guardianPhone || s.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+      }
+      const companyPart = company ? ` @ ${company}` : "";
+      const loc = location ? `, ${location}` : "";
+      const link = applyUrl ? ` আবেদন: ${applyUrl}` : "";
+      const body = `চাকরি: ${title}${companyPart}${loc} (${jobType}).${link} — Edupro`;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: title,
+            body,
+            relatedType: "CAREER",
+            relatedId:
+              typeof job === "object" && job && "id" in job
+                ? String((job as { id: string }).id)
+                : undefined,
+          });
+        } catch {
+          /* continue */
+        }
+      }
+    } catch (e) {
+      console.error("career SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/career");
+  revalidatePath("/tenant/admin/communication");
 }
 
 export async function createAssetAction(formData: FormData) {
   const session = await ctx();
   const pv = formData.get("purchaseValue");
-  await extendedOpsRepository.createAsset({
+  const name = String(formData.get("name") || "");
+  const assetTag = String(formData.get("assetTag") || "") || undefined;
+  const location = String(formData.get("location") || "") || undefined;
+  const assigneePhone = String(formData.get("assigneePhone") || "").trim() || undefined;
+  const assigneeName = String(formData.get("assigneeName") || "").trim() || undefined;
+  const sendSms = formData.get("sendSms") === "on";
+  const notesParts = [
+    String(formData.get("notes") || "") || "",
+    assigneeName ? `Assigned: ${assigneeName}` : "",
+    assigneePhone ? `Phone: ${assigneePhone}` : "",
+  ].filter(Boolean);
+
+  const asset = await extendedOpsRepository.createAsset({
     tenantId: session.user.tenantId!,
-    name: String(formData.get("name") || ""),
+    name,
     category: String(formData.get("category") || "GENERAL"),
-    assetTag: String(formData.get("assetTag") || "") || undefined,
-    location: String(formData.get("location") || "") || undefined,
+    assetTag,
+    location,
     purchaseValue: pv ? Number(pv) : undefined,
     condition: String(formData.get("condition") || "GOOD"),
-    notes: String(formData.get("notes") || "") || undefined,
+    notes: notesParts.join(" | ") || undefined,
   });
+
+  if (sendSms && assigneePhone && session.user.tenantId) {
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const tag = assetTag ? ` (${assetTag})` : "";
+      const loc = location ? ` · স্থান: ${location}` : "";
+      const body = `অ্যাসেট অ্যাসাইন: ${name}${tag}${loc}${assigneeName ? " → " + assigneeName : ""}। যত্নসহ ব্যবহার করুন। — Edupro`;
+      await communicationRepository.sendMessage({
+        tenantId: session.user.tenantId,
+        channel: "SMS",
+        recipient: assigneePhone,
+        subject: "Asset assignment",
+        body,
+        relatedType: "ASSET",
+        relatedId:
+          typeof asset === "object" && asset && "id" in asset
+            ? String((asset as { id: string }).id)
+            : undefined,
+      });
+    } catch (e) {
+      console.error("asset SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/assets");
+  revalidatePath("/tenant/admin/communication");
 }
 
 export async function createQuestionAction(formData: FormData) {
@@ -175,16 +282,61 @@ export async function createCanteenSaleAction(formData: FormData) {
   const session = await ctx();
   const qty = Number(formData.get("quantity") || 1);
   const unit = Number(formData.get("unitPrice") || 0);
-  await extendedOpsRepository.createCanteenSale({
+  const itemName = String(formData.get("itemName") || "");
+  const studentId = String(formData.get("studentId") || "") || undefined;
+  const paidVia = String(formData.get("paidVia") || "CASH");
+  const sendSms = formData.get("sendSms") === "on";
+
+  const sale = await extendedOpsRepository.createCanteenSale({
     tenantId: session.user.tenantId!,
-    itemName: String(formData.get("itemName") || ""),
+    itemName,
     quantity: qty,
     unitPrice: unit,
-    studentId: String(formData.get("studentId") || "") || undefined,
-    paidVia: String(formData.get("paidVia") || "CASH"),
+    studentId,
+    paidVia,
     note: String(formData.get("note") || "") || undefined,
   });
+
+  if (sendSms && studentId && session.user.tenantId) {
+    try {
+      const { prisma } = await import("@/infrastructure/database/prisma");
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const student = await prisma.student.findFirst({
+        where: { id: studentId, tenantId: session.user.tenantId },
+        select: {
+          name: true,
+          nameBn: true,
+          studentId: true,
+          fatherPhone: true,
+          guardianPhone: true,
+        },
+      });
+      const phone = student?.guardianPhone || student?.fatherPhone;
+      if (phone && student) {
+        const total = qty * unit;
+        const body = `ক্যান্টিন: ${student.nameBn || student.name} (${student.studentId}) — ${itemName} × ${qty} = ৳${total.toLocaleString("en-BD")} (${paidVia})। — Edupro`;
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Canteen sale",
+          body,
+          relatedType: "CANTEEN",
+          relatedId:
+            typeof sale === "object" && sale && "id" in sale
+              ? String((sale as { id: string }).id)
+              : undefined,
+        });
+      }
+    } catch (e) {
+      console.error("canteen SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/canteen");
+  revalidatePath("/tenant/admin/communication");
 }
 
 export async function createVehicleLogAction(formData: FormData) {
