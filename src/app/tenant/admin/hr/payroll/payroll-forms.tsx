@@ -14,6 +14,7 @@ import {
 import {
   processPayrollAction,
   markSalaryPaidAction,
+  sendPayslipSmsAction,
   type PayrollState,
 } from "@/application/use-cases/hr/payroll";
 
@@ -66,7 +67,12 @@ export function PayrollForms({
     {} as PayrollState
   );
 
-  return (
+  
+  const [slipState, slipAction, slipPending] = useActionState(
+    sendPayslipSmsAction,
+    {} as PayrollState
+  );
+return (
     <div className="grid gap-6 lg:grid-cols-3">
       <Card>
         <CardHeader>
@@ -175,6 +181,24 @@ export function PayrollForms({
               )}
               {payState.success && (
                 <p className="text-xs text-emerald-600">{payState.message}</p>
+              )}
+              {latestRunId && (
+                <form action={slipAction} className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+                  <input type="hidden" name="payrollRunId" value={latestRunId} />
+                  <Button type="submit" size="sm" variant="secondary" disabled={slipPending}>
+                    {slipPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "বিস্তারিত পেস্লিপ SMS (PAID)"
+                    )}
+                  </Button>
+                  {slipState.error && (
+                    <p className="text-xs text-red-600">{slipState.error}</p>
+                  )}
+                  {slipState.success && (
+                    <p className="text-xs text-emerald-600">{slipState.message}</p>
+                  )}
+                </form>
               )}
             </div>
           )}

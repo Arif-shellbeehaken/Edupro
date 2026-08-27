@@ -249,3 +249,86 @@ export async function markSalaryPaidAction(
     return { error: "পেমেন্ট মার্ক ব্যর্থ" };
   }
 }
+
+
+/** Send detailed payslip SMS for a payroll run (or single payment) */
+export async function sendPayslipSmsAction(
+  _prev: PayrollState,
+  formData: FormData
+): Promise<PayrollState> {
+  const session = await requireTenantContext().catch(() => null);
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  setTenantContext({
+    tenantId: session.user.tenantId,
+    userId: session.user.id,
+    role: session.user.role,
+    isSuperAdmin: false,
+  });
+
+  const payrollRunId = String(formData.get("payrollRunId") || "");
+  const paymentId = String(formData.get("paymentId") || "") || undefined;
+  if (!payrollRunId && !paymentId) return { error: "রান বা পেমেন্ট বাছুন" };
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const payments = await prisma.salaryPayment.findMany({
+      where: {
+        tenantId: session.user.tenantId,
+        ...(paymentId
+          ? { id: paymentId }
+          : { payrollRunId, status: "PAID" }),
+      },
+      include: {
+        staff: {
+          select: {
+            name: true,
+            nameBn: true,
+            employeeId: true,
+            phone: true,
+          },
+        },
+        payrollRun: { select: { month: true, year: true } },
+      },
+      take: 200,
+    });
+
+    if (payments.length === 0) {
+      return { error: "পেইড স্লিপ নেই — আগে পেমেন্ট মার্ক করুন" };
+    }
+
+    let sent = 0;
+    for (const p of payments) {
+      if (!p.staff.phone) continue;
+      const body = `পেস্লিপ ${p.payrollRun.month}/${p.payrollRun.year}: ${p.staff.nameBn || p.staff.name} (${p.staff.employeeId}) — বেসিক ৳${p.basicSalary}, HRA ৳${p.houseRent}, মেডিকেল ৳${p.medicalAllow}, অন্যান্য ৳${p.otherAllow}, গ্রস ৳${p.grossSalary}, কর্তন ৳${p.deduction}, নেট ৳${p.netSalary}${p.paymentMethod ? " · " + p.paymentMethod : ""}। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: p.staff.phone,
+          subject: "Payslip",
+          body: body.slice(0, 480),
+          relatedType: "PAYSLIP",
+          relatedId: p.id,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/hr/payroll");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `পেস্লিপ SMS ${sent}/${payments.length}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "পেস্লিপ SMS ব্যর্থ" };
+  }
+}

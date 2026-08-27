@@ -538,3 +538,72 @@ export async function createPurchaseOrderAction(
     return { error: e instanceof Error ? e.message : "PO ব্যর্থ" };
   }
 }
+
+
+/** Formal admission offer letter SMS */
+export async function sendAdmissionOfferAction(
+  _p: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const leadId = String(formData.get("leadId") || "");
+  const feeNote = String(formData.get("feeNote") || "").trim();
+  const joinDate = String(formData.get("joinDate") || "").trim();
+  if (!leadId) return { error: "লিড বাছুন" };
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const lead = await prisma.admissionLead.findFirst({
+      where: { id: leadId, tenantId: session.user.tenantId },
+    });
+    if (!lead) return { error: "লিড পাওয়া যায়নি" };
+    if (!lead.phone) return { error: "লিডে ফোন নেই" };
+
+    await prisma.admissionLead.update({
+      where: { id: leadId },
+      data: {
+        status: "OFFERED",
+        notes: [
+          lead.notes || "",
+          feeNote ? `Offer fee: ${feeNote}` : "",
+          joinDate ? `Join: ${joinDate}` : "",
+        ]
+          .filter(Boolean)
+          .join(" | ") || undefined,
+      },
+    });
+
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: session.user.tenantId },
+      select: { name: true, nameBn: true, phone: true, address: true },
+    });
+    const inst = tenant?.nameBn || tenant?.name || "প্রতিষ্ঠান";
+    const cls = lead.applyingClass ? ` ক্লাস ${lead.applyingClass}` : "";
+    const body = `ভর্তি অফার লেটার: ${lead.applicantNameBn || lead.applicantName} — ${inst}${cls}-এ ভর্তির সুযোগ।${feeNote ? " ফি: " + feeNote + "." : ""}${joinDate ? " যোগদান: " + joinDate + "." : ""} নিশ্চিত করতে অফিসে যোগাযোগ করুন${tenant?.phone ? " (" + tenant.phone + ")" : ""}। — Edupro`;
+
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+    await communicationRepository.sendMessage({
+      tenantId: session.user.tenantId,
+      channel: "SMS",
+      recipient: lead.phone,
+      subject: "Admission offer",
+      body: body.slice(0, 480),
+      relatedType: "ADMISSION_OFFER",
+      relatedId: lead.id,
+    });
+
+    revalidatePath("/tenant/admin/admission");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `অফার লেটার SMS · ${lead.applicantName}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "অফার SMS ব্যর্থ" };
+  }
+}

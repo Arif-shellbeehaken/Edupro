@@ -52,17 +52,23 @@ export async function requestParentOtpAction(
     };
     if (tenantId) studentWhere.tenantId = tenantId;
 
-    const linked = await prisma.student.findFirst({
+    const linkedStudents = await prisma.student.findMany({
       where: studentWhere,
-      select: { tenantId: true, name: true },
+      select: { tenantId: true, name: true, nameBn: true, studentId: true },
+      take: 5,
     });
 
-    if (!linked) {
+    if (linkedStudents.length === 0) {
       return {
         error: "এই নম্বরে কোনো শিক্ষার্থী লিংক নেই",
         step: "phone",
       };
     }
+
+    const linked = linkedStudents[0]!;
+    const names = linkedStudents
+      .map((s) => s.nameBn || s.name)
+      .join(", ");
 
     const otp = genOtp();
     const { communicationRepository } = await import(
@@ -74,7 +80,7 @@ export async function requestParentOtpAction(
       channel: "SMS",
       recipient: phone,
       subject: "PARENT_OTP",
-      body: `Edupro অভিভাবক লগইন OTP: ${otp}। ১০ মিনিটের মধ্যে ব্যবহার করুন।`,
+      body: `Edupro অভিভাবক OTP: ${otp} (${names})। ১০ মিনিটের মধ্যে ব্যবহার করুন। শেয়ার করবেন না।`,
       relatedType: "PARENT_OTP",
       relatedId: phone,
     });

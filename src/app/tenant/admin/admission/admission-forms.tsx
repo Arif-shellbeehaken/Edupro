@@ -12,6 +12,7 @@ import {
 import {
   createLeadAction,
   updateLeadStatusAction,
+  sendAdmissionOfferAction,
   type ActionState,
 } from "@/application/use-cases/crm/actions";
 
@@ -23,6 +24,7 @@ const STATUSES = [
   { v: "CONTACTED", n: "যোগাযোগ" },
   { v: "VISIT_SCHEDULED", n: "ভিজিট" },
   { v: "DOCUMENTS", n: "ডকুমেন্ট" },
+  { v: "OFFERED", n: "অফার" },
   { v: "ADMITTED", n: "ভর্তি" },
   { v: "REJECTED", n: "বাতিল" },
   { v: "LOST", n: "হারিয়েছে" },
@@ -49,7 +51,12 @@ export function AdmissionForms({
     {} as ActionState
   );
 
-  const active = leads.filter(
+  
+  const [offerState, offerAction, offerPending] = useActionState(
+    sendAdmissionOfferAction,
+    {} as ActionState
+  );
+const active = leads.filter(
     (l) => !["ADMITTED", "REJECTED", "LOST"].includes(l.status)
   );
 
@@ -120,6 +127,37 @@ export function AdmissionForms({
               {statusState.message || "স্ট্যাটাস আপডেট হয়েছে"}
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-base">ভর্তি অফার লেটার · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={offerAction} className="grid gap-2 sm:grid-cols-2">
+            <select name="leadId" required className={inputClass} defaultValue="">
+              <option value="" disabled>
+                লিড *
+              </option>
+              {leads.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name} ({l.phone}) — {l.status}
+                </option>
+              ))}
+            </select>
+            <input name="feeNote" placeholder="ফি নোট (যেমন ৳৫০০০)" className={inputClass} />
+            <input name="joinDate" type="date" className={inputClass} />
+            <Button type="submit" disabled={offerPending || leads.length === 0}>
+              {offerPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "অফার লেটার SMS"}
+            </Button>
+            {offerState.error && (
+              <p className="text-xs text-red-600 sm:col-span-2">{offerState.error}</p>
+            )}
+            {offerState.success && (
+              <p className="text-xs text-emerald-600 sm:col-span-2">{offerState.message}</p>
+            )}
+          </form>
         </CardContent>
       </Card>
     </div>
