@@ -1,3 +1,4 @@
+import { GrievanceSlaForm } from "./sla-form";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
 import { prisma } from "@/infrastructure/database/prisma";
@@ -30,6 +31,7 @@ export default async function GrievancePage() {
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="অভিযোগ সেল" subtitle="Grievance tracking" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
         <div className="space-y-6 p-6">
+      <GrievanceSlaForm />
           <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">ওপেন</CardTitle></CardHeader>
             <CardContent><div className="text-2xl font-bold text-amber-600">{open}</div></CardContent></Card>
           <GrievanceForms openItems={items.filter((g) => g.status !== "CLOSED" && g.status !== "RESOLVED").map((g) => ({ id: g.id, subject: g.subject, status: g.status }))} />

@@ -12,6 +12,7 @@ import {
 import {
   createRoomAction,
   allocateRoomAction,
+  publishMessMenuAction,
   type OpsState,
 } from "@/application/use-cases/operations/actions";
 
@@ -28,6 +29,10 @@ export function HostelForms({
   const [roomState, roomAction, roomPending] = useActionState(createRoomAction, {} as OpsState);
   const [allocState, allocAction, allocPending] = useActionState(
     allocateRoomAction,
+    {} as OpsState
+  );
+  const [menuState, menuAction, menuPending] = useActionState(
+    publishMessMenuAction,
     {} as OpsState
   );
 
@@ -97,6 +102,29 @@ export function HostelForms({
             >
               {allocPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "অ্যালোকেট"}
             </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-base">মেস মেনু · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={menuAction} className="grid gap-2 sm:grid-cols-2">
+            <input name="menuDate" type="date" required className={inputClass} />
+            <input name="breakfast" placeholder="সকালের খাবার" className={inputClass} />
+            <input name="lunch" placeholder="দুপুরের খাবার" className={inputClass} />
+            <input name="dinner" placeholder="রাতের খাবার" className={inputClass} />
+            <Button type="submit" disabled={menuPending} className="sm:col-span-2">
+              {menuPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "মেনু প্রকাশ + SMS"}
+            </Button>
+            {menuState.error && (
+              <p className="text-xs text-red-600 sm:col-span-2">{menuState.error}</p>
+            )}
+            {menuState.success && (
+              <p className="text-xs text-emerald-600 sm:col-span-2">{menuState.message}</p>
+            )}
           </form>
         </CardContent>
       </Card>

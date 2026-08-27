@@ -13,6 +13,7 @@ import {
   createRouteAction,
   updateRouteAction,
   assignTransportAction,
+  generateTransportFeeInvoicesAction,
   type OpsState,
 } from "@/application/use-cases/operations/actions";
 
@@ -36,6 +37,10 @@ export function TransportForms({
   );
   const [updState, updAction, updPending] = useActionState(
     updateRouteAction,
+    {} as OpsState
+  );
+  const [feeState, feeAction, feePending] = useActionState(
+    generateTransportFeeInvoicesAction,
     {} as OpsState
   );
 
@@ -148,6 +153,53 @@ export function TransportForms({
               <p className="text-xs text-emerald-600 sm:col-span-2">
                 {updState.message}
               </p>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-base">ট্রান্সপোর্ট ফি চালান · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={feeAction} className="grid gap-2 sm:grid-cols-3">
+            <select name="routeId" className={inputClass} defaultValue="">
+              <option value="">সব রুট</option>
+              {routes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+            <input
+              name="month"
+              type="number"
+              min={1}
+              max={12}
+              defaultValue={new Date().getMonth() + 1}
+              className={inputClass}
+              placeholder="মাস"
+            />
+            <input
+              name="year"
+              type="number"
+              defaultValue={new Date().getFullYear()}
+              className={inputClass}
+              placeholder="বছর"
+            />
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" name="notify" defaultChecked />
+              অভিভাবককে চালান SMS
+            </label>
+            <Button type="submit" disabled={feePending}>
+              {feePending ? <Loader2 className="h-4 w-4 animate-spin" /> : "চালান তৈরি"}
+            </Button>
+            {feeState.error && (
+              <p className="text-xs text-red-600 sm:col-span-3">{feeState.error}</p>
+            )}
+            {feeState.success && (
+              <p className="text-xs text-emerald-600 sm:col-span-3">{feeState.message}</p>
             )}
           </form>
         </CardContent>

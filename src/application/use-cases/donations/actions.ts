@@ -457,3 +457,114 @@ export async function notifyDueHomeworkAction(
     return { error: "ডিউ রিমাইন্ডার ব্যর্থ" };
   }
 }
+
+
+/** SMS admins / contact for grievances open longer than N days */
+export async function notifyGrievanceSlaOverdueAction(
+  _p: ExtState,
+  formData: FormData
+): Promise<ExtState> {
+  const s = await session();
+  if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const days = Math.min(30, Math.max(1, Number(formData.get("days") || 3)));
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+
+    const open = await prisma.grievance.findMany({
+      where: {
+        tenantId: s.user.tenantId,
+        status: { in: ["OPEN", "IN_PROGRESS"] },
+        createdAt: { lte: cutoff },
+      },
+      orderBy: { createdAt: "asc" },
+      take: 100,
+    });
+
+    if (open.length === 0) {
+      return { error: `${days} দিনের বেশি খোলা অভিযোগ নেই` };
+    }
+
+    // Notify tenant admins summary
+    const phones = new Set<string>();
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: s.user.tenantId },
+      select: { phone: true },
+    });
+    if (tenant?.phone) phones.add(tenant.phone);
+    const admins = await prisma.user.findMany({
+      where: {
+        tenantId: s.user.tenantId,
+        role: { in: ["ADMIN", "ACCOUNTANT"] },
+      },
+      select: { phone: true },
+      take: 10,
+    });
+    for (const a of admins) {
+      if (a.phone) phones.add(a.phone);
+    }
+
+    const top = open
+      .slice(0, 3)
+      .map((g) => g.subject.slice(0, 30))
+      .join("; ");
+    const summary = `অভিযোগ SLA: ${open.length}টি খোলা >${days} দিন — যেমন: ${top}। — Edupro`;
+    let sent = 0;
+    for (const phone of phones) {
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Grievance SLA",
+          body: summary.slice(0, 320),
+          relatedType: "GRIEVANCE_SLA",
+          relatedId: s.user.tenantId,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    // Also SMS each contact
+    for (const g of open) {
+      if (!g.contactPhone) continue;
+      const age = Math.floor(
+        (Date.now() - g.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const body = `অভিযোগ অপেক্ষমাণ: "${g.subject}" ${age} দিন ধরে ${g.status}। শীঘ্রই আপডেট পাবেন। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: s.user.tenantId,
+          channel: "SMS",
+          recipient: g.contactPhone,
+          subject: g.subject,
+          body,
+          relatedType: "GRIEVANCE_SLA",
+          relatedId: g.id,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/grievance");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `SLA ওভারডিউ ${open.length} · SMS ${sent}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "SLA নোটিশ ব্যর্থ" };
+  }
+}

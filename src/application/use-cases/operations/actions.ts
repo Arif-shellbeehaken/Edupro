@@ -530,3 +530,202 @@ export async function notifyOverdueBooksAction(
     return { error: "লাইব্রেরি SMS ব্যর্থ" };
   }
 }
+
+
+/** Publish hostel mess menu and SMS allocated students' guardians */
+export async function publishMessMenuAction(
+  _p: OpsState,
+  formData: FormData
+): Promise<OpsState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const menuDate = String(formData.get("menuDate") || "").trim();
+  const breakfast = String(formData.get("breakfast") || "").trim();
+  const lunch = String(formData.get("lunch") || "").trim();
+  const dinner = String(formData.get("dinner") || "").trim();
+  if (!menuDate || (!breakfast && !lunch && !dinner)) {
+    return { error: "তারিখ ও অন্তত এক বেলা খাবার দিন" };
+  }
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    // Audit store
+    await prisma.auditLog.create({
+      data: {
+        tenantId: session.user.tenantId,
+        userId: session.user.id,
+        action: "MESS_MENU_PUBLISH",
+        entityType: "Hostel",
+        newValues: { menuDate, breakfast, lunch, dinner },
+      },
+    });
+
+    const allocations = await prisma.hostelAllocation.findMany({
+      where: { tenantId: session.user.tenantId, status: "ACTIVE" },
+      select: { studentId: true },
+      take: 400,
+    });
+    const studentIds = [...new Set(allocations.map((a) => a.studentId))];
+    const students = studentIds.length
+      ? await prisma.student.findMany({
+          where: { id: { in: studentIds }, tenantId: session.user.tenantId },
+          select: {
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        })
+      : [];
+
+    const meals = [
+      breakfast ? `সকাল: ${breakfast}` : "",
+      lunch ? `দুপুর: ${lunch}` : "",
+      dinner ? `রাত: ${dinner}` : "",
+    ]
+      .filter(Boolean)
+      .join("; ");
+    const dateLabel = new Date(menuDate).toLocaleDateString("en-GB");
+    let sent = 0;
+    for (const st of students) {
+      const phone = st.guardianPhone || st.fatherPhone;
+      if (!phone) continue;
+      const body = `হোস্টেল মেনু ${dateLabel}: ${meals}। — Edupro`;
+      try {
+        await communicationRepository.sendMessage({
+          tenantId: session.user.tenantId,
+          channel: "SMS",
+          recipient: phone,
+          subject: "Mess menu",
+          body: body.slice(0, 320),
+          relatedType: "MESS_MENU",
+          relatedId: session.user.tenantId,
+        });
+        sent += 1;
+      } catch {
+        /* continue */
+      }
+    }
+
+    revalidatePath("/tenant/admin/hostel");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `মেনু প্রকাশ · SMS ${sent}/${students.length}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: "মেনু প্রকাশ ব্যর্থ" };
+  }
+}
+
+
+/** Generate monthly transport fee invoices for assigned students + SMS */
+export async function generateTransportFeeInvoicesAction(
+  _p: OpsState,
+  formData: FormData
+): Promise<OpsState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  const month = Number(formData.get("month") || new Date().getMonth() + 1);
+  const year = Number(formData.get("year") || new Date().getFullYear());
+  const notify = formData.get("notify") !== "off";
+  const routeId = String(formData.get("routeId") || "") || undefined;
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const { financeRepository } = await import(
+      "@/infrastructure/database/repositories/finance-repository"
+    );
+    const { communicationRepository } = await import(
+      "@/infrastructure/database/repositories/communication-repository"
+    );
+
+    const assignments = await prisma.transportAssignment.findMany({
+      where: {
+        tenantId: session.user.tenantId,
+        status: "ACTIVE",
+        ...(routeId ? { routeId } : {}),
+      },
+      include: {
+        route: true,
+      },
+      take: 500,
+    });
+
+    if (assignments.length === 0) return { error: "সক্রিয় অ্যাসাইনমেন্ট নেই" };
+
+    const due = new Date(year, month, 10); // 10th of next month-ish
+    // due on 10th of selected month
+    const dueDate = new Date(year, month - 1, 10);
+    let created = 0;
+    let sent = 0;
+
+    for (const a of assignments) {
+      const fee = a.route.monthlyFee || 0;
+      if (fee <= 0) continue;
+
+      const student = await prisma.student.findFirst({
+        where: { id: a.studentId, tenantId: session.user.tenantId },
+        select: {
+          id: true,
+          name: true,
+          nameBn: true,
+          studentId: true,
+          fatherPhone: true,
+          guardianPhone: true,
+        },
+      });
+      if (!student) continue;
+
+      const invoice = await financeRepository.createInvoice({
+        tenantId: session.user.tenantId,
+        studentId: student.id,
+        totalAmount: fee,
+        dueDate,
+        notes: `ট্রান্সপোর্ট ফি ${month}/${year} — ${a.route.name}`,
+        discountAmount: 0,
+      });
+      created += 1;
+
+      if (notify) {
+        const phone = student.guardianPhone || student.fatherPhone;
+        if (phone) {
+          const body = `ট্রান্সপোর্ট ফি: ${student.nameBn || student.name} (${student.studentId}) — রুট ${a.route.nameBn || a.route.name}, ${month}/${year}, ৳${fee.toLocaleString("en-BD")}, চালান ${invoice.invoiceNumber}, ডিউ ${dueDate.toLocaleDateString("en-GB")}। — Edupro`;
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: "Transport fee",
+              body,
+              relatedType: "TRANSPORT_FEE",
+              relatedId: invoice.id,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+      }
+    }
+
+    revalidatePath("/tenant/admin/transport");
+    revalidatePath("/tenant/admin/finance");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `${created} চালান · SMS ${sent}`,
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: e instanceof Error ? e.message : "ট্রান্সপোর্ট ফি ব্যর্থ" };
+  }
+}
