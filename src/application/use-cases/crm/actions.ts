@@ -607,3 +607,130 @@ export async function sendAdmissionOfferAction(
     return { error: "অফার SMS ব্যর্থ" };
   }
 }
+
+
+/** Complete inventory stocktake: ADJUST to physical count + SMS summary */
+export async function completeStocktakeAction(
+  _p: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const session = await tenantSession();
+  if (!session?.user.tenantId) return { error: "অনুমতি নেই" };
+
+  // form: count__{itemId} = physical quantity
+  const counts: { itemId: string; qty: number }[] = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("count__") && typeof value === "string") {
+      const itemId = key.replace("count__", "");
+      const qty = Number(value);
+      if (itemId && !Number.isNaN(qty) && qty >= 0) {
+        counts.push({ itemId, qty });
+      }
+    }
+  }
+  // single-item mode
+  const singleId = String(formData.get("itemId") || "");
+  const singleQty = formData.get("quantity");
+  if (singleId && singleQty !== null && singleQty !== "") {
+    counts.push({ itemId: singleId, qty: Number(singleQty) });
+  }
+
+  if (counts.length === 0) return { error: "কোনো কাউন্ট নেই" };
+
+  try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    let adjusted = 0;
+    const diffs: string[] = [];
+
+    for (const c of counts) {
+      const item = await prisma.inventoryItem.findFirst({
+        where: { id: c.itemId, tenantId: session.user.tenantId },
+      });
+      if (!item) continue;
+      if (item.quantity === c.qty) continue;
+      const delta = c.qty - item.quantity;
+      await inventoryRepository.stockTxn({
+        tenantId: session.user.tenantId,
+        itemId: c.itemId,
+        type: "ADJUST",
+        quantity: c.qty,
+        note: `Stocktake adjust (was ${item.quantity})`,
+        performedById: session.user.id,
+      });
+      adjusted += 1;
+      diffs.push(
+        `${item.nameBn || item.name}: ${item.quantity}→${c.qty} (${delta >= 0 ? "+" : ""}${delta})`
+      );
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: session.user.tenantId,
+        userId: session.user.id,
+        action: "STOCKTAKE",
+        entityType: "Inventory",
+        newValues: { adjusted, diffs: diffs.slice(0, 20) },
+      },
+    });
+
+    let smsNote = "";
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const phones = new Set<string>();
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: session.user.tenantId },
+        select: { phone: true },
+      });
+      if (tenant?.phone) phones.add(tenant.phone);
+      const staff = await prisma.staff.findMany({
+        where: {
+          tenantId: session.user.tenantId,
+          deletedAt: null,
+          status: "ACTIVE",
+          roleType: { in: ["ADMIN", "ACCOUNTANT", "SUPPORT"] },
+        },
+        select: { phone: true },
+        take: 20,
+      });
+      for (const s of staff) {
+        if (s.phone) phones.add(s.phone);
+      }
+      const summary =
+        diffs.length > 0
+          ? diffs.slice(0, 3).join("; ")
+          : "কোনো পরিবর্তন নেই";
+      const body = `স্টকটেক সম্পন্ন: ${adjusted} আইটেম অ্যাডজাস্ট — ${summary}। — Edupro`;
+      let sent = 0;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Stocktake complete",
+            body: body.slice(0, 320),
+            relatedType: "STOCKTAKE",
+            relatedId: session.user.tenantId,
+          });
+          sent += 1;
+        } catch {
+          /* continue */
+        }
+      }
+      smsNote = ` · SMS ${sent}`;
+    } catch (e) {
+      console.error("stocktake SMS", e);
+    }
+
+    revalidatePath("/tenant/admin/inventory");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `স্টকটেক: ${adjusted} অ্যাডজাস্ট${smsNote}`,
+    };
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : "স্টকটেক ব্যর্থ" };
+  }
+}

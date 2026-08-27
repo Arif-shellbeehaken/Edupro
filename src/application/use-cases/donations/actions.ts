@@ -325,20 +325,79 @@ export async function createHomeworkAction(
   if (!s?.user.tenantId) return { error: "অনুমতি নেই" };
   const title = (formData.get("title") as string)?.trim();
   if (!title) return { error: "শিরোনাম দিন" };
+  const notify = formData.get("notify") === "on";
+  const classId = (formData.get("classId") as string) || undefined;
+  const subjectName = (formData.get("subjectName") as string) || undefined;
+  const description = (formData.get("description") as string) || undefined;
+  const dueDate = formData.get("dueDate")
+    ? new Date(formData.get("dueDate") as string)
+    : undefined;
+
   try {
-    await extendedRepository.createHomework({
+    const hw = await extendedRepository.createHomework({
       tenantId: s.user.tenantId,
       title,
-      description: (formData.get("description") as string) || undefined,
-      subjectName: (formData.get("subjectName") as string) || undefined,
-      classId: (formData.get("classId") as string) || undefined,
-      dueDate: formData.get("dueDate")
-        ? new Date(formData.get("dueDate") as string)
-        : undefined,
+      description,
+      subjectName,
+      classId,
+      dueDate,
       assignedById: s.user.id,
     });
+
+    let smsNote = "";
+    if (notify) {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const students = await prisma.student.findMany({
+          where: {
+            tenantId: s.user.tenantId,
+            deletedAt: null,
+            status: "ACTIVE",
+            ...(classId ? { currentClassId: classId } : {}),
+          },
+          select: {
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+          take: 400,
+        });
+        const due = dueDate ? dueDate.toLocaleDateString("en-GB") : "শীঘ্রই";
+        const subj = subjectName || "হোমওয়ার্ক";
+        let sent = 0;
+        for (const st of students) {
+          const phone = st.guardianPhone || st.fatherPhone;
+          if (!phone) continue;
+          const body = `নতুন হোমওয়ার্ক: ${title} (${subj}) — ${st.nameBn || st.name} (${st.studentId}), ডিউ ${due}${description ? ". " + description.slice(0, 60) : ""}। — Edupro`;
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: s.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: title,
+              body: body.slice(0, 320),
+              relatedType: "HOMEWORK",
+              relatedId: typeof hw === "object" && hw && "id" in hw ? String((hw as { id: string }).id) : undefined,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = ` · SMS ${sent}`;
+      } catch (e) {
+        console.error("homework create SMS", e);
+      }
+    }
+
     revalidatePath("/tenant/admin/homework");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `হোমওয়ার্ক তৈরি${smsNote}` };
   } catch (e) {
     return { error: "হোমওয়ার্ক তৈরি ব্যর্থ" };
   }

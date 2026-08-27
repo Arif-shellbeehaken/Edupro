@@ -13,6 +13,7 @@ import {
   createInventoryItemAction,
   stockTxnAction,
   createPurchaseOrderAction,
+  completeStocktakeAction,
   type ActionState,
 } from "@/application/use-cases/crm/actions";
 
@@ -28,8 +29,18 @@ export function InventoryForms({
     createInventoryItemAction,
     {} as ActionState
   );
-  const [txnState, txnAction, txnPending] = useActionState(stockTxnAction,
-  createPurchaseOrderAction, {} as ActionState);
+  const [txnState, txnAction, txnPending] = useActionState(
+    stockTxnAction,
+    {} as ActionState
+  );
+  const [poState, poAction, poPending] = useActionState(
+    createPurchaseOrderAction,
+    {} as ActionState
+  );
+  const [stkState, stkAction, stkPending] = useActionState(
+    completeStocktakeAction,
+    {} as ActionState
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -40,22 +51,16 @@ export function InventoryForms({
         <CardContent>
           <form action={addAction} className="space-y-2">
             <input name="name" required placeholder="নাম *" className={inputClass} />
+            <input name="nameBn" placeholder="বাংলা নাম" className={inputClass} />
             <input name="sku" placeholder="SKU" className={inputClass} />
-            <select name="category" className={inputClass} defaultValue="STATIONERY">
-              <option value="STATIONERY">স্টেশনারি</option>
-              <option value="UNIFORM">ইউনিফর্ম</option>
-              <option value="LAB">ল্যাব</option>
-              <option value="FURNITURE">ফার্নিচার</option>
-              <option value="OTHER">অন্যান্য</option>
-            </select>
-            <div className="grid grid-cols-3 gap-2">
-              <input name="quantity" type="number" min={0} defaultValue={0} placeholder="পরিমাণ" className={inputClass} />
-              <input name="minStock" type="number" min={0} defaultValue={5} placeholder="মিন স্টক" className={inputClass} />
-              <input name="unitCost" type="number" min={0} defaultValue={0} placeholder="মূল্য" className={inputClass} />
-            </div>
-            <input name="location" placeholder="লোকেশন" className={inputClass} />
+            <input name="category" placeholder="ক্যাটাগরি" className={inputClass} />
+            <input name="unit" placeholder="ইউনিট" defaultValue="pcs" className={inputClass} />
+            <input name="quantity" type="number" min={0} defaultValue={0} className={inputClass} />
+            <input name="minStock" type="number" min={0} defaultValue={5} className={inputClass} />
             {addState.error && <p className="text-xs text-red-600">{addState.error}</p>}
-            {addState.success && <p className="text-xs text-emerald-600">আইটেম যোগ হয়েছে</p>}
+            {addState.success && (
+              <p className="text-xs text-emerald-600">আইটেম যোগ হয়েছে</p>
+            )}
             <Button type="submit" className="w-full" disabled={addPending}>
               {addPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "যোগ করুন"}
             </Button>
@@ -121,9 +126,46 @@ export function InventoryForms({
             <Button type="submit" disabled={poPending || items.length === 0} className="sm:col-span-2">
               {poPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "PO + স্টক ইন"}
             </Button>
-            {poState.error && <p className="text-xs text-red-600 sm:col-span-2">{poState.error}</p>}
+            {poState.error && (
+              <p className="text-xs text-red-600 sm:col-span-2">{poState.error}</p>
+            )}
             {poState.success && (
               <p className="text-xs text-emerald-600 sm:col-span-2">{poState.message}</p>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">স্টকটেক · SMS</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={stkAction} className="space-y-2">
+            <select name="itemId" required className={inputClass} defaultValue="">
+              <option value="" disabled>
+                আইটেম *
+              </option>
+              {items.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name} (সিস্টেম {i.quantity})
+                </option>
+              ))}
+            </select>
+            <input
+              name="quantity"
+              type="number"
+              min={0}
+              required
+              placeholder="ফিজিক্যাল কাউন্ট *"
+              className={inputClass}
+            />
+            <Button type="submit" className="w-full" disabled={stkPending || items.length === 0}>
+              {stkPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "স্টকটেক সম্পন্ন"}
+            </Button>
+            {stkState.error && <p className="text-xs text-red-600">{stkState.error}</p>}
+            {stkState.success && (
+              <p className="text-xs text-emerald-600">{stkState.message}</p>
             )}
           </form>
         </CardContent>

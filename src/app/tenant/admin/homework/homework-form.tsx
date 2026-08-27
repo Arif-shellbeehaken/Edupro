@@ -74,7 +74,11 @@ export function HomeworkForm({
               {state.success && (
                 <p className="text-xs text-emerald-600">তৈরি হয়েছে</p>
               )}
-              <Button type="submit" disabled={pending}>
+              <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="notify" defaultChecked />
+              অভিভাবককে এখনই SMS
+            </label>
+            <Button type="submit" disabled={pending}>
                 {pending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (

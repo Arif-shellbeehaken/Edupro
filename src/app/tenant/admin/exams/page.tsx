@@ -1,3 +1,4 @@
+import { ExamSeatingForm } from "./seating-form";
 import { redirect } from "next/navigation";
 import { FileText } from "lucide-react";
 import { auth } from "@/infrastructure/auth/auth";
@@ -33,6 +34,7 @@ export default async function ExamsPage() {
   let exams: Awaited<ReturnType<typeof examRepository.listExams>> = [];
   let subjects: Awaited<ReturnType<typeof examRepository.listSubjects>> = [];
   let students: { id: string; name: string; studentId: string }[] = [];
+  let classes: { id: string; name: string }[] = [];
 
   if (session.user.tenantId) {
     setTenantContext({
@@ -55,6 +57,19 @@ export default async function ExamsPage() {
         name: x.nameBn || x.name,
         studentId: x.studentId,
       }));
+      try {
+        const cls = await prisma.class.findMany({
+          where: { tenantId: session.user.tenantId },
+          select: { id: true, name: true, nameBn: true },
+          take: 50,
+        });
+        classes = cls.map((c) => ({
+          id: c.id,
+          name: c.nameBn || c.name,
+        }));
+      } catch {
+        /* optional */
+      }
     } catch {
       // db
     }
@@ -72,6 +87,10 @@ export default async function ExamsPage() {
         />
 
         <div className="space-y-6 p-6">
+          <ExamSeatingForm
+            exams={exams.map((e) => ({ id: e.id, name: e.name, nameBn: e.nameBn ?? null }))}
+            classes={classes}
+          />
           <div className="flex flex-wrap gap-2">
             <Link
               href="/tenant/admin/exams/notify"
