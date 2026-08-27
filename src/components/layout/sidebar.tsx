@@ -61,6 +61,11 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
 const superAdminNav: NavItem[] = [
   { title: "ড্যাশবোর্ড", href: "/super-admin/dashboard", icon: LayoutDashboard },
   { title: "প্রতিষ্ঠানসমূহ", href: "/super-admin/tenants", icon: Building2 },
@@ -70,49 +75,80 @@ const superAdminNav: NavItem[] = [
   { title: "সেটিংস", href: "/super-admin/settings", icon: Settings },
 ];
 
-const tenantAdminNav: NavItem[] = [
-  { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
-  { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
-  { title: "শিক্ষার্থী", href: "/tenant/admin/students", icon: Users },
-  { title: "একাডেমিক রোলওভার", href: "/tenant/admin/academic/rollover", icon: CalendarRange },
-  { title: "উপস্থিতি", href: "/tenant/admin/attendance", icon: ClipboardList },
-  { title: "পরীক্ষা ও ফলাফল", href: "/tenant/admin/exams", icon: FileText },
-  { title: "হিফজ ট্র্যাকিং", href: "/tenant/admin/hifz", icon: BookOpen },
-  { title: "ফি ও অ্যাকাউন্ট", href: "/tenant/admin/finance", icon: Wallet },
-  { title: "টাইমটেবল", href: "/tenant/admin/timetable", icon: Calendar },
-  { title: "HR ও পে-রোল", href: "/tenant/admin/hr", icon: GraduationCap },
-  { title: "লাইব্রেরি", href: "/tenant/admin/library", icon: BookOpen },
-  { title: "হোস্টেল", href: "/tenant/admin/hostel", icon: Home },
-  { title: "ট্রান্সপোর্ট", href: "/tenant/admin/transport", icon: Bus },
-  { title: "ইনভেন্টরি", href: "/tenant/admin/inventory", icon: Package },
-  { title: "যোগাযোগ", href: "/tenant/admin/communication", icon: MessageSquare },
-  { title: "সার্টিফিকেট", href: "/tenant/admin/certificates", icon: Award },
-  { title: "যাকাত/অনুদান", href: "/tenant/admin/donations", icon: Heart },
-  { title: "গেট/ভিজিটর", href: "/tenant/admin/gate", icon: Shield },
-  { title: "অভিযোগ", href: "/tenant/admin/grievance", icon: AlertCircle },
-  { title: "হোমওয়ার্ক", href: "/tenant/admin/homework", icon: PenLine },
-  { title: "নোটিশ বোর্ড", href: "/tenant/admin/notices", icon: Megaphone },
-  { title: "LMS", href: "/tenant/admin/lms", icon: LibraryBig },
-  { title: "অ্যালামনাই", href: "/tenant/admin/alumni", icon: UsersRound },
-  { title: "স্বাস্থ্য", href: "/tenant/admin/health", icon: Stethoscope },
-  { title: "ক্লাব/স্পোর্টস", href: "/tenant/admin/clubs", icon: Trophy },
-  { title: "সার্ভে", href: "/tenant/admin/surveys", icon: ClipboardCheck },
-  { title: "প্রশ্নব্যাংক", href: "/tenant/admin/questions", icon: HelpCircle },
-  { title: "ক্যারিয়ার", href: "/tenant/admin/career", icon: Briefcase },
-  { title: "অ্যাসেট", href: "/tenant/admin/assets", icon: Boxes },
-  { title: "ক্যাম্পাস/শাখা", href: "/tenant/admin/campuses", icon: MapPinned },
-  { title: "ক্যান্টিন/মেস", href: "/tenant/admin/canteen", icon: Utensils },
-  { title: "যানবাহন লগ", href: "/tenant/admin/vehicles", icon: Wrench },
-  { title: "ইমার্জেন্সি", href: "/tenant/admin/emergency", icon: Siren },
-  { title: "অডিট লগ", href: "/tenant/admin/audit", icon: ScrollText },
-  { title: "নামাজ", href: "/tenant/admin/namaz", icon: Moon },
-  { title: "হিজরি ক্যালেন্ডার", href: "/tenant/admin/hijri", icon: Calendar },
-  { title: "সিকিউরিটি", href: "/tenant/admin/security", icon: Lock },
-  { title: "লেজার", href: "/tenant/admin/ledger", icon: Scale },
-  { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
-  { title: "সিস্টেম স্ট্যাটাস", href: "/tenant/admin/system", icon: Activity },
-  { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
+const tenantAdminSections: NavSection[] = [
+  {
+    label: "মূল",
+    items: [
+      { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
+      { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
+      { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "একাডেমিক",
+    items: [
+      { title: "শিক্ষার্থী", href: "/tenant/admin/students", icon: Users },
+      { title: "উপস্থিতি", href: "/tenant/admin/attendance", icon: ClipboardList },
+      { title: "পরীক্ষা ও ফলাফল", href: "/tenant/admin/exams", icon: FileText },
+      { title: "হোমওয়ার্ক", href: "/tenant/admin/homework", icon: PenLine },
+      { title: "টাইমটেবল", href: "/tenant/admin/timetable", icon: Calendar },
+      { title: "হিফজ ট্র্যাকিং", href: "/tenant/admin/hifz", icon: BookOpen },
+      { title: "LMS", href: "/tenant/admin/lms", icon: LibraryBig },
+      { title: "প্রশ্নব্যাংক", href: "/tenant/admin/questions", icon: HelpCircle },
+      { title: "একাডেমিক রোলওভার", href: "/tenant/admin/academic/rollover", icon: CalendarRange },
+    ],
+  },
+  {
+    label: "অর্থ ও HR",
+    items: [
+      { title: "ফি ও অ্যাকাউন্ট", href: "/tenant/admin/finance", icon: Wallet },
+      { title: "লেজার", href: "/tenant/admin/ledger", icon: Scale },
+      { title: "HR ও পে-রোল", href: "/tenant/admin/hr", icon: GraduationCap },
+      { title: "যাকাত/অনুদান", href: "/tenant/admin/donations", icon: Heart },
+    ],
+  },
+  {
+    label: "অপারেশন",
+    items: [
+      { title: "লাইব্রেরি", href: "/tenant/admin/library", icon: BookOpen },
+      { title: "হোস্টেল", href: "/tenant/admin/hostel", icon: Home },
+      { title: "ট্রান্সপোর্ট", href: "/tenant/admin/transport", icon: Bus },
+      { title: "ইনভেন্টরি", href: "/tenant/admin/inventory", icon: Package },
+      { title: "ক্যান্টিন/মেস", href: "/tenant/admin/canteen", icon: Utensils },
+      { title: "গেট/ভিজিটর", href: "/tenant/admin/gate", icon: Shield },
+      { title: "যানবাহন লগ", href: "/tenant/admin/vehicles", icon: Wrench },
+      { title: "অ্যাসেট", href: "/tenant/admin/assets", icon: Boxes },
+    ],
+  },
+  {
+    label: "যোগাযোগ ও সেবা",
+    items: [
+      { title: "যোগাযোগ", href: "/tenant/admin/communication", icon: MessageSquare },
+      { title: "নোটিশ বোর্ড", href: "/tenant/admin/notices", icon: Megaphone },
+      { title: "সার্টিফিকেট", href: "/tenant/admin/certificates", icon: Award },
+      { title: "অভিযোগ", href: "/tenant/admin/grievance", icon: AlertCircle },
+      { title: "সার্ভে", href: "/tenant/admin/surveys", icon: ClipboardCheck },
+      { title: "ইমার্জেন্সি", href: "/tenant/admin/emergency", icon: Siren },
+    ],
+  },
+  {
+    label: "অন্যান্য",
+    items: [
+      { title: "অ্যালামনাই", href: "/tenant/admin/alumni", icon: UsersRound },
+      { title: "স্বাস্থ্য", href: "/tenant/admin/health", icon: Stethoscope },
+      { title: "ক্লাব/স্পোর্টস", href: "/tenant/admin/clubs", icon: Trophy },
+      { title: "ক্যারিয়ার", href: "/tenant/admin/career", icon: Briefcase },
+      { title: "ক্যাম্পাস/শাখা", href: "/tenant/admin/campuses", icon: MapPinned },
+      { title: "নামাজ", href: "/tenant/admin/namaz", icon: Moon },
+      { title: "হিজরি ক্যালেন্ডার", href: "/tenant/admin/hijri", icon: Calendar },
+      { title: "অডিট লগ", href: "/tenant/admin/audit", icon: ScrollText },
+      { title: "সিকিউরিটি", href: "/tenant/admin/security", icon: Lock },
+      { title: "সিস্টেম স্ট্যাটাস", href: "/tenant/admin/system", icon: Activity },
+      { title: "সেটিংস", href: "/tenant/admin/settings", icon: Settings },
+    ],
+  },
 ];
+
 
 
 
@@ -159,7 +195,8 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const isSuper = type === "super" || type === "super-admin";
-  const nav = isSuper ? superAdminNav : tenantAdminNav;
+  const nav = isSuper ? superAdminNav : [];
+  const sections = isSuper ? [] : tenantAdminSections;
   const brand = primaryColor || "#059669";
 
   return (
@@ -203,7 +240,7 @@ export function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+      <nav className="flex-1 space-y-3 overflow-y-auto p-3">
         {nav.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
@@ -228,6 +265,37 @@ export function Sidebar({
             </Link>
           );
         })}
+        {sections.map((section) => (
+          <div key={section.label} className="space-y-1">
+            <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+              {section.label}
+            </p>
+            {section.items.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "font-semibold"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                  style={
+                    isActive
+                      ? { backgroundColor: `${brand}18`, color: brand }
+                      : undefined
+                  }
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {item.title}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
 

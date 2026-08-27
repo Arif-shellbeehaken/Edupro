@@ -265,6 +265,207 @@ async function main() {
   }
   console.log("✅ Staff:", staffSeed.length);
 
+  
+  // ─── SEED_REFRESH_V2: general class, staff, subjects, fee ───
+  const genClass = await prisma.class.upsert({
+    where: {
+      tenantId_academicYearId_name: {
+        tenantId: tenant.id,
+        academicYearId: year.id,
+        name: "Class 6",
+      },
+    },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      academicYearId: year.id,
+      name: "Class 6",
+      nameBn: "ষষ্ঠ শ্রেণি",
+      board: "NCTB",
+      level: "Secondary",
+      capacity: 50,
+    },
+  });
+
+  const genStudents = [
+    {
+      studentId: "STD-601",
+      name: "Rahim Uddin",
+      nameBn: "রহিম উদ্দিন",
+      phone: "01710000001",
+    },
+    {
+      studentId: "STD-602",
+      name: "Karim Hossain",
+      nameBn: "করিম হোসেন",
+      phone: "01710000002",
+    },
+    {
+      studentId: "STD-603",
+      name: "Fatema Akter",
+      nameBn: "ফাতেমা আক্তার",
+      phone: "01710000003",
+    },
+  ];
+  for (const gs of genStudents) {
+    await prisma.student.upsert({
+      where: {
+        tenantId_studentId: {
+          tenantId: tenant.id,
+          studentId: gs.studentId,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        studentId: gs.studentId,
+        name: gs.name,
+        nameBn: gs.nameBn,
+        gender: gs.studentId.endsWith("3") ? "FEMALE" : "MALE",
+        status: "ACTIVE",
+        currentClassId: genClass.id,
+        academicYearId: year.id,
+        fatherPhone: gs.phone,
+        guardianPhone: gs.phone,
+        admissionDate: new Date(),
+      },
+    });
+  }
+  console.log("✅ Class 6 +", genStudents.length, "students");
+
+  const staffRows = [
+    {
+      employeeId: "EMP-001",
+      name: "Md. Yusuf",
+      nameBn: "মোঃ ইউসুফ",
+      designation: "Teacher",
+      roleType: "TEACHER",
+      phone: "01810000001",
+      basicSalary: 25000,
+    },
+    {
+      employeeId: "EMP-002",
+      name: "Ayesha Begum",
+      nameBn: "আয়েশা বেগম",
+      designation: "Accountant",
+      roleType: "ACCOUNTANT",
+      phone: "01810000002",
+      basicSalary: 22000,
+    },
+    {
+      employeeId: "EMP-003",
+      name: "Maulana Karim",
+      nameBn: "মাওলানা করিম",
+      designation: "Hifz Teacher",
+      roleType: "HIFZ_TEACHER",
+      phone: "01810000003",
+      basicSalary: 20000,
+    },
+  ];
+  for (const s of staffRows) {
+    await prisma.staff.upsert({
+      where: {
+        tenantId_employeeId: {
+          tenantId: tenant.id,
+          employeeId: s.employeeId,
+        },
+      },
+      update: {},
+      create: {
+        tenantId: tenant.id,
+        employeeId: s.employeeId,
+        name: s.name,
+        nameBn: s.nameBn,
+        designation: s.designation,
+        roleType: s.roleType,
+        phone: s.phone,
+        basicSalary: s.basicSalary,
+        status: "ACTIVE",
+        employmentType: "FULL_TIME",
+        joiningDate: new Date("2024-01-01"),
+      },
+    });
+  }
+  console.log("✅ Staff:", staffRows.length);
+
+  // Subjects
+  const subjects = [
+    { name: "Bangla", nameBn: "বাংলা", fullMarks: 100 },
+    { name: "English", nameBn: "ইংরেজি", fullMarks: 100 },
+    { name: "Mathematics", nameBn: "গণিত", fullMarks: 100 },
+    { name: "Quran", nameBn: "কুরআন", fullMarks: 100 },
+  ];
+  for (const sub of subjects) {
+    const existing = await prisma.subject.findFirst({
+      where: { tenantId: tenant.id, name: sub.name },
+    });
+    if (!existing) {
+      await prisma.subject.create({
+        data: {
+          tenantId: tenant.id,
+          name: sub.name,
+          nameBn: sub.nameBn,
+          fullMarks: sub.fullMarks,
+        },
+      });
+    }
+  }
+  console.log("✅ Subjects:", subjects.length);
+
+  // Fee structure sample (if model exists)
+  try {
+    const feeExisting = await prisma.feeStructure.findFirst({
+      where: { tenantId: tenant.id, name: "Monthly Tuition" },
+    });
+    if (!feeExisting) {
+      await prisma.feeStructure.create({
+        data: {
+          tenantId: tenant.id,
+          name: "Monthly Tuition",
+          nameBn: "মাসিক বেতন",
+          feeType: "TUITION",
+          amount: 1500,
+          classId: genClass.id,
+          isRecurring: true,
+          dueDay: 10,
+          isActive: true,
+        },
+      });
+      console.log("✅ Fee structure: Monthly Tuition ৳1500");
+    }
+  } catch (e) {
+    console.log("⚠️ Fee structure skip", e instanceof Error ? e.message : e);
+  }
+
+  // Subscription plans for super-admin revenue
+  const plans = [
+    { code: "BASIC", name: "Basic", priceMonthly: 2000, sortOrder: 1 },
+    { code: "STANDARD", name: "Standard", priceMonthly: 5000, sortOrder: 2 },
+    { code: "PREMIUM", name: "Premium", priceMonthly: 10000, sortOrder: 3 },
+  ];
+  for (const p of plans) {
+    try {
+      await prisma.subscriptionPlanConfig.upsert({
+        where: { code: p.code },
+        update: { priceMonthly: p.priceMonthly, isActive: true },
+        create: {
+          code: p.code,
+          name: p.name,
+          priceMonthly: p.priceMonthly,
+          priceYearly: p.priceMonthly * 10,
+          maxStudents: p.code === "BASIC" ? 200 : p.code === "STANDARD" ? 500 : 2000,
+          maxStaff: p.code === "BASIC" ? 20 : p.code === "STANDARD" ? 50 : 200,
+          features: { modules: "all" },
+          sortOrder: p.sortOrder,
+          isActive: true,
+        },
+      });
+    } catch {
+      /* schema may differ */
+    }
+  }
+  console.log("✅ Subscription plans seeded");
+
   console.log("\n🎉 Seed completed successfully!");
   console.log("────────────────────────────────────");
   console.log("Super Admin  → super@edupro.app / Super@1234");
