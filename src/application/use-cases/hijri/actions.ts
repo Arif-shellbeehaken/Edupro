@@ -5,7 +5,7 @@ import { requireTenantContext } from "@/infrastructure/auth/rbac";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { prisma } from "@/infrastructure/database/prisma";
 
-export type HijriState = { error?: string; success?: boolean };
+export type HijriState = { error?: string; success?: boolean; message?: string };
 
 export async function createHijriHolidayAction(
   _prev: HijriState,
@@ -25,23 +25,89 @@ export async function createHijriHolidayAction(
   const hijriDate = (formData.get("hijriDate") as string)?.trim();
   if (!title || !hijriDate) return { error: "শিরোনাম ও হিজরি তারিখ দিন" };
 
+  const announce = formData.get("announce") === "on";
+  const titleBn = (formData.get("titleBn") as string) || undefined;
+  const gregorianDate = formData.get("gregorianDate")
+    ? new Date(formData.get("gregorianDate") as string)
+    : undefined;
+  const notes = (formData.get("notes") as string) || undefined;
+
   try {
-    await prisma.hijriHoliday.create({
+    const holiday = await prisma.hijriHoliday.create({
       data: {
         tenantId: session.user.tenantId,
         title,
-        titleBn: (formData.get("titleBn") as string) || undefined,
+        titleBn,
         hijriDate,
-        gregorianDate: formData.get("gregorianDate")
-          ? new Date(formData.get("gregorianDate") as string)
-          : undefined,
+        gregorianDate,
         holidayType: (formData.get("holidayType") as string) || "RELIGIOUS",
-        notes: (formData.get("notes") as string) || undefined,
+        notes,
         isRecurring: formData.get("isRecurring") === "on",
       },
     });
+
+    let smsNote = "";
+    if (announce) {
+      try {
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const phones = new Set<string>();
+        const students = await prisma.student.findMany({
+          where: {
+            tenantId: session.user.tenantId,
+            deletedAt: null,
+            status: "ACTIVE",
+          },
+          select: { fatherPhone: true, guardianPhone: true },
+          take: 400,
+        });
+        for (const st of students) {
+          const ph = st.guardianPhone || st.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+        const staff = await prisma.staff.findMany({
+          where: {
+            tenantId: session.user.tenantId,
+            deletedAt: null,
+            status: "ACTIVE",
+          },
+          select: { phone: true },
+          take: 100,
+        });
+        for (const s of staff) {
+          if (s.phone) phones.add(s.phone);
+        }
+        const label = titleBn || title;
+        const g =
+          gregorianDate ? ` (${gregorianDate.toLocaleDateString("en-GB")})` : "";
+        const body = `হিজরি ছুটি ঘোষণা: ${label} — ${hijriDate}${g}${notes ? ". " + notes.slice(0, 50) : ""}। — Edupro`;
+        let sent = 0;
+        for (const phone of phones) {
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: label,
+              body,
+              relatedType: "HIJRI_HOLIDAY",
+              relatedId: holiday.id,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = ` · SMS ${sent}`;
+      } catch (smsErr) {
+        console.error("hijri SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/hijri");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `ছুটি যোগ${smsNote}` };
   } catch (e) {
     console.error(e);
     return { error: "ছুটি যোগ করা যায়নি" };

@@ -44,6 +44,10 @@ export function HijriForms() {
               <input type="checkbox" name="isRecurring" defaultChecked className="rounded" />
               প্রতি বছর পুনরাবৃত্ত
             </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="announce" />
+              সবাইকে ঘোষণা SMS
+            </label>
             {createState.error && <p className="text-xs text-red-600">{createState.error}</p>}
             {createState.success && <p className="text-xs text-emerald-600">যোগ হয়েছে</p>}
             <Button type="submit" disabled={createPending}>
@@ -67,7 +71,7 @@ export function HijriForms() {
             </Button>
           </form>
           {seedState.success && (
-            <p className="text-xs text-emerald-600">ডিফল্ট ছুটি যোগ হয়েছে</p>
+            <p className="text-xs text-emerald-600">ডিফল্ট ছুটি · ঘোষণা SMS হয়েছে</p>
           )}
           {seedState.error && <p className="text-xs text-red-600">{seedState.error}</p>}
         </CardContent>

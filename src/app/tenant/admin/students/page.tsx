@@ -1,3 +1,4 @@
+import { StudentStatusForm } from "./status-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Users, Plus, BookOpen } from "lucide-react";
@@ -55,6 +56,7 @@ export default async function StudentsPage() {
         />
 
         <div className="space-y-6 p-6">
+          <StudentStatusForm students={students.map((s) => ({ id: s.id, name: s.name, nameBn: s.nameBn, studentId: s.studentId, status: s.status }))} />
           <div className="flex flex-wrap gap-2">
             <Link
               href="/tenant/admin/students/id-cards"

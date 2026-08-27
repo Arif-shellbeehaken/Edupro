@@ -76,9 +76,13 @@ export function CreateInvoiceForm({ students }: { students: StudentOpt[] }) {
       {state.error && (
         <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</div>
       )}
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="notify" defaultChecked />
+        অভিভাবককে চালান SMS
+      </label>
       {state.success && (
         <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          চালান তৈরি: {state.invoiceNumber}
+          {state.message || `চালান ${state.invoiceNumber} তৈরি হয়েছে`}
         </div>
       )}
 

@@ -18,6 +18,7 @@ export type CreateInvoiceState = {
   error?: string;
   success?: boolean;
   invoiceNumber?: string;
+  message?: string;
 };
 
 export async function createInvoiceAction(
@@ -48,7 +49,24 @@ export async function createInvoiceAction(
     return { error: parsed.error.errors[0]?.message ?? "ইনপুট সঠিক নয়" };
   }
 
+  const notify = formData.get("notify") !== "off";
+
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const student = await prisma.student.findFirst({
+      where: {
+        id: parsed.data.studentId,
+        tenantId: session.user.tenantId,
+      },
+      select: {
+        name: true,
+        nameBn: true,
+        studentId: true,
+        fatherPhone: true,
+        guardianPhone: true,
+      },
+    });
+
     const invoice = await financeRepository.createInvoice({
       tenantId: session.user.tenantId,
       studentId: parsed.data.studentId,
@@ -58,8 +76,41 @@ export async function createInvoiceAction(
       discountAmount: parsed.data.discountAmount,
     });
 
+    let smsNote = "";
+    if (notify && student) {
+      const phone = student.guardianPhone || student.fatherPhone;
+      if (phone) {
+        try {
+          const { communicationRepository } = await import(
+            "@/infrastructure/database/repositories/communication-repository"
+          );
+          const due = new Date(parsed.data.dueDate).toLocaleDateString("en-GB");
+          const net =
+            parsed.data.totalAmount - (parsed.data.discountAmount || 0);
+          const body = `ফি চালান: ${student.nameBn || student.name} (${student.studentId}) — নং ${invoice.invoiceNumber}, ৳${net.toLocaleString("en-BD")}, ডিউ ${due}${parsed.data.notes ? ". " + parsed.data.notes.slice(0, 40) : ""}। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Fee invoice",
+            body,
+            relatedType: "FEE_INVOICE",
+            relatedId: invoice.id,
+          });
+          smsNote = " · SMS";
+        } catch (smsErr) {
+          console.error("invoice SMS", smsErr);
+        }
+      }
+    }
+
     revalidatePath("/tenant/admin/finance");
-    return { success: true, invoiceNumber: invoice.invoiceNumber };
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      invoiceNumber: invoice.invoiceNumber,
+      message: `চালান ${invoice.invoiceNumber}${smsNote}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "চালান তৈরি করা যায়নি" };
