@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { TimetableDigestForm } from "./digest-form";
 import { TimetableForm } from "./timetable-form";
 
 export default async function TimetablePage() {
@@ -26,6 +27,7 @@ export default async function TimetablePage() {
   let slots: Awaited<ReturnType<typeof timetableRepository.listSlots>> = [];
   let subjects: { id: string; name: string }[] = [];
 
+  let classes: { id: string; name: string; nameBn: string | null }[] = [];
   if (session.user.tenantId) {
     setTenantContext({
       tenantId: session.user.tenantId,
@@ -42,6 +44,12 @@ export default async function TimetablePage() {
       slots = await timetableRepository.listSlots();
       const subs = await examRepository.listSubjects();
       subjects = subs.map((s) => ({ id: s.id, name: s.nameBn || s.name }));
+      classes = await prisma.class.findMany({
+        where: { tenantId: session.user.tenantId, deletedAt: null },
+        select: { id: true, name: true, nameBn: true },
+        orderBy: { name: "asc" },
+        take: 50,
+      });
     } catch {
       // db
     }
@@ -66,6 +74,7 @@ export default async function TimetablePage() {
         />
 
         <div className="space-y-6 p-6">
+          <TimetableDigestForm classes={classes} />
           <div className="grid gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-1">
               <CardHeader>

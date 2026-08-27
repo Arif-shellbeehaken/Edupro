@@ -99,10 +99,14 @@ export function PayrollForms({
               <p className="text-xs text-emerald-600">{processState.message}</p>
             )}
             <Button type="submit" className="w-full" disabled={processPending}>
-              {processPending ? (
+              <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="notifyStaff" defaultChecked />
+              স্টাফকে পে-রোল SMS
+            </label>
+            {processPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "পে-রোল প্রসেস করুন"
+                "পে-রোল প্রসেস"
               )}
             </Button>
           </form>

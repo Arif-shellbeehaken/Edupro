@@ -14,7 +14,7 @@ const schema = z.object({
   endDate: z.string().optional(),
 });
 
-export type CreateExamState = { error?: string; success?: boolean };
+export type CreateExamState = { error?: string; success?: boolean; message?: string };
 
 export async function createExamAction(
   _prev: CreateExamState,
@@ -42,8 +42,10 @@ export async function createExamAction(
     return { error: parsed.error.errors[0]?.message ?? "ইনপুট সঠিক নয়" };
   }
 
+  const notify = formData.get("notify") === "on";
+
   try {
-    await examRepository.createExam({
+    const exam = await examRepository.createExam({
       tenantId: session.user.tenantId,
       name: parsed.data.name,
       nameBn: parsed.data.nameBn,
@@ -51,8 +53,66 @@ export async function createExamAction(
       startDate: parsed.data.startDate ? new Date(parsed.data.startDate) : undefined,
       endDate: parsed.data.endDate ? new Date(parsed.data.endDate) : undefined,
     });
+
+    let smsNote = "";
+    if (notify) {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const students = await prisma.student.findMany({
+          where: {
+            tenantId: session.user.tenantId,
+            deletedAt: null,
+            status: "ACTIVE",
+          },
+          select: { fatherPhone: true, guardianPhone: true },
+          take: 400,
+        });
+        const phones = new Set<string>();
+        for (const st of students) {
+          const ph = st.guardianPhone || st.fatherPhone;
+          if (ph) phones.add(ph);
+        }
+        const name = parsed.data.nameBn || parsed.data.name;
+        const start = parsed.data.startDate
+          ? new Date(parsed.data.startDate).toLocaleDateString("en-GB")
+          : "";
+        const end = parsed.data.endDate
+          ? new Date(parsed.data.endDate).toLocaleDateString("en-GB")
+          : "";
+        const range = start ? ` ${start}${end ? "–" + end : ""}` : "";
+        const body = `পরীক্ষার সূচি: ${name} (${parsed.data.examType})${range}। প্রস্তুতি নিন। — Edupro`;
+        let sent = 0;
+        for (const phone of phones) {
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: phone,
+              subject: name,
+              body,
+              relatedType: "EXAM_SCHEDULE",
+              relatedId:
+                typeof exam === "object" && exam && "id" in exam
+                  ? String((exam as { id: string }).id)
+                  : undefined,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = ` · SMS ${sent}`;
+      } catch (smsErr) {
+        console.error("exam schedule SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/exams");
-    return { success: true };
+    revalidatePath("/tenant/admin/communication");
+    return { success: true, message: `পরীক্ষা তৈরি${smsNote}` };
   } catch (e) {
     console.error(e);
     return { error: "পরীক্ষা তৈরি করা যায়নি" };

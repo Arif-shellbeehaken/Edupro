@@ -71,8 +71,14 @@ export function ExamForms({
               <p className="text-xs text-red-600">{examState.error}</p>
             )}
             {examState.success && (
-              <p className="text-xs text-emerald-600">পরীক্ষা তৈরি হয়েছে</p>
+              <p className="text-xs text-emerald-600">
+                {examState.message || "পরীক্ষা তৈরি হয়েছে"}
+              </p>
             )}
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="notify" defaultChecked />
+              অভিভাবককে সূচি SMS
+            </label>
             <Button type="submit" className="w-full" disabled={examPending}>
               {examPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "তৈরি করুন"}
             </Button>

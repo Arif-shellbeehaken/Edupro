@@ -38,6 +38,8 @@ export async function processPayrollAction(
     return { error: parsed.error.errors[0]?.message ?? "ইনপুট সঠিক নয়" };
   }
 
+  const notifyStaff = formData.get("notifyStaff") === "on";
+
   try {
     const result = await hrRepository.processPayroll({
       tenantId: session.user.tenantId,
@@ -45,11 +47,63 @@ export async function processPayrollAction(
       year: parsed.data.year,
       notes: parsed.data.notes,
     });
+
+    let smsNote = "";
+    if (notifyStaff && result.payments.length > 0) {
+      try {
+        const { prisma } = await import("@/infrastructure/database/prisma");
+        const { communicationRepository } = await import(
+          "@/infrastructure/database/repositories/communication-repository"
+        );
+        const staffIds = result.payments.map(
+          (p: { staffId: string }) => p.staffId
+        );
+        const staffList = await prisma.staff.findMany({
+          where: { id: { in: staffIds }, tenantId: session.user.tenantId },
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            employeeId: true,
+            phone: true,
+          },
+        });
+        const byId = new Map(staffList.map((s) => [s.id, s]));
+        let sent = 0;
+        for (const pay of result.payments as {
+          staffId: string;
+          netSalary: number;
+        }[]) {
+          const st = byId.get(pay.staffId);
+          if (!st?.phone) continue;
+          const body = `পে-রোল তৈরি: ${st.nameBn || st.name} (${st.employeeId}) — ${parsed.data.month}/${parsed.data.year}, নেট ৳${pay.netSalary.toLocaleString("en-BD")} (পেন্ডিং)। — Edupro`;
+          try {
+            await communicationRepository.sendMessage({
+              tenantId: session.user.tenantId,
+              channel: "SMS",
+              recipient: st.phone,
+              subject: "Payroll processed",
+              body,
+              relatedType: "PAYROLL_PROCESS",
+              relatedId: pay.staffId,
+            });
+            sent += 1;
+          } catch {
+            /* continue */
+          }
+        }
+        smsNote = ` · SMS ${sent}`;
+      } catch (smsErr) {
+        console.error("payroll process SMS", smsErr);
+      }
+    }
+
     revalidatePath("/tenant/admin/hr/payroll");
     revalidatePath("/tenant/admin/hr");
+    revalidatePath("/tenant/admin/communication");
     return {
       success: true,
-      message: `${result.payments.length} জনের স্যালারি প্রসেস হয়েছে`,
+      message: `${result.payments.length} জনের স্যালারি প্রসেস হয়েছে${smsNote}`,
     };
   } catch (e: unknown) {
     console.error(e);
