@@ -39,7 +39,7 @@ export default async function VehiclesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>নতুন লগ</CardTitle>
+          <CardTitle>নতুন লগ · ড্রাইভার SMS</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={createVehicleLogAction} className="grid gap-3 sm:grid-cols-2">
@@ -53,6 +53,15 @@ export default async function VehiclesPage() {
             <input name="amount" type="number" placeholder="খরচ (৳)" className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
             <input name="odometer" type="number" placeholder="ওডোমিটার (কিমি)" className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
             <input name="notes" placeholder="নোট" className="sm:col-span-2 rounded-md border border-border bg-background px-3 py-2 text-sm" />
+            <input
+              name="driverPhone"
+              placeholder="ড্রাইভার ফোন (SMS)"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+            />
+            <label className="flex items-center gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" name="sendSms" defaultChecked />
+              ড্রাইভারকে SMS
+            </label>
             <Button type="submit">সেভ</Button>
           </form>
         </CardContent>

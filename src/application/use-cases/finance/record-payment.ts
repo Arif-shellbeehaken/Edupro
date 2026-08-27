@@ -17,6 +17,7 @@ const schema = z.object({
 export type RecordPaymentState = {
   error?: string;
   success?: boolean;
+  message?: string;
 };
 
 export async function recordPaymentAction(
@@ -47,7 +48,28 @@ export async function recordPaymentAction(
     return { error: parsed.error.errors[0]?.message ?? "ইনপুট সঠিক নয়" };
   }
 
+  const notifyGuardian = formData.get("notifyGuardian") !== "off";
+
   try {
+    const { prisma } = await import("@/infrastructure/database/prisma");
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: parsed.data.invoiceId,
+        tenantId: session.user.tenantId,
+      },
+      include: {
+        student: {
+          select: {
+            name: true,
+            nameBn: true,
+            studentId: true,
+            fatherPhone: true,
+            guardianPhone: true,
+          },
+        },
+      },
+    });
+
     await financeRepository.recordPayment({
       tenantId: session.user.tenantId,
       invoiceId: parsed.data.invoiceId,
@@ -58,8 +80,46 @@ export async function recordPaymentAction(
       receivedById: session.user.id,
     });
 
+    let smsNote = "";
+    if (notifyGuardian && invoice?.student) {
+      const phone =
+        invoice.student.guardianPhone || invoice.student.fatherPhone;
+      if (phone) {
+        try {
+          const { communicationRepository } = await import(
+            "@/infrastructure/database/repositories/communication-repository"
+          );
+          const remaining = Math.max(
+            0,
+            invoice.totalAmount -
+              invoice.discountAmount -
+              invoice.paidAmount -
+              parsed.data.amount
+          );
+          const body = `ফি রসিদ: ${invoice.student.nameBn || invoice.student.name} (${invoice.student.studentId}) — চালান ${invoice.invoiceNumber}, পেমেন্ট ৳${parsed.data.amount.toLocaleString("en-BD")} (${parsed.data.method})${remaining > 0 ? ", বাকি ৳" + remaining.toLocaleString("en-BD") : " · পরিশোধিত"}। — Edupro`;
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Fee receipt",
+            body,
+            relatedType: "FEE_PAYMENT",
+            relatedId: invoice.id,
+          });
+          smsNote = " · SMS রসিদ";
+        } catch (smsErr) {
+          console.error("payment SMS", smsErr);
+        }
+      }
+    }
+
     revalidatePath("/tenant/admin/finance");
-    return { success: true };
+    revalidatePath("/tenant/admin/ledger");
+    revalidatePath("/tenant/admin/communication");
+    return {
+      success: true,
+      message: `পেমেন্ট সংরক্ষিত${smsNote}`,
+    };
   } catch (e) {
     console.error(e);
     return { error: "পেমেন্ট রেকর্ড করা যায়নি" };

@@ -252,18 +252,71 @@ export async function createAssetAction(formData: FormData) {
 
 export async function createQuestionAction(formData: FormData) {
   const session = await ctx();
-  await extendedOpsRepository.createQuestion({
+  const subject = String(formData.get("subject") || "");
+  const className = String(formData.get("className") || "") || undefined;
+  const questionType = String(formData.get("questionType") || "MCQ");
+  const difficulty = String(formData.get("difficulty") || "MEDIUM");
+  const sendSms = formData.get("sendSms") === "on";
+
+  const q = await extendedOpsRepository.createQuestion({
     tenantId: session.user.tenantId!,
-    subject: String(formData.get("subject") || ""),
-    className: String(formData.get("className") || "") || undefined,
-    questionType: String(formData.get("questionType") || "MCQ"),
+    subject,
+    className,
+    questionType,
     questionText: String(formData.get("questionText") || ""),
     optionsJson: String(formData.get("optionsJson") || "") || undefined,
     correctAnswer: String(formData.get("correctAnswer") || "") || undefined,
-    difficulty: String(formData.get("difficulty") || "MEDIUM"),
+    difficulty,
     marks: Number(formData.get("marks") || 1),
   });
+
+  if (sendSms && session.user.tenantId) {
+    try {
+      const { prisma } = await import("@/infrastructure/database/prisma");
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      // Notify teaching staff
+      const staff = await prisma.staff.findMany({
+        where: {
+          tenantId: session.user.tenantId,
+          deletedAt: null,
+          status: "ACTIVE",
+        },
+        select: { phone: true, designation: true },
+        take: 100,
+      });
+      const phones = new Set<string>();
+      for (const s of staff) {
+        if (s.phone) phones.add(s.phone);
+      }
+      const cls = className ? ` · ${className}` : "";
+      const body = `প্রশ্ন ব্যাংক: নতুন ${questionType} (${difficulty}) — বিষয়: ${subject}${cls}। ব্যাংকে যোগ হয়েছে। — Edupro`;
+      for (const phone of phones) {
+        try {
+          await communicationRepository.sendMessage({
+            tenantId: session.user.tenantId,
+            channel: "SMS",
+            recipient: phone,
+            subject: "Question bank",
+            body,
+            relatedType: "QUESTION",
+            relatedId:
+              typeof q === "object" && q && "id" in q
+                ? String((q as { id: string }).id)
+                : undefined,
+          });
+        } catch {
+          /* continue */
+        }
+      }
+    } catch (e) {
+      console.error("question SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/questions");
+  revalidatePath("/tenant/admin/communication");
 }
 
 export async function createCanteenItemAction(formData: FormData) {
@@ -343,13 +396,53 @@ export async function createVehicleLogAction(formData: FormData) {
   const session = await ctx();
   const amount = formData.get("amount");
   const odo = formData.get("odometer");
-  await extendedOpsRepository.createVehicleLog({
+  const vehicleLabel = String(formData.get("vehicleLabel") || "");
+  const logType = String(formData.get("logType") || "SERVICE");
+  const driverPhone = String(formData.get("driverPhone") || "").trim() || undefined;
+  const sendSms = formData.get("sendSms") === "on";
+  const notes = String(formData.get("notes") || "") || undefined;
+
+  const log = await extendedOpsRepository.createVehicleLog({
     tenantId: session.user.tenantId!,
-    vehicleLabel: String(formData.get("vehicleLabel") || ""),
-    logType: String(formData.get("logType") || "SERVICE"),
+    vehicleLabel,
+    logType,
     amount: amount ? Number(amount) : undefined,
     odometer: odo ? Number(odo) : undefined,
-    notes: String(formData.get("notes") || "") || undefined,
+    notes,
   });
+
+  if (sendSms && driverPhone && session.user.tenantId) {
+    try {
+      const { communicationRepository } = await import(
+        "@/infrastructure/database/repositories/communication-repository"
+      );
+      const TYPE_BN: Record<string, string> = {
+        SERVICE: "সার্ভিস",
+        FUEL: "জ্বালানি",
+        REPAIR: "মেরামত",
+        INCIDENT: "ঘটনা",
+        OTHER: "অন্যান্য",
+      };
+      const amt = amount ? ` · ৳${Number(amount).toLocaleString("en-BD")}` : "";
+      const odoPart = odo ? ` · ওডো ${odo}` : "";
+      const body = `যানবাহন লগ: ${vehicleLabel} — ${TYPE_BN[logType] || logType}${amt}${odoPart}${notes ? ". " + notes.slice(0, 60) : ""} — Edupro`;
+      await communicationRepository.sendMessage({
+        tenantId: session.user.tenantId,
+        channel: "SMS",
+        recipient: driverPhone,
+        subject: "Vehicle log",
+        body,
+        relatedType: "VEHICLE",
+        relatedId:
+          typeof log === "object" && log && "id" in log
+            ? String((log as { id: string }).id)
+            : undefined,
+      });
+    } catch (e) {
+      console.error("vehicle SMS", e);
+    }
+  }
+
   revalidatePath("/tenant/admin/vehicles");
+  revalidatePath("/tenant/admin/communication");
 }

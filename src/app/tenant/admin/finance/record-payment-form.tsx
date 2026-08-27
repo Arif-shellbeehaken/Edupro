@@ -73,10 +73,14 @@ export function RecordPaymentForm({ invoices }: { invoices: InvoiceOpt[] }) {
       )}
       {state.success && (
         <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          পেমেন্ট সফলভাবে রেকর্ড হয়েছে
+          {state.message || "পেমেন্ট সফলভাবে রেকর্ড হয়েছে"}
         </div>
       )}
 
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="notifyGuardian" defaultChecked />
+        অভিভাবককে SMS রসিদ
+      </label>
       <Button type="submit" className="w-full" disabled={pending || unpaid.length === 0}>
         {pending ? (
           <>
