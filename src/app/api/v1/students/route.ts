@@ -9,7 +9,7 @@ import { newRequestId, logger } from "@/lib/logger";
  */
 export async function GET(req: Request) {
   const requestId = req.headers.get("x-request-id") || newRequestId();
-  const { error, session } = await requireApiSession();
+  const { error, session } = await requireApiSession(req);
   if (error || !session) return error!;
   if (!session.user.tenantId && !session.user.isSuperAdmin) {
     return NextResponse.json({ error: "No tenant" }, { status: 403 });

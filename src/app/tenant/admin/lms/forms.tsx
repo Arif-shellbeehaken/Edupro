@@ -21,8 +21,17 @@ export function ModuleForm() {
             <option value="VIDEO">ভিডিও</option>
             <option value="LINK">লিংক</option>
             <option value="FILE">ফাইল</option>
+            <option value="MEET">Google Meet</option>
+            <option value="ZOOM">Zoom</option>
           </select>
-          <input name="url" placeholder="URL" className={inputClass + " sm:col-span-2"} />
+          <input
+            name="url"
+            placeholder="URL / Meet / Zoom link"
+            className={inputClass + " sm:col-span-2"}
+          />
+          <p className="text-[11px] text-muted-foreground sm:col-span-2">
+            Meet/Zoom: পূর্ণ join URL দিন (https://meet.google.com/... বা https://zoom.us/j/...)
+          </p>
           <textarea name="body" placeholder="বিবরণ" className={inputClass + " min-h-20 sm:col-span-2"} />
           <label className="flex items-center gap-2 text-sm sm:col-span-2">
             <input type="checkbox" name="sendSms" />

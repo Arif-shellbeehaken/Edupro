@@ -6,7 +6,7 @@ import { newRequestId } from "@/lib/logger";
 /** GET /api/v1/attendance?date=YYYY-MM-DD */
 export async function GET(req: Request) {
   const requestId = req.headers.get("x-request-id") || newRequestId();
-  const { error, session } = await requireApiSession();
+  const { error, session } = await requireApiSession(req);
   if (error || !session?.user.tenantId) {
     return error || NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

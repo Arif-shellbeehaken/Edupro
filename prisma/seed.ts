@@ -537,6 +537,63 @@ async function main() {
     console.log("⚠️ Invoice skip", e instanceof Error ? e.message : e);
   }
 
+
+  // ── Seed V3: LMS Meet link + sample API-facing notice ─────────
+  try {
+    const matCount = await prisma.lmsMaterial.count({ where: { tenantId: tenant.id } });
+    if (matCount === 0) {
+      await prisma.lmsMaterial.create({
+        data: {
+          tenantId: tenant.id,
+          title: "Demo Google Meet class",
+          className: "Class 6",
+          subject: "General",
+          materialType: "MEET",
+          url: "https://meet.google.com/lookup/edupro-demo",
+          body: "Demo virtual class link — replace with real Meet/Zoom URL",
+          isPublished: true,
+        },
+      });
+      await prisma.lmsMaterial.create({
+        data: {
+          tenantId: tenant.id,
+          title: "Zoom revision session",
+          className: "Hifz",
+          subject: "Quran",
+          materialType: "ZOOM",
+          url: "https://zoom.us/j/00000000000",
+          body: "Demo Zoom link",
+          isPublished: true,
+        },
+      });
+      console.log("✅ LMS Meet/Zoom demo materials (Seed V3)");
+    }
+  } catch (e) {
+    console.log("⚠️ LMS seed skip", e instanceof Error ? e.message : e);
+  }
+
+  try {
+    const leadCount = await prisma.admissionLead.count({ where: { tenantId: tenant.id } });
+    if (leadCount === 0) {
+      await prisma.admissionLead.create({
+        data: {
+          tenantId: tenant.id,
+          applicantName: "Demo Applicant",
+          phone: "01700000099",
+          applyingClass: "Class 6",
+          status: "NEW",
+          source: "WEBSITE",
+          meritScore: 75,
+        },
+      });
+      console.log("✅ Demo admission lead (Seed V3)");
+    }
+  } catch (e) {
+    console.log("⚠️ Lead seed skip", e instanceof Error ? e.message : e);
+  }
+
+  console.log("API key (optional): set API_KEY + API_KEY_TENANT_ID=" + tenant.id);
+
   console.log("\n🎉 Seed completed successfully!");
   console.log("────────────────────────────────────");
   console.log("Super Admin  → super@edupro.app / Super@1234");
