@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { TableScroll } from "@/components/ui/table-scroll";
 import { Button } from "@/components/ui/button";
 
@@ -115,9 +116,7 @@ export default async function AuditPage({
             </CardHeader>
             <CardContent className="space-y-2">
               {logs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  মিল পাওয়া যায়নি / লগ খালি
-                </p>
+                <EmptyState title="অডিট লগ খালি" description="অ্যাকশন হলে ট্রেইল এখানে জমবে" />
               ) : (
                 logs.map((l) => (
                   <div

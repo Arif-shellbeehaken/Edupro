@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { LeaveForms } from "./leave-forms";
 
 const typeLabel: Record<string, string> = {
@@ -85,7 +86,7 @@ export default async function LeavePage() {
             </CardHeader>
             <CardContent>
               {leaves.length === 0 ? (
-                <p className="text-sm text-muted-foreground">কোনো আবেদন নেই</p>
+                <EmptyState title="কোনো ছুটির আবেদন নেই" description="স্টাফ আবেদন এখানে আসবে" />
               ) : (
                 <div className="space-y-3">
                   {leaves.map((lv) => (

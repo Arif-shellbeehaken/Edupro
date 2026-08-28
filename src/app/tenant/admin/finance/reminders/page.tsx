@@ -6,6 +6,7 @@ import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { financeRepository } from "@/infrastructure/database/repositories/finance-repository";
 import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeeReminderForm } from "./reminder-form";
 
@@ -105,7 +106,7 @@ export default async function FeeRemindersPage() {
             </CardHeader>
             <CardContent>
               {rows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">কোনো ওভারডিউ নেই</p>
+                <EmptyState title="কোনো ওভারডিউ নেই" description="বকেয়া চালান থাকলে এখানে দেখাবে" />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">

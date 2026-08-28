@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { ExamForms } from "./exam-forms";
 
@@ -158,7 +159,7 @@ export default async function ExamsPage() {
             </CardHeader>
             <CardContent>
               {exams.length === 0 ? (
-                <p className="text-sm text-muted-foreground">এখনো কোনো পরীক্ষা নেই</p>
+                <EmptyState title="কোনো পরীক্ষা নেই" description="নতুন পরীক্ষা তৈরি করুন" />
               ) : (
                 <div className="space-y-3">
                   {exams.map((e) => (

@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import { IdCardNotifyForm } from "./notify-form";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -209,7 +210,7 @@ export default async function StudentIdCardsPage({
       </div>
 
       {list.length === 0 && (
-        <p className="text-sm text-muted-foreground">কোনো শিক্ষার্থী নেই</p>
+        <EmptyState title="কোনো শিক্ষার্থী নেই" />
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { financeRepository } from "@/infrastructure/database/repositories/finance-repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function bdt(n: number) {
   return `৳${n.toLocaleString("en-BD")}`;
@@ -167,7 +168,7 @@ export default async function LedgerPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {recentPayments.length === 0 && (
-            <p className="text-sm text-muted-foreground">এখনো কোনো পেমেন্ট নেই</p>
+            <EmptyState title="এখনো কোনো পেমেন্ট নেই" />
           )}
           {recentPayments.map((p) => (
             <div

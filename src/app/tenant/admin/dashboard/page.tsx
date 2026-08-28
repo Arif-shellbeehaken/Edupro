@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
 function bdt(n: number) {
@@ -264,9 +265,7 @@ export default async function TenantAdminDashboard() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {recentAudit.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    এখনো অ্যাক্টিভিটি নেই
-                  </p>
+                  <EmptyState title="এখনো অ্যাক্টিভিটি নেই" />
                 ) : (
                   recentAudit.map((a) => (
                     <div
@@ -302,7 +301,7 @@ export default async function TenantAdminDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {recentLeads.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">কোনো লিড নেই</p>
+                    <EmptyState title="কোনো লিড নেই" />
                   ) : (
                     recentLeads.map((l) => (
                       <div

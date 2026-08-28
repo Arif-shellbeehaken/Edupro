@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { CommunicationForms } from "./communication-forms";
 
 export default async function CommunicationPage() {
@@ -91,7 +92,7 @@ export default async function CommunicationPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {messages.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">কোনো মেসেজ নেই</p>
+                  <EmptyState title="কোনো মেসেজ নেই" description="SMS/নোটিফিকেশন লগ এখানে দেখাবে" />
                 ) : (
                   messages.slice(0, 15).map((m) => (
                     <div
@@ -121,7 +122,7 @@ export default async function CommunicationPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {notices.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">কোনো নোটিশ নেই</p>
+                  <EmptyState title="কোনো নোটিশ নেই" description="প্রথম নোটিশ প্রকাশ করুন" />
                 ) : (
                   notices.map((n) => (
                     <div key={n.id} className="rounded-lg border px-3 py-2 text-sm">

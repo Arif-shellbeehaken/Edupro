@@ -8,6 +8,7 @@ import { studentRepository } from "@/infrastructure/database/repositories/studen
 import { computeGpa, letterGrade } from "@/lib/grading";
 import { PrintButton } from "./print-button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function MarksheetPage({
   searchParams,
@@ -86,7 +87,7 @@ export default async function MarksheetPage({
       </div>
 
       {ranked.length === 0 && (
-        <p className="text-sm text-muted-foreground">এই পরীক্ষায় কোনো মার্ক নেই</p>
+        <EmptyState title="এই পরীক্ষায় কোনো মার্ক নেই" />
       )}
 
       {ranked.map((row, idx) => {

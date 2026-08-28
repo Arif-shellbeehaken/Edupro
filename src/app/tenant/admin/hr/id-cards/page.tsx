@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/infrastructure/auth/auth";
@@ -171,7 +172,7 @@ export default async function StaffIdCardsPage({
       </div>
 
       {list.length === 0 && (
-        <p className="text-sm text-muted-foreground">কোনো সক্রিয় স্টাফ নেই</p>
+        <EmptyState title="কোনো সক্রিয় স্টাফ নেই" />
       )}
     </div>
   );

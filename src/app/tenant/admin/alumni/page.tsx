@@ -3,6 +3,7 @@ import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { auth } from "@/infrastructure/auth/auth";
 import { ModuleForm } from "./forms";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function AlumniPage() {
   const session = await auth();
@@ -24,7 +25,9 @@ export default async function AlumniPage() {
       </div>
       <ModuleForm />
       <div className="space-y-2">
-        {rows.length === 0 && <p className="text-sm text-muted-foreground">কোনো রেকর্ড নেই</p>}
+        {rows.length === 0 && (
+            <EmptyState title="কোনো অ্যালামনাই নেই" description="পাশ করা শিক্ষার্থী যোগ করুন" />
+          )}
         {rows.map((a) => (
           <Card key={a.id}>
             <CardContent className="flex flex-wrap items-center justify-between gap-2 py-3">

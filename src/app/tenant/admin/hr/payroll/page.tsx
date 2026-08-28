@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PayrollForms } from "./payroll-forms";
 
 const MONTHS_BN = [
@@ -116,7 +117,7 @@ export default async function PayrollPage() {
             </CardHeader>
             <CardContent>
               {runs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">এখনো কোনো পে-রোল রান নেই</p>
+                <EmptyState title="কোনো পে-রোল রান নেই" description="মাসিক পে-রোল জেনারেট করুন" />
               ) : (
                 <div className="space-y-3">
                   {runs.map((run) => {

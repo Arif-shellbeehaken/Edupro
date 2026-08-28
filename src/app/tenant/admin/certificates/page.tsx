@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { CertificateForms } from "./certificate-forms";
 
@@ -82,7 +83,7 @@ export default async function CertificatesPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {certs.length === 0 ? (
-                <p className="text-sm text-muted-foreground">এখনো কোনো সার্টিফিকেট নেই</p>
+                <EmptyState title="কোনো সার্টিফিকেট নেই" description="মার্কশিট/টিসি ইস্যু করুন" />
               ) : (
                 certs.map((c) => (
                   <div

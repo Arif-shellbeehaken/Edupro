@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { MessagingForm } from "./form";
 
 export default async function MessagingPage({
@@ -43,7 +44,7 @@ export default async function MessagingPage({
           <CardContent className="space-y-3">
             <div className="max-h-80 space-y-2 overflow-y-auto rounded-lg border p-3">
               {messages.length === 0 ? (
-                <p className="text-sm text-muted-foreground">মেসেজ নেই</p>
+                <EmptyState title="মেসেজ নেই" description="অভিভাবক-স্টাফ মেসেজ এখানে" />
               ) : (
                 messages.map((m) => (
                   <div key={m.id} className="text-sm">

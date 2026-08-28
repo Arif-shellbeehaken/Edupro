@@ -7,6 +7,7 @@ import { extendedRepository } from "@/infrastructure/database/repositories/exten
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { GrievanceForms } from "./grievance-forms";
 
 export default async function GrievancePage() {
@@ -38,7 +39,9 @@ export default async function GrievancePage() {
           <Card>
             <CardHeader><CardTitle>সব অভিযোগ</CardTitle></CardHeader>
             <CardContent className="space-y-2">
-              {items.length === 0 ? <p className="text-sm text-muted-foreground">কোনো অভিযোগ নেই</p> : items.map((g) => (
+              {items.length === 0 ? (
+                <EmptyState title="কোনো অভিযোগ নেই" description="অভিযোগ এলে এখানে ট্র্যাক হবে" />
+              ) : items.map((g) => (
                 <div key={g.id} className="rounded-lg border px-3 py-2 text-sm">
                   <div className="flex justify-between">
                     <p className="font-medium">{g.subject}</p>

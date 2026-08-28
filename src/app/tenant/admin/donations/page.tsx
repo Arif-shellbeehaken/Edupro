@@ -6,6 +6,7 @@ import { extendedRepository } from "@/infrastructure/database/repositories/exten
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { DonationForms } from "./donation-forms";
 
 export default async function DonationsPage() {
@@ -57,7 +58,9 @@ export default async function DonationsPage() {
           <Card>
             <CardHeader><CardTitle>রসিদ তালিকা</CardTitle></CardHeader>
             <CardContent className="space-y-2">
-              {donations.length === 0 ? <p className="text-sm text-muted-foreground">কোনো ডোনেশন নেই</p> : donations.map((d) => (
+              {donations.length === 0 ? (
+                <EmptyState title="কোনো ডোনেশন নেই" description="যাকাত/অনুদান রেকর্ড এখানে দেখাবে" />
+              ) : donations.map((d) => (
                 <div key={d.id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
                   <div>
                     <p className="font-medium">{d.donorName} · ৳{d.amount.toLocaleString()}</p>

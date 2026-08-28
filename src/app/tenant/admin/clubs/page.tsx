@@ -5,6 +5,7 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { ModuleForm } from "./forms";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function ClubsPage() {
   const session = await auth();
@@ -64,7 +65,7 @@ export default async function ClubsPage() {
       />
       <div className="space-y-2">
         {rows.length === 0 && (
-          <p className="text-sm text-muted-foreground">কোনো ক্লাব নেই</p>
+          <EmptyState title="কোনো ক্লাব নেই" description="স্পোর্টস/এক্সট্রাকারিকুলার ক্লাব যোগ করুন" />
         )}
         {rows.map((c) => (
           <Card key={c.id}>

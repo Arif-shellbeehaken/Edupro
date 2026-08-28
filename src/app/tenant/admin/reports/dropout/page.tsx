@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { DropoutForm } from "./form";
 
 export default async function DropoutPage() {
@@ -45,7 +46,7 @@ export default async function DropoutPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {flags.length === 0 ? (
-              <p className="text-sm text-muted-foreground">ফ্ল্যাগ নেই</p>
+              <EmptyState title="ঝুঁকি ফ্ল্যাগ নেই" description="হিউরিস্টিক চালিয়ে ফ্ল্যাগ তৈরি করুন" />
             ) : (
               flags.map((f) => (
                 <div

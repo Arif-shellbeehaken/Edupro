@@ -9,6 +9,7 @@ import {
 } from "@/infrastructure/database/repositories/namaz-repository";
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { NamazForm } from "./namaz-form";
 
 export default async function NamazPage() {
@@ -89,7 +90,7 @@ export default async function NamazPage() {
             </CardHeader>
             <CardContent>
               {students.length === 0 ? (
-                <p className="text-sm text-muted-foreground">শিক্ষার্থী নেই</p>
+                <EmptyState title="শিক্ষার্থী নেই" />
               ) : (
                 <NamazForm
                   students={students}

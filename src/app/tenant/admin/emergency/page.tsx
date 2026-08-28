@@ -8,6 +8,7 @@ import {
 } from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
 export default async function EmergencyPage() {
@@ -126,7 +127,7 @@ export default async function EmergencyPage() {
 
       <div className="space-y-2">
         {rows.length === 0 && (
-          <p className="text-sm text-muted-foreground">কোনো অ্যালার্ট নেই</p>
+          <EmptyState title="কোনো অ্যালার্ট নেই" description="ইমার্জেন্সি ব্রডকাস্ট এখানে লগ হবে" />
         )}
         {rows.map((r) => (
           <Card key={r.id}>

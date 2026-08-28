@@ -6,6 +6,7 @@ import { extendedRepository } from "@/infrastructure/database/repositories/exten
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { HomeworkForm } from "./homework-form";
 
 export default async function HomeworkPage() {
@@ -65,9 +66,7 @@ export default async function HomeworkPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {items.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  কোনো হোমওয়ার্ক নেই
-                </p>
+                <EmptyState title="কোনো হোমওয়ার্ক নেই" />
               ) : (
                 items.map((h) => (
                   <div
