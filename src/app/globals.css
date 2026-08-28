@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 /**
- * Edupro design tokens — single source of truth for light/dark surfaces.
- * Feature UI must consume these (bg-background, text-primary, border-border)
- * instead of ad-hoc emerald/zinc hex.
+ * Edupro design system — production tokens (light + class-based dark).
+ * Prefer semantic classes: bg-background, text-foreground, border-border, bg-primary.
  */
+
 :root {
   --background: #f8faf9;
   --foreground: #0f172a;
@@ -25,6 +25,33 @@
   --radius: 0.625rem;
   --sidebar: #ffffff;
   --sidebar-border: #e2e8f0;
+  --success: #059669;
+  --warning: #d97706;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #f1f5f9;
+  --card: #111827;
+  --card-foreground: #f1f5f9;
+  --primary: #10b981;
+  --primary-foreground: #022c22;
+  --secondary: #064e3b;
+  --secondary-foreground: #d1fae5;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #064e3b;
+  --accent-foreground: #a7f3d0;
+  --destructive: #ef4444;
+  --destructive-foreground: #fef2f2;
+  --border: #1f2937;
+  --ring: #34d399;
+  --sidebar: #0f172a;
+  --sidebar-border: #1f2937;
+  --success: #34d399;
+  --warning: #fbbf24;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -54,29 +81,6 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0b1220;
-    --foreground: #f1f5f9;
-    --card: #111827;
-    --card-foreground: #f1f5f9;
-    --primary: #10b981;
-    --primary-foreground: #022c22;
-    --secondary: #064e3b;
-    --secondary-foreground: #d1fae5;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --accent: #064e3b;
-    --accent-foreground: #a7f3d0;
-    --destructive: #ef4444;
-    --destructive-foreground: #fef2f2;
-    --border: #1f2937;
-    --ring: #34d399;
-    --sidebar: #0f172a;
-    --sidebar-border: #1f2937;
-  }
-}
-
 @layer base {
   * {
     border-color: var(--border);
@@ -85,16 +89,77 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
   }
 
   body {
     background: var(--background);
     color: var(--foreground);
+    min-height: 100dvh;
+  }
+
+  /* Touch targets */
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Form controls — consistent mobile sizing */
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* prevent iOS zoom */
+  }
+
+  @media (min-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: inherit;
+    }
+  }
+}
+
+@layer utilities {
+  .page-pad {
+    @apply space-y-4 p-4 sm:space-y-6 sm:p-6;
+  }
+
+  .container-app {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .table-responsive {
+    @apply w-full overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card-interactive {
+    @apply transition-shadow hover:shadow-md;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
@@ -108,27 +173,14 @@
 }
 
 @media print {
-  aside, header, nav, .print\\:hidden {
+  aside,
+  header,
+  nav,
+  .print\:hidden {
     display: none !important;
   }
   body {
     background: white !important;
+    color: black !important;
   }
-}
-
-
-/* Dark mode (class strategy) */
-.dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --border: 240 3.7% 15.9%;
-  color-scheme: dark;
-}
-.dark body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
 }

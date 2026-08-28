@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import {
   GraduationCap,
   Building2,
@@ -87,38 +88,7 @@ const plans = [
 export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white">
-              <Mosque className="h-5 w-5" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">Edupro</span>
-          </div>
-          <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              ফিচার
-            </a>
-            <a href="#modules" className="text-muted-foreground hover:text-foreground transition-colors">
-              মডিউল
-            </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              প্রাইসিং
-            </a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link href="/login">লগইন</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/login">
-                ফ্রি ট্রায়াল <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -128,11 +98,11 @@ export default function HomePage() {
             <Badge variant="success" className="mb-6">
               বাংলাদেশের জন্য বিশেষভাবে ডিজাইন করা
             </Badge>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               স্কুল, কলেজ ও মাদ্রাসার{" "}
               <span className="text-emerald-600">একক প্ল্যাটফর্ম</span>
             </h1>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground sm:text-xl">
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
               প্রোডাকশন-গ্রেড মাল্টি-টেন্যান্ট SaaS। হিফজ ট্র্যাকিং, BMEB/BEFAQ, bKash/Nagad,
               অ্যাটেনডেন্স, ফি ম্যানেজমেন্ট ও আরও অনেক কিছু — এক জায়গায়।
             </p>
@@ -261,7 +231,7 @@ export default function HomePage() {
               মাসিক বা বাৎসরিক — যা আপনার সুবিধা। ১৪ দিন ফ্রি ট্রায়াল।
             </p>
           </div>
-          <div className="mt-16 grid gap-8 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 sm:mt-16 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
             {plans.map((plan) => (
               <Card
                 key={plan.name}

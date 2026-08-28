@@ -48,7 +48,7 @@ export default function LoginPage() {
   }, [loginState, otpState, router]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-background px-4 dark:from-emerald-950/20">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-background px-4 py-8 dark:from-emerald-950/20">
       <div className="mb-8 flex items-center gap-2">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600 text-white">
           <Mosque className="h-5 w-5" />
@@ -56,7 +56,7 @@ export default function LoginPage() {
         <span className="text-2xl font-bold">Edupro</span>
       </div>
 
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-lg border-border/60">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
             {requires2FA ? "দুই-ধাপ যাচাই" : "লগইন করুন"}

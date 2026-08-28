@@ -2,8 +2,7 @@ import type { ReactNode } from "react";
 import { Sidebar, type SidebarUser } from "@/components/layout/sidebar";
 
 /**
- * Production app chrome — sidebar + scrollable main.
- * Used by route-group layouts so feature pages stay content-only.
+ * Production app chrome — responsive sidebar + scrollable main.
  */
 export function AppShell({
   type,
@@ -21,7 +20,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-[100dvh] overflow-hidden bg-background">
       <Sidebar
         type={type}
         institutionName={institutionName}
@@ -38,12 +37,12 @@ export function AppShell({
 
 export function PageBody({ children }: { children: ReactNode }) {
   return (
-    <main className="flex-1 overflow-y-auto bg-background">
+    <main className="flex-1 overflow-y-auto overflow-x-hidden bg-background safe-bottom">
       {children}
     </main>
   );
 }
 
 export function PageContent({ children }: { children: ReactNode }) {
-  return <div className="space-y-6 p-4 md:p-6">{children}</div>;
+  return <div className="page-pad">{children}</div>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Bell, ChevronDown } from "lucide-react";
+import { LogOut, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -36,18 +36,24 @@ export function AppHeader({
   isSuperAdmin,
 }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-card/80 px-6 backdrop-blur">
-      <div>
-        <h1 className="text-lg font-semibold">{title}</h1>
+    <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between gap-2 border-b border-border bg-card/90 px-3 backdrop-blur-md sm:min-h-16 sm:px-6">
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate text-base font-semibold sm:text-lg">{title}</h1>
         {subtitle && (
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
+            {subtitle}
+          </p>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
-        {isSuperAdmin && <Badge variant="success">Platform</Badge>}
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+        {isSuperAdmin && (
+          <Badge variant="success" className="hidden xs:inline-flex sm:inline-flex">
+            Platform
+          </Badge>
+        )}
         {tenantName && !isSuperAdmin && (
-          <span className="hidden text-xs text-muted-foreground sm:inline">
+          <span className="hidden max-w-[120px] truncate text-xs text-muted-foreground lg:inline">
             {tenantName}
           </span>
         )}
@@ -57,29 +63,30 @@ export function AppHeader({
         <Button
           variant="ghost"
           size="icon"
-          className="relative"
+          className="relative h-9 w-9"
           aria-label="Notifications"
         >
           <Bell className="h-4 w-4" />
         </Button>
 
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-1.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-2 py-1 sm:px-3 sm:py-1.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
             {userName.charAt(0)}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium leading-none">{userName}</p>
+            <p className="max-w-[100px] truncate text-sm font-medium leading-none">
+              {userName}
+            </p>
             <p className="text-[10px] text-muted-foreground">
               {roleLabels[userRole] ?? userRole}
             </p>
           </div>
-          <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
         </div>
 
-        <form action={logoutAction}>
+        <form action={logoutAction} className="hidden sm:block">
           <Button type="submit" variant="outline" size="sm">
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">লগআউট</span>
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="ml-1">লগআউট</span>
           </Button>
         </form>
       </div>

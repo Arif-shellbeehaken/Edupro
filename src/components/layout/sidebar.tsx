@@ -268,7 +268,7 @@ export function Sidebar({
       )}
     <aside
       className={
-        "fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-border bg-card transition-transform duration-200 md:static md:z-auto md:translate-x-0 " +
+        "fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(18rem,88vw)] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 md:static md:z-auto md:w-64 md:shadow-none md:translate-x-0 " +
         (mobileOpen ? "translate-x-0" : "-translate-x-full")
       }
       style={
@@ -365,8 +365,9 @@ export function Sidebar({
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setMobileOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors active:scale-[0.99]",
                     isActive
                       ? "font-semibold"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
