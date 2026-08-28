@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:edupro_mobile/core/error/exception_mapper.dart';
 import 'package:edupro_mobile/core/error/failures.dart';
+import 'package:edupro_mobile/shared/widgets/error_view.dart';
 
 extension AsyncValueUiX<T> on AsyncValue<T> {
-  String? get errorMessage {
+  Failure? get asFailure {
     if (!hasError) return null;
-    final e = error;
-    if (e is Failure) return e.message;
-    return e?.toString() ?? 'ত্রুটি';
+    return ExceptionMapper.from(error!);
   }
+
+  String? get errorMessage => asFailure?.message;
 }
 
-/// Shared loading / error / data renderer for Riverpod AsyncValue.
 class AsyncValueWidget<T> extends StatelessWidget {
   const AsyncValueWidget({
     super.key,
@@ -38,28 +39,8 @@ class AsyncValueWidget<T> extends StatelessWidget {
       loading: () =>
           loading ?? const Center(child: CircularProgressIndicator()),
       error: (e, _) {
-        final msg = e is Failure ? e.message : 'লোড ব্যর্থ';
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline,
-                    size: 40, color: Theme.of(context).colorScheme.error),
-                const SizedBox(height: 12),
-                Text(msg, textAlign: TextAlign.center),
-                if (onRetry != null) ...[
-                  const SizedBox(height: 16),
-                  FilledButton.tonal(
-                    onPressed: onRetry,
-                    child: const Text('আবার চেষ্টা'),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
+        final failure = ExceptionMapper.from(e);
+        return ErrorView(failure: failure, onRetry: onRetry);
       },
     );
   }

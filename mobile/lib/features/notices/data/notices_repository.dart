@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:edupro_mobile/core/error/error_logger.dart';
+import 'package:edupro_mobile/core/error/exception_mapper.dart';
 import 'package:edupro_mobile/core/error/failures.dart';
 import 'package:edupro_mobile/core/network/api_client.dart';
 
@@ -37,9 +39,18 @@ class NoticesRepository {
       return list
           .map((e) => NoticeDto.fromJson(e as Map<String, dynamic>))
           .toList();
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) throw const AuthFailure();
-      throw const ServerFailure();
+    } on Failure {
+      rethrow;
+    } on DioException catch (e, st) {
+      final f = e.error is Failure
+          ? e.error as Failure
+          : ExceptionMapper.fromDio(e);
+      ErrorLogger.log(f, st, 'NoticesRepository.list');
+      if (f is AuthFailure) await _api.clearSessionOnUnauthorized(f);
+      throw f;
+    } catch (e, st) {
+      ErrorLogger.log(e, st, 'NoticesRepository.list');
+      throwMapped(e, st);
     }
   }
 }

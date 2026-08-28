@@ -56,3 +56,17 @@ flutter build ios --release --dart-define=API_BASE_URL=https://api.edupro.app
 | `themeModeProvider` | `StateNotifier` | Persisted theme |
 
 DI lives in `lib/core/di/providers.dart`. UI uses `AsyncValueWidget` for loading/error/retry.
+
+
+## Error handling
+
+| Layer | Component |
+|-------|-----------|
+| Domain | `Failure` hierarchy (Network, Auth, Forbidden, NotFound, Validation, RateLimit, Server) |
+| Mapping | `ExceptionMapper.fromDio` / `from` |
+| HTTP | Dio interceptor attaches `Failure` on `DioException.error` |
+| UI | `ErrorView` + `AsyncValueWidget` + `showAppError` snackbar |
+| Logging | `ErrorLogger` (debug; swap for Sentry/Crashlytics) |
+| Global | `FlutterError.onError` + `PlatformDispatcher.onError` |
+
+Repositories catch `DioException`, rethrow typed `Failure`. Auth 401 clears secure token.

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:edupro_mobile/core/di/providers.dart';
+import 'package:edupro_mobile/core/error/error_logger.dart';
 import 'package:edupro_mobile/features/auth/domain/user_entity.dart';
 
 /// Session user — `null` means logged out.
@@ -30,6 +31,7 @@ class AuthController extends AsyncNotifier<UserEntity?> {
           );
     });
     if (result.hasError) {
+      ErrorLogger.log(result.error!, result.stackTrace, 'AuthController.login');
       state = const AsyncValue.data(null);
       throw result.error!;
     }
