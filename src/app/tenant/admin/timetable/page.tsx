@@ -1,3 +1,4 @@
+import { SubstituteForm } from "./substitute-form";
 import { PublishDayForm } from "./publish-day-form";
 import { redirect } from "next/navigation";
 import { Calendar } from "lucide-react";
@@ -135,6 +136,10 @@ export default async function TimetablePage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+              <div className="rounded-xl border bg-card p-4">
+          <h2 className="mb-2 text-sm font-semibold">সাবস্টিটিউট টিচার</h2>
+          <SubstituteForm />
         </div>
       </main>
     </>

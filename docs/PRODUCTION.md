@@ -244,3 +244,15 @@ Drain LB connections before kill. Prisma disconnects on process exit; long-runni
 - `checks.readReplica` — configured | primary-only
 - `checks.sms` — provider name
 - `requestId` — correlation id
+
+## REST API v1 (mobile / integrations)
+
+Authenticated with same session cookie (or future Bearer token).
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/students?status=ACTIVE&take=50` | Student list |
+| GET | `/api/v1/attendance?date=YYYY-MM-DD` | Daily attendance |
+| GET | `/api/v1/notices` | Published notices |
+
+All responses include `X-Request-Id` and JSON `{ data, meta }`.

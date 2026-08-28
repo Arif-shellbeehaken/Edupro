@@ -95,7 +95,7 @@ See `docs/PRODUCTION.md` for production deploy and `docs/SMS_CATALOG.md` for SMS
 | Docker + CI (tsc, audit, build) | Done |
 | Structured logs + read replica hook | Done |
 
-**Ops docs:** `docs/PRODUCTION.md` · `docs/SECURITY.md`
+**Ops docs:** `docs/PRODUCTION.md` · `docs/SECURITY.md` · `docs/STAGING.md` · `docs/COVERAGE.md`
 
 ## 🎯 Vision
 

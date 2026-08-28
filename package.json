@@ -19,7 +19,9 @@
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/smoke.mjs",
     "audit:deps": "npm audit --audit-level=high",
-    "healthcheck": "node scripts/smoke.mjs"
+    "healthcheck": "node scripts/smoke.mjs",
+    "postdeploy": "node scripts/post-deploy-check.mjs",
+    "staging:check": "node scripts/post-deploy-check.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",

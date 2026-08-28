@@ -77,6 +77,14 @@ export default async function SettingsPage() {
                 {tenant.status}
               </Badge>
               <Badge variant="secondary">Slug: {tenant.slug}</Badge>
+              <a
+                href={`/s/${tenant.slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-medium text-emerald-700 underline"
+              >
+                পাবলিক সাইট খুলুন
+              </a>
               <Badge variant="secondary">Type: {tenant.type}</Badge>
             </div>
           )}

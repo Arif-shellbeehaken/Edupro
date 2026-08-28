@@ -85,6 +85,7 @@ const tenantAdminSections: NavSection[] = [
       { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
       { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
       { title: "মেধাতালিকা", href: "/tenant/admin/admission/merit", icon: ClipboardList },
+      { title: "অনলাইন MCQ", href: "/tenant/admin/exams/mcq", icon: FileText },
       { title: "সিবলিং/ডকুমেন্ট", href: "/tenant/admin/students/siblings", icon: Users },
       { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
       { title: "ঝরে পড়ার ঝুঁকি", href: "/tenant/admin/reports/dropout", icon: BarChart3 },
