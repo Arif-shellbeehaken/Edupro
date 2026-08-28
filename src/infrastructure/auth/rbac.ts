@@ -96,7 +96,8 @@ export function getDashboardPath(role: string, isSuperAdmin: boolean): string {
     case UserRole.TEACHER:
     case UserRole.HIFZ_TEACHER:
     case UserRole.MUHADDIS:
-      return "/tenant/admin/dashboard"; // later: /tenant/teacher/dashboard
+    case UserRole.MUHADDIS:
+      return "/tenant/teacher";
     case UserRole.PARENT:
       return "/tenant/admin/dashboard"; // later: /tenant/parent/dashboard
     case UserRole.STUDENT:

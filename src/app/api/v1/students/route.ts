@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/infrastructure/database/prisma";
 import { requireApiSession } from "@/lib/api-auth";
 import { newRequestId, logger } from "@/lib/logger";
+import { enforceApiRateLimit } from "@/lib/api-rate-limit";
 
 /**
  * GET /api/v1/students?status=ACTIVE&take=50
  * REST surface for mobile / integrations.
  */
 export async function GET(req: Request) {
+  const limited = await enforceApiRateLimit(req);
+  if (limited) return limited;
   const requestId = req.headers.get("x-request-id") || newRequestId();
   const { error, session } = await requireApiSession(req);
   if (error || !session) return error!;

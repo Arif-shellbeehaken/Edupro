@@ -82,6 +82,7 @@ const tenantAdminSections: NavSection[] = [
   {
     label: "মূল",
     items: [
+      { title: "শিক্ষক পোর্টাল", href: "/tenant/teacher", icon: GraduationCap },
       { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
       { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
       { title: "মেধাতালিকা", href: "/tenant/admin/admission/merit", icon: ClipboardList },
