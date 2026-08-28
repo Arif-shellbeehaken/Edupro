@@ -10,7 +10,7 @@ import 'package:edupro_mobile/features/profile/presentation/profile_page.dart';
 import 'package:edupro_mobile/features/students/presentation/students_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authStateProvider);
+  final auth = ref.watch(authControllerProvider);
 
   return GoRouter(
     initialLocation: '/home',
@@ -66,7 +66,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 class _AuthRefresh extends ChangeNotifier {
   _AuthRefresh(this._ref) {
-    _ref.listen(authStateProvider, (_, __) => notifyListeners());
+    _ref.listen(authControllerProvider, (_, __) => notifyListeners());
   }
   final Ref _ref;
 }

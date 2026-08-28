@@ -1,56 +1,43 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:edupro_mobile/core/network/api_client.dart';
-import 'package:edupro_mobile/core/storage/token_storage.dart';
-import 'package:edupro_mobile/features/auth/data/auth_repository.dart';
+import 'package:edupro_mobile/core/di/providers.dart';
 import 'package:edupro_mobile/features/auth/domain/user_entity.dart';
 
-final tokenStorageProvider = Provider((ref) => TokenStorage());
+/// Session user — `null` means logged out.
+final authControllerProvider =
+    AsyncNotifierProvider<AuthController, UserEntity?>(AuthController.new);
 
-final apiClientProvider = Provider(
-  (ref) => ApiClient(ref.watch(tokenStorageProvider)),
-);
+/// Convenience selector for widgets that only need the user object.
+final currentUserProvider = Provider<UserEntity?>((ref) {
+  return ref.watch(authControllerProvider).valueOrNull;
+});
 
-final authRepositoryProvider = Provider(
-  (ref) => AuthRepository(
-    ref.watch(apiClientProvider),
-    ref.watch(tokenStorageProvider),
-  ),
-);
+final isAuthLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(authControllerProvider).isLoading;
+});
 
-final authStateProvider =
-    StateNotifierProvider<AuthNotifier, AsyncValue<UserEntity?>>(
-  (ref) => AuthNotifier(ref.watch(authRepositoryProvider)),
-);
-
-class AuthNotifier extends StateNotifier<AsyncValue<UserEntity?>> {
-  AuthNotifier(this._repo) : super(const AsyncValue.loading()) {
-    _bootstrap();
-  }
-
-  final AuthRepository _repo;
-
-  Future<void> _bootstrap() async {
-    try {
-      final user = await _repo.restoreSession();
-      state = AsyncValue.data(user);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+class AuthController extends AsyncNotifier<UserEntity?> {
+  @override
+  Future<UserEntity?> build() {
+    return ref.read(authRepositoryProvider).restoreSession();
   }
 
   Future<void> login(String email, String password) async {
     state = const AsyncValue.loading();
-    try {
-      final user = await _repo.login(email: email, password: password);
-      state = AsyncValue.data(user);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      rethrow;
+    final result = await AsyncValue.guard(() {
+      return ref.read(authRepositoryProvider).login(
+            email: email,
+            password: password,
+          );
+    });
+    if (result.hasError) {
+      state = const AsyncValue.data(null);
+      throw result.error!;
     }
+    state = result;
   }
 
   Future<void> logout() async {
-    await _repo.logout();
+    await ref.read(authRepositoryProvider).logout();
     state = const AsyncValue.data(null);
   }
 }

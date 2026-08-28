@@ -16,7 +16,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _email = TextEditingController(text: 'admin@demo-madrasah.edu.bd');
   final _password = TextEditingController();
   bool _obscure = true;
-  bool _loading = false;
+  bool _submitting = false;
   String? _error;
 
   @override
@@ -29,11 +29,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() {
-      _loading = true;
+      _submitting = true;
       _error = null;
     });
     try {
-      await ref.read(authStateProvider.notifier).login(
+      await ref.read(authControllerProvider.notifier).login(
             _email.text.trim(),
             _password.text,
           );
@@ -43,7 +43,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         _error = e is Failure ? e.message : 'লগইন ব্যর্থ';
       });
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
@@ -90,9 +90,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'ইমেইল দিন';
-                        }
+                        if (v == null || v.trim().isEmpty) return 'ইমেইল দিন';
                         if (!v.contains('@')) return 'সঠিক ইমেইল দিন';
                         return null;
                       },
@@ -130,8 +128,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ],
                     const SizedBox(height: 20),
                     FilledButton(
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
+                      onPressed: _submitting ? null : _submit,
+                      child: _submitting
                           ? const SizedBox(
                               height: 22,
                               width: 22,

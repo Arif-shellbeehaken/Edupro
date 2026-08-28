@@ -51,7 +51,7 @@ class HomeDashboardPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authStateProvider).valueOrNull;
+    final user = ref.watch(currentUserProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -61,7 +61,7 @@ class HomeDashboardPage extends ConsumerWidget {
           IconButton(
             tooltip: 'লগআউট',
             onPressed: () async {
-              await ref.read(authStateProvider.notifier).logout();
+              await ref.read(authControllerProvider.notifier).logout();
               if (context.mounted) context.go('/login');
             },
             icon: const Icon(Icons.logout),

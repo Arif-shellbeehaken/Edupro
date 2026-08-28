@@ -40,3 +40,19 @@ iOS simulator → `http://127.0.0.1:3000`
 flutter build apk --release --dart-define=API_BASE_URL=https://api.edupro.app
 flutter build ios --release --dart-define=API_BASE_URL=https://api.edupro.app
 ```
+
+
+## State management (Riverpod)
+
+| Provider | Type | Role |
+|----------|------|------|
+| `authControllerProvider` | `AsyncNotifier<UserEntity?>` | Session bootstrap, login, logout |
+| `currentUserProvider` | `Provider` | Derived user |
+| `studentsControllerProvider` | `AutoDisposeAsyncNotifier` | Student list (status filter) |
+| `studentSearchProvider` | `StateProvider` | Client search |
+| `filteredStudentsProvider` | `Provider` | Derived filtered list |
+| `attendanceControllerProvider` | `AutoDisposeAsyncNotifier` | Attendance by date |
+| `noticesControllerProvider` | `AutoDisposeAsyncNotifier` | Notices |
+| `themeModeProvider` | `StateNotifier` | Persisted theme |
+
+DI lives in `lib/core/di/providers.dart`. UI uses `AsyncValueWidget` for loading/error/retry.
