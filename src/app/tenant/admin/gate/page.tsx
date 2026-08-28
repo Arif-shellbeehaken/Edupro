@@ -6,6 +6,7 @@ import { extendedRepository } from "@/infrastructure/database/repositories/exten
 import { AppHeader } from "@/components/layout/app-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { GateForms } from "./gate-forms";
 
 export default async function GatePage() {
@@ -36,7 +37,13 @@ export default async function GatePage() {
           <Card>
             <CardHeader><CardTitle>লগ</CardTitle></CardHeader>
             <CardContent className="space-y-2">
-              {visitors.length === 0 ? <p className="text-sm text-muted-foreground">কোনো লগ নেই</p> : visitors.map((v) => (
+              {visitors.length === 0 ? (
+                <EmptyState
+                  title="কোনো ভিজিটর লগ নেই"
+                  description="গেটে প্রবেশ/প্রস্থান রেকর্ড এখানে দেখাবে"
+                />
+              ) : (
+                visitors.map((v) => (
                 <div key={v.id} className="flex justify-between rounded-lg border px-3 py-2 text-sm">
                   <div>
                     <p className="font-medium">{v.visitorName}</p>
@@ -44,7 +51,8 @@ export default async function GatePage() {
                   </div>
                   <Badge variant={v.status === "IN" ? "warning" : "secondary"}>{v.status}</Badge>
                 </div>
-              ))}
+              ))
+              )}
             </CardContent>
           </Card>
         </div>
