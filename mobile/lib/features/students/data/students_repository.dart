@@ -1,0 +1,51 @@
+import 'package:dio/dio.dart';
+import 'package:edupro_mobile/core/error/failures.dart';
+import 'package:edupro_mobile/core/network/api_client.dart';
+
+class StudentDto {
+  StudentDto({
+    required this.studentId,
+    required this.name,
+    this.nameBn,
+    this.status,
+    this.rollNumber,
+    this.guardianPhone,
+  });
+
+  final String studentId;
+  final String name;
+  final String? nameBn;
+  final String? status;
+  final String? rollNumber;
+  final String? guardianPhone;
+
+  factory StudentDto.fromJson(Map<String, dynamic> j) => StudentDto(
+        studentId: j['studentId']?.toString() ?? '',
+        name: j['name']?.toString() ?? '',
+        nameBn: j['nameBn']?.toString(),
+        status: j['status']?.toString(),
+        rollNumber: j['rollNumber']?.toString(),
+        guardianPhone: j['guardianPhone']?.toString(),
+      );
+}
+
+class StudentsRepository {
+  StudentsRepository(this._api);
+  final ApiClient _api;
+
+  Future<List<StudentDto>> list({String status = 'ACTIVE'}) async {
+    try {
+      final res = await _api.dio.get<Map<String, dynamic>>(
+        '/api/v1/students',
+        queryParameters: {'status': status, 'take': 100},
+      );
+      final list = res.data?['data'] as List<dynamic>? ?? [];
+      return list
+          .map((e) => StudentDto.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw const AuthFailure();
+      throw const ServerFailure();
+    }
+  }
+}

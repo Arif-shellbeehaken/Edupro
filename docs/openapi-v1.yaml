@@ -11,6 +11,24 @@ security:
   - ApiKeyAuth: []
   - BearerAuth: []
 paths:
+  /auth/login:
+    post:
+      summary: Mobile/API login (JWT Bearer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: accessToken + user
+        "401":
+          description: Invalid credentials
   /students:
     get:
       summary: List students

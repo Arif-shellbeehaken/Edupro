@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/infrastructure/database/prisma";
 import { requireApiSession } from "@/lib/api-auth";
 import { newRequestId } from "@/lib/logger";
+import { enforceApiRateLimit } from "@/lib/api-rate-limit";
 
 /** GET /api/v1/notices — published notices for tenant */
 export async function GET(req: Request) {

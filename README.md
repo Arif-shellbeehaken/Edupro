@@ -315,3 +315,14 @@ Details: [`docs/architecture/STRUCTURE.md`](docs/architecture/STRUCTURE.md) · D
 **Built with ❤️ for Bangladesh's education institutions**
 
 Repository: https://github.com/Arif-shellbeehaken/Edupro
+
+
+## Mobile (Flutter)
+
+```bash
+cd mobile
+flutter pub get
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000
+```
+
+See `mobile/README.md` for architecture (Riverpod, go_router, Dio, secure storage).
