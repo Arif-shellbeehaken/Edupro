@@ -69,7 +69,7 @@ export default async function FeePassbookPage({
     <div className="mx-auto max-w-3xl page-pad">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
-          <h1 className="text-2xl font-semibold">ফি পাসবুক / সেটেলমেন্ট</h1>
+          <h1 className="page-title">ফি পাসবুক / সেটেলমেন্ট</h1>
           <p className="text-sm text-muted-foreground">
             শিক্ষার্থীভিত্তিক চালান ও আদায়ের হিসাব
           </p>

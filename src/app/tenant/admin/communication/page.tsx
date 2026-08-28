@@ -82,7 +82,7 @@ export default async function CommunicationPage() {
 
           <CommunicationForms classes={classes} />
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>সাম্প্রতিক মেসেজ</CardTitle>

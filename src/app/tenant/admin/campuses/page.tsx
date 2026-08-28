@@ -29,7 +29,7 @@ export default async function CampusesPage() {
     <div className="page-pad">
       <CampusDigestForm />
       <div>
-        <h1 className="text-2xl font-semibold">মাল্টি-ক্যাম্পাস / শাখা</h1>
+        <h1 className="page-title">মাল্টি-ক্যাম্পাস / শাখা</h1>
         <p className="text-sm text-muted-foreground">
           শাখা সুইচ · অডিট লগ · SMS নোটিফিকেশন
         </p>

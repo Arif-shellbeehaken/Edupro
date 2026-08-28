@@ -23,7 +23,7 @@ export default async function SurveysPage() {
     <div className="page-pad">
       <NpsSurveyForm />
       <div>
-        <h1 className="text-2xl font-semibold">ফিডব্যাক / সার্ভে</h1>
+        <h1 className="page-title">ফিডব্যাক / সার্ভে</h1>
         <p className="text-sm text-muted-foreground">NPS · অভিভাবক সন্তুষ্টি</p>
       </div>
       <ModuleForm />

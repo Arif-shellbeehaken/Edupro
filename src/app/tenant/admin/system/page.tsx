@@ -47,13 +47,13 @@ export default async function TenantSystemPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">সিস্টেম স্ট্যাটাস</h1>
+        <h1 className="page-title">সিস্টেম স্ট্যাটাস</h1>
         <p className="text-sm text-muted-foreground">
           প্রোডাকশন রেডিনেস · DB · মডিউল কাউন্ট
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Database</CardTitle>
@@ -68,7 +68,7 @@ export default async function TenantSystemPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">শিক্ষার্থী</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
+          <CardContent className="page-title">
             {counts.students}
           </CardContent>
         </Card>
@@ -76,7 +76,7 @@ export default async function TenantSystemPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">স্টাফ</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
+          <CardContent className="page-title">
             {counts.staff}
           </CardContent>
         </Card>
@@ -84,7 +84,7 @@ export default async function TenantSystemPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">SMS লগ</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
+          <CardContent className="page-title">
             {counts.messages}
           </CardContent>
         </Card>

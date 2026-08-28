@@ -41,13 +41,13 @@ export default async function CanteenPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">ক্যান্টিন / মেস POS</h1>
+        <h1 className="page-title">ক্যান্টিন / মেস POS</h1>
         <p className="text-sm text-muted-foreground">
           মেনু · POS বিক্রি · নগদ/কার্ড · মোট {bdt(todayTotal)}
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>মেনু আইটেম</CardTitle>

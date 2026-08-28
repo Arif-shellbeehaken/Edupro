@@ -237,7 +237,7 @@ export default async function TenantAdminDashboard() {
             </Card>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {kpi.map((stat) => (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -254,7 +254,7 @@ export default async function TenantAdminDashboard() {
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -270,7 +270,7 @@ export default async function TenantAdminDashboard() {
                   recentAudit.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                      className="list-row text-sm"
                     >
                       <div>
                         <p className="font-medium">

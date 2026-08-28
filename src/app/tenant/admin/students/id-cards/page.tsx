@@ -71,7 +71,7 @@ export default async function StudentIdCardsPage({
     <div className="mx-auto max-w-5xl page-pad">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
-          <h1 className="text-2xl font-semibold">স্টুডেন্ট আইডি কার্ড</h1>
+          <h1 className="page-title">স্টুডেন্ট আইডি কার্ড</h1>
           <p className="text-sm text-muted-foreground">
             প্রিন্ট-রেডি · QR-ready code · {list.length} কার্ড
           </p>

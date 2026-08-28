@@ -73,7 +73,7 @@ export default async function MarksheetPage({
     <div className="mx-auto max-w-3xl page-pad">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
-          <h1 className="text-2xl font-semibold">মার্কশিট / GPA</h1>
+          <h1 className="page-title">মার্কশিট / GPA</h1>
           <p className="text-sm text-muted-foreground">
             {exam?.nameBn || exam?.name || "পরীক্ষা"} · {ranked.length} জন
           </p>

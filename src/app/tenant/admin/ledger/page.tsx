@@ -95,7 +95,7 @@ export default async function LedgerPage() {
     <div className="page-pad">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">অ্যাকাউন্টিং লেজার</h1>
+          <h1 className="page-title">অ্যাকাউন্টিং লেজার</h1>
           <p className="text-sm text-muted-foreground">
             আয় · ব্যয় · নেট (সারসংক্ষেপ)
           </p>

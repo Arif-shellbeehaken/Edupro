@@ -28,7 +28,7 @@ export function StudentStatusForm({
         <CardTitle className="text-base">স্ট্যাটাস পরিবর্তন · SMS</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={action} className="grid gap-2 sm:grid-cols-3">
+        <form action={action} className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <select name="studentId" required className={inputClass} defaultValue="">
             <option value="" disabled>
               শিক্ষার্থী *

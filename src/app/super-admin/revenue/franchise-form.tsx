@@ -17,7 +17,7 @@ export function FranchiseForm() {
     {} as FranchiseState
   );
   return (
-    <form action={action} className="grid gap-2 sm:grid-cols-4 items-end">
+    <form action={action} className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 items-end">
       <input name="slug" required placeholder="tenant slug" className={inputClass} />
       <input name="partnerName" placeholder="Partner name" className={inputClass} />
       <input name="sharePercent" type="number" min={0} max={100} defaultValue={20} className={inputClass} />

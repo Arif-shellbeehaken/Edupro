@@ -42,7 +42,7 @@ export default async function DonationsPage() {
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="যাকাত / অনুদান" subtitle="Donation · Zakat · Receipt" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
         <div className="page-pad">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">মোট সংগ্রহ</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold text-emerald-600">৳{total.toLocaleString()}</div></CardContent>
@@ -61,7 +61,7 @@ export default async function DonationsPage() {
               {donations.length === 0 ? (
                 <EmptyState title="কোনো ডোনেশন নেই" description="যাকাত/অনুদান রেকর্ড এখানে দেখাবে" />
               ) : donations.map((d) => (
-                <div key={d.id} className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
+                <div key={d.id} className="list-row text-sm">
                   <div>
                     <p className="font-medium">{d.donorName} · ৳{d.amount.toLocaleString()}</p>
                     <p className="text-xs text-muted-foreground">{d.receiptNo} · {d.method || "—"} · {d.receivedAt.toLocaleDateString("bn-BD")}</p>

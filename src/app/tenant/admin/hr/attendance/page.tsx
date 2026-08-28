@@ -98,7 +98,7 @@ export default async function StaffAttendancePage({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">আজ মার্ক</CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{marks.length}</CardContent>
+          <CardContent className="page-title">{marks.length}</CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">

@@ -62,7 +62,7 @@ export default async function ParentFeesPage({
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/60 to-background">
       <div className="mx-auto max-w-3xl space-y-4 p-4 pb-10">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <h1 className="text-lg font-semibold text-emerald-900">ফি পাসবুক</h1>
           <Button variant="outline" size="sm" asChild>
             <Link href="/parent">← পোর্টাল</Link>

@@ -73,7 +73,7 @@ export function PayrollForms({
     {} as PayrollState
   );
 return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">পে-রোল প্রসেস</CardTitle>

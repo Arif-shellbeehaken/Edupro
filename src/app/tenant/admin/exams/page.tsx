@@ -106,7 +106,7 @@ export default async function ExamsPage() {
               মার্কশিট
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">পরীক্ষা</CardTitle>
@@ -165,7 +165,7 @@ export default async function ExamsPage() {
                   {exams.map((e) => (
                     <div
                       key={e.id}
-                      className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3"
+                      className="list-row border-border/60"
                     >
                       <div>
                         <p className="text-sm font-medium">{e.nameBn || e.name}</p>

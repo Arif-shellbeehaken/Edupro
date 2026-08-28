@@ -71,7 +71,7 @@ export default async function HomeworkPage() {
                 items.map((h) => (
                   <div
                     key={h.id}
-                    className="flex justify-between rounded-lg border px-3 py-2 text-sm"
+                    className="list-row text-sm"
                   >
                     <div>
                       <p className="font-medium">{h.title}</p>

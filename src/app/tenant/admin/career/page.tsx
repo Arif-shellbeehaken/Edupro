@@ -30,7 +30,7 @@ export default async function CareerPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">ক্যারিয়ার ও জব বোর্ড</h1>
+        <h1 className="page-title">ক্যারিয়ার ও জব বোর্ড</h1>
         <p className="text-sm text-muted-foreground">
           অ্যালামনাই · ইন্টার্নশিপ · প্লেসমেন্ট
         </p>
@@ -93,7 +93,7 @@ export default async function CareerPage() {
       ) : rows.map((r) => (
           <Card key={r.id}>
             <CardContent className="py-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <p className="font-medium">{r.title}</p>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">{r.jobType}</Badge>

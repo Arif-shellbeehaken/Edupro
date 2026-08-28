@@ -21,7 +21,7 @@ export default async function LmsPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">LMS / স্টাডি ম্যাটেরিয়াল</h1>
+        <h1 className="page-title">LMS / স্টাডি ম্যাটেরিয়াল</h1>
         <p className="text-sm text-muted-foreground">নোট · ভিডিও · লিংক</p>
       </div>
       <ModuleForm />

@@ -33,7 +33,7 @@ export default async function HealthPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">স্বাস্থ্য ও ক্লিনিক</h1>
+        <h1 className="page-title">স্বাস্থ্য ও ক্লিনিক</h1>
         <p className="text-sm text-muted-foreground">
           অ্যালার্জি · ক্রনিক · টিকা · ইমার্জেন্সি কন্টাক্ট · ভিজিট নোট · অভিভাবক SMS
         </p>
@@ -49,7 +49,7 @@ export default async function HealthPage() {
           records.map((r) => (
             <Card key={r.id}>
               <CardContent className="space-y-1 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                   <p className="text-sm font-medium">
                     {nameById[r.studentId] || r.studentId}
                   </p>

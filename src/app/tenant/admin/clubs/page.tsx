@@ -50,7 +50,7 @@ export default async function ClubsPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">ক্লাব ও এক্সট্রাকারিকুলার</h1>
+        <h1 className="page-title">ক্লাব ও এক্সট্রাকারিকুলার</h1>
         <p className="text-sm text-muted-foreground">
           ক্রীড়া · সাংস্কৃতিক · একাডেমিক · সদস্য SMS
         </p>

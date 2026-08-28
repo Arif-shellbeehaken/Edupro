@@ -46,7 +46,7 @@ export default async function MeritPage() {
               leads.map((l) => (
                 <div
                   key={l.id}
-                  className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                  className="list-row text-sm"
                 >
                   <div>
                     <p className="font-medium">

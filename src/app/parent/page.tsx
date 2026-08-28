@@ -102,7 +102,7 @@ export default async function ParentPortalPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     <div className="rounded-xl bg-emerald-50 p-3 text-center">
                       <p className="text-[10px] text-muted-foreground">
                         হিফজ জুজ
@@ -164,7 +164,7 @@ export default async function ParentPortalPage() {
                       {s.invoices.slice(0, 3).map((inv) => (
                         <div
                           key={inv.id}
-                          className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                          className="list-row text-sm"
                         >
                           <span>{inv.invoiceNumber}</span>
                           <span className="font-medium">

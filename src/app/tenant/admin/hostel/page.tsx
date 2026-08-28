@@ -65,7 +65,7 @@ export default async function HostelPage() {
           tenantName={tenantName}
         />
         <div className="page-pad">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">রুম</CardTitle>
@@ -104,7 +104,7 @@ export default async function HostelPage() {
             students={students}
           />
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>রুম তালিকা</CardTitle>
@@ -119,7 +119,7 @@ export default async function HostelPage() {
                   rooms.map((r) => (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                      className="list-row text-sm"
                     >
                       <span>
                         {r.blockName ? `${r.blockName} · ` : ""}

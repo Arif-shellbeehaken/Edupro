@@ -123,7 +123,7 @@ export default function LoginPage() {
               {activeError && (
                 <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{activeError}</div>
               )}
-              <Button type="submit" className="w-full" size="lg" disabled={isPending}>
+              <Button type="submit" className="w-full min-h-11" size="lg" disabled={isPending}>
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />

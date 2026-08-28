@@ -178,7 +178,7 @@ export default async function RevenuePage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>প্ল্যান বিতরণ (Active)</CardTitle>
@@ -193,7 +193,7 @@ export default async function RevenuePage() {
                   Array.from(byPlan.entries()).map(([code, v]) => (
                     <div
                       key={code}
-                      className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                      className="list-row text-sm"
                     >
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary">{code}</Badge>

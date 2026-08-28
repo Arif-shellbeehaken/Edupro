@@ -38,7 +38,7 @@ export function TwoFactorForms({
   const uri = setupState.uri;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Two-Factor Authentication (TOTP)</CardTitle>

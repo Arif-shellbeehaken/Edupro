@@ -29,7 +29,7 @@ export function MonthlyFeeForm({
         <CardTitle className="text-base">মাসিক ফি অটো-জেনারেট · SMS</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={action} className="grid gap-2 sm:grid-cols-3">
+        <form action={action} className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <input
             name="amount"
             type="number"

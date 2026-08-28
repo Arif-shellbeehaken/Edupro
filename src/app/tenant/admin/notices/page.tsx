@@ -21,7 +21,7 @@ export default async function NoticesPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">নোটিশ বোর্ড</h1>
+        <h1 className="page-title">নোটিশ বোর্ড</h1>
         <p className="text-sm text-muted-foreground">ইভেন্ট · ছুটি · ঘোষণা</p>
       </div>
       <ModuleForm />

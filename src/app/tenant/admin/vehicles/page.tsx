@@ -32,7 +32,7 @@ export default async function VehiclesPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">যানবাহন মেইনটেন্যান্স</h1>
+        <h1 className="page-title">যানবাহন মেইনটেন্যান্স</h1>
         <p className="text-sm text-muted-foreground">
           সার্ভিস · জ্বালানি · মেরামত · মোট খরচ {bdt(spend)}
         </p>

@@ -3,7 +3,7 @@ export default function SuperAdminLoading() {
     <div className="flex flex-1 flex-col">
       <div className="h-16 border-b border-border bg-card/50 px-6" />
       <div className="page-pad">
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <div
               key={i}

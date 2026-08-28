@@ -90,7 +90,7 @@ export default async function TransportPage() {
             students={students}
           />
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>রুট তালিকা</CardTitle>
@@ -105,7 +105,7 @@ export default async function TransportPage() {
                   routes.map((r) => (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                      className="list-row text-sm"
                     >
                       <div>
                         <p className="font-medium">{r.nameBn || r.name}</p>

@@ -31,7 +31,7 @@ export default async function EmergencyPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">ইমার্জেন্সি অ্যালার্ট</h1>
+        <h1 className="page-title">ইমার্জেন্সি অ্যালার্ট</h1>
         <p className="text-sm text-muted-foreground">
           ক্যাম্পাস ব্রডকাস্ট · স্টাফ / অভিভাবক / সবাই
         </p>

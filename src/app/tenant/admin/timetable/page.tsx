@@ -78,7 +78,7 @@ export default async function TimetablePage() {
         <div className="page-pad">
           <PublishDayForm classes={classes.map((c) => ({ id: c.id, name: c.nameBn || c.name }))} />
           <TimetableDigestForm classes={classes} />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-1">
               <CardHeader>
                 <CardTitle className="text-base">স্লট যোগ / আপডেট</CardTitle>

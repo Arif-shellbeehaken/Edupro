@@ -187,7 +187,41 @@
   .scrollbar-thin {
     scrollbar-width: thin;
   }
+
+  /* Responsive list rows & forms */
+  .list-row {
+    @apply flex flex-col gap-2 rounded-lg border border-border px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3;
+  }
+
+  .form-grid {
+    @apply grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3;
+  }
+
+  .form-grid-3 {
+    @apply grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .kpi-grid {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .kpi-grid-3 {
+    @apply grid grid-cols-1 gap-3 sm:grid-cols-3;
+  }
+
+  .stack-btns {
+    @apply flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center;
+  }
+
+  .page-title {
+    @apply text-xl font-semibold tracking-tight sm:text-2xl;
+  }
+
+  .page-sub {
+    @apply text-xs text-muted-foreground sm:text-sm;
+  }
 }
+
 
 /* A11y */
 .sr-only {

@@ -45,7 +45,7 @@ export function TransportForms({
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">নতুন রুট</CardTitle>
@@ -163,7 +163,7 @@ export function TransportForms({
           <CardTitle className="text-base">ট্রান্সপোর্ট ফি চালান · SMS</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={feeAction} className="grid gap-2 sm:grid-cols-3">
+          <form action={feeAction} className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <select name="routeId" className={inputClass} defaultValue="">
               <option value="">সব রুট</option>
               {routes.map((r) => (

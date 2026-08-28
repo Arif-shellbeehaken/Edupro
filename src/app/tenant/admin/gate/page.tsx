@@ -44,7 +44,7 @@ export default async function GatePage() {
                 />
               ) : (
                 visitors.map((v) => (
-                <div key={v.id} className="flex justify-between rounded-lg border px-3 py-2 text-sm">
+                <div key={v.id} className="list-row text-sm">
                   <div>
                     <p className="font-medium">{v.visitorName}</p>
                     <p className="text-xs text-muted-foreground">{v.purpose || "—"} · {v.checkInAt.toLocaleString("bn-BD")}</p>

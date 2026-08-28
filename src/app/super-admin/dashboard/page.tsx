@@ -74,7 +74,7 @@ export default async function SuperAdminDashboard() {
         />
 
         <div className="page-pad">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -91,7 +91,7 @@ export default async function SuperAdminDashboard() {
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>সাম্প্রতিক প্রতিষ্ঠান</CardTitle>
@@ -102,7 +102,7 @@ export default async function SuperAdminDashboard() {
                   {recentTenants.map((t) => (
                     <div
                       key={t.name}
-                      className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3"
+                      className="list-row border-border/60"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40">

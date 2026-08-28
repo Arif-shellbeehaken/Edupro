@@ -27,7 +27,7 @@ export default async function QuestionsPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">প্রশ্নব্যাংক</h1>
+        <h1 className="page-title">প্রশ্নব্যাংক</h1>
         <p className="text-sm text-muted-foreground">MCQ · সংক্ষিপ্ত · রচনা</p>
       </div>
 

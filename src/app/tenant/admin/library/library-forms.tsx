@@ -50,7 +50,7 @@ export function LibraryForms({
   }, [addState, issueState, retState, toast]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">নতুন বই</CardTitle>

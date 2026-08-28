@@ -85,7 +85,7 @@ export default async function HrDashboardPage() {
               নতুন স্টাফ
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">সক্রিয় স্টাফ</CardTitle>
@@ -139,7 +139,7 @@ export default async function HrDashboardPage() {
             </Button>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export default async function HrDashboardPage() {
                     {staffList.map((s) => (
                       <div
                         key={s.id}
-                        className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
+                        className="list-row border-border/60"
                       >
                         <div>
                           <p className="text-sm font-medium">{s.nameBn || s.name}</p>
@@ -203,7 +203,7 @@ export default async function HrDashboardPage() {
                     {recentLeaves.map((lv) => (
                       <div
                         key={lv.id}
-                        className="flex items-center justify-between rounded-lg border border-border/60 px-3 py-2"
+                        className="list-row border-border/60"
                       >
                         <div>
                           <p className="text-sm font-medium">

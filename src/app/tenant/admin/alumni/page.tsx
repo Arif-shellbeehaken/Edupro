@@ -22,7 +22,7 @@ export default async function AlumniPage() {
   return (
     <div className="page-pad">
       <div>
-        <h1 className="text-2xl font-semibold">অ্যালামনাই নেটওয়ার্ক</h1>
+        <h1 className="page-title">অ্যালামনাই নেটওয়ার্ক</h1>
         <p className="text-sm text-muted-foreground">পাশ করা শিক্ষার্থী · ক্যারিয়ার</p>
       </div>
       <ModuleForm />

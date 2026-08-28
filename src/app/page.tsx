@@ -106,7 +106,7 @@ export default function HomePage() {
               প্রোডাকশন-গ্রেড মাল্টি-টেন্যান্ট SaaS। হিফজ ট্র্যাকিং, BMEB/BEFAQ, bKash/Nagad,
               অ্যাটেনডেন্স, ফি ম্যানেজমেন্ট ও আরও অনেক কিছু — এক জায়গায়।
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:items-center sm:gap-4">
               <Button size="lg" asChild>
                 <Link href="/login">
                   শুরু করুন — ১৪ দিন ফ্রি <ArrowRight className="h-5 w-5" />
@@ -199,7 +199,7 @@ export default function HomePage() {
                   <div className="h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                     <div className="h-full w-[85%] rounded-full bg-emerald-500" />
                   </div>
-                  <div className="grid grid-cols-3 gap-3 pt-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3 pt-2">
                     <div className="rounded-lg bg-muted/50 p-3 text-center">
                       <div className="text-lg font-bold">১২</div>
                       <div className="text-xs text-muted-foreground">সবক</div>
