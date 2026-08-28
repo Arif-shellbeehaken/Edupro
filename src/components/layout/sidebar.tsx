@@ -84,7 +84,10 @@ const tenantAdminSections: NavSection[] = [
     items: [
       { title: "ড্যাশবোর্ড", href: "/tenant/admin/dashboard", icon: LayoutDashboard },
       { title: "ভর্তি CRM", href: "/tenant/admin/admission", icon: ClipboardList },
+      { title: "মেধাতালিকা", href: "/tenant/admin/admission/merit", icon: ClipboardList },
+      { title: "সিবলিং/ডকুমেন্ট", href: "/tenant/admin/students/siblings", icon: Users },
       { title: "রিপোর্টস", href: "/tenant/admin/reports", icon: BarChart3 },
+      { title: "ঝরে পড়ার ঝুঁকি", href: "/tenant/admin/reports/dropout", icon: BarChart3 },
     ],
   },
   {
@@ -127,6 +130,7 @@ const tenantAdminSections: NavSection[] = [
     label: "যোগাযোগ ও সেবা",
     items: [
       { title: "যোগাযোগ", href: "/tenant/admin/communication", icon: MessageSquare },
+      { title: "মেসেজিং", href: "/tenant/admin/messaging", icon: MessageSquare },
       { title: "নোটিশ বোর্ড", href: "/tenant/admin/notices", icon: Megaphone },
       { title: "সার্টিফিকেট", href: "/tenant/admin/certificates", icon: Award },
       { title: "অভিযোগ", href: "/tenant/admin/grievance", icon: AlertCircle },

@@ -2,6 +2,7 @@
 
 import { LogOut, Bell, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { logoutAction } from "@/application/use-cases/auth/logout";
 
@@ -44,16 +45,21 @@ export function AppHeader({
       </div>
 
       <div className="flex items-center gap-3">
-        {isSuperAdmin && (
-          <Badge variant="success">Platform</Badge>
-        )}
+        {isSuperAdmin && <Badge variant="success">Platform</Badge>}
         {tenantName && !isSuperAdmin && (
           <span className="hidden text-xs text-muted-foreground sm:inline">
             {tenantName}
           </span>
         )}
 
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+        <ThemeToggle />
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label="Notifications"
+        >
           <Bell className="h-4 w-4" />
         </Button>
 

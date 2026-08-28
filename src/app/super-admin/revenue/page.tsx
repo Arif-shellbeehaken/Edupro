@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+import { FranchiseForm } from "./franchise-form";
+
 export default async function RevenuePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -281,7 +283,13 @@ export default async function RevenuePage() {
             </CardContent>
           </Card>
         </div>
-      </main>
+            <div className="mx-auto max-w-5xl px-6 pb-10">
+        <div className="rounded-xl border bg-card p-4">
+          <h2 className="mb-2 text-sm font-semibold">Franchise / partner share</h2>
+          <FranchiseForm />
+        </div>
+      </div>
+    </main>
     </>
   );
 }

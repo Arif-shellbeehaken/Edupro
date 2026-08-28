@@ -28,12 +28,14 @@ export const certificateRepository = {
     });
     const certificateNo = `CERT-${year}-${String(count + 1).padStart(5, "0")}`;
 
+    const verificationCode = `vc_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
     return prisma.certificate.create({
       data: {
         tenantId: data.tenantId,
         studentId: data.studentId,
         certType: data.certType,
         certificateNo,
+        verificationCode,
         studentName: data.studentName,
         studentNameBn: data.studentNameBn,
         fatherName: data.fatherName,

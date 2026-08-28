@@ -35,8 +35,8 @@ export default async function StudentPortalPage() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <header className="border-b bg-white px-6 py-4">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+      <header className="border-b bg-white px-6 py-4 dark:bg-zinc-900">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-emerald-800">শিক্ষার্থী পোর্টাল</h1>

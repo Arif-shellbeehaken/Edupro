@@ -238,6 +238,9 @@ model Student {
   currentJuz          Int?
   currentPage         Int?
 
+  siblingGroupId      String?                       // same family link
+  documentsJson       String?                       // JSON array of {name,url,type}
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   deletedAt           DateTime?
@@ -818,6 +821,9 @@ model AdmissionLead {
   previousSchool  String?
   applyingClass   String?
   source          String?   // WALK_IN | WEBSITE | REFERRAL | SOCIAL | OTHER
+  meritScore      Float?
+  meritRank       Int?
+  examMarks       Float?
   status          String    @default("NEW") // NEW | CONTACTED | VISIT_SCHEDULED | DOCUMENTS | ADMITTED | REJECTED | LOST
   notes           String?
   assignedToId    String?
@@ -929,11 +935,13 @@ model Certificate {
   remarks         String?
   issuedById      String?
   status          String    @default("ISSUED") // ISSUED | CANCELLED
+  verificationCode String?                      // public QR verify token
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@unique([tenantId, certificateNo])
+  @@index([verificationCode])
   @@index([tenantId])
   @@index([tenantId, studentId])
   @@map("certificates")
@@ -1396,4 +1404,52 @@ model VehicleLog {
 
   @@index([tenantId, vehicleLabel])
   @@map("vehicle_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MESSAGING · MCQ ATTEMPTS · DROPOUT FLAGS
+// ═══════════════════════════════════════════════════════════════
+
+model ChatMessage {
+  id          String    @id @default(cuid())
+  tenantId    String
+  threadKey   String                        // e.g. student:{id} or class:{id}
+  senderRole  String                        // PARENT | STAFF | ADMIN | STUDENT
+  senderName  String
+  body        String
+  createdAt   DateTime  @default(now())
+
+  @@index([tenantId, threadKey])
+  @@map("chat_messages")
+}
+
+model ExamAttempt {
+  id          String    @id @default(cuid())
+  tenantId    String
+  examId      String
+  studentId   String
+  answersJson String                        // JSON {questionId: answer}
+  score       Float?
+  maxScore    Float?
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  status      String    @default("IN_PROGRESS") // IN_PROGRESS | SUBMITTED | GRADED
+
+  @@index([tenantId, examId])
+  @@index([tenantId, studentId])
+  @@map("exam_attempts")
+}
+
+model StudentRiskFlag {
+  id          String    @id @default(cuid())
+  tenantId    String
+  studentId   String
+  riskScore   Float     @default(0)
+  reasonsJson String?                       // JSON string array
+  flaggedAt   DateTime  @default(now())
+  resolvedAt  DateTime?
+
+  @@unique([tenantId, studentId])
+  @@index([tenantId])
+  @@map("student_risk_flags")
 }

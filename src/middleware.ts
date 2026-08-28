@@ -12,6 +12,8 @@ const publicPrefixes = [
   "/api/health",
   "/api/cron",
   "/parent",
+  "/p",
+  "/verify",
 ];
 
 function isPublic(pathname: string) {
