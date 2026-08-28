@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function StudentsPage() {
   const session = await auth();
@@ -98,12 +99,17 @@ export default async function StudentsPage() {
             </CardHeader>
             <CardContent>
               {students.length === 0 ? (
-                <div className="rounded-lg border border-dashed py-12 text-center text-muted-foreground">
-                  <p>কোনো শিক্ষার্থী নেই</p>
-                  <Button className="mt-4" asChild>
-                    <Link href="/tenant/admin/students/new">প্রথম শিক্ষার্থী যোগ করুন</Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  title="কোনো শিক্ষার্থী নেই"
+                  description="SIS শুরু করতে প্রথম শিক্ষার্থী যোগ করুন"
+                  action={
+                    <Button asChild>
+                      <Link href="/tenant/admin/students/new">
+                        প্রথম শিক্ষার্থী যোগ করুন
+                      </Link>
+                    </Button>
+                  }
+                />
               ) : (
                 <div className="space-y-3">
                   {students.map((s) => (
