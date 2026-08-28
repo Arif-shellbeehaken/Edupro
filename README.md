@@ -78,6 +78,25 @@ Parent portal (OTP): `/parent/login` — guardian phone linked on student record
 See `docs/PRODUCTION.md` for production deploy and `docs/SMS_CATALOG.md` for SMS types.
 
 
+
+
+## ✅ Production readiness status
+
+| Area | Status |
+|------|--------|
+| Multi-tenant SaaS core | Done |
+| Modules (SIS, Finance, HR, Ops, CRM, portals) | Done |
+| SMS catalog (60+ types) | Done — `docs/SMS_CATALOG.md` |
+| Auth / RBAC / 2FA / Parent OTP | Done |
+| Rate limit + Redis adapter | Done |
+| Security headers + CSP + request-id | Done |
+| Health matrix + retention cron | Done |
+| BANBEIS/EMIS export + tenant backup | Done |
+| Docker + CI (tsc, audit, build) | Done |
+| Structured logs + read replica hook | Done |
+
+**Ops docs:** `docs/PRODUCTION.md` · `docs/SECURITY.md`
+
 ## 🎯 Vision
 
 A single production-ready SaaS core that serves:

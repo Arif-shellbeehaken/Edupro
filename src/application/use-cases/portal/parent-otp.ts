@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/infrastructure/database/prisma";
-import { rateLimit } from "@/infrastructure/security/rate-limit";
+import { rateLimitAsync } from "@/infrastructure/security/rate-limit";
 
 export type ParentOtpState = {
   error?: string;
@@ -30,7 +30,7 @@ export async function requestParentOtpAction(
     return { error: "সঠিক মোবাইল নম্বর দিন", step: "phone" };
   }
 
-  const rl = rateLimit(`otp:${phone}`, 5, 15 * 60 * 1000);
+  const rl = await rateLimitAsync(`otp:${phone}`, 5, 15 * 60 * 1000);
   if (!rl.ok) {
     return {
       error: `OTP অনুরোধ সীমা পেরিয়েছে। ${rl.retryAfterSec} সেকেন্ড পর চেষ্টা করুন।`,

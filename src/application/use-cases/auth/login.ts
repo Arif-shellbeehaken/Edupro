@@ -7,7 +7,7 @@ import { signIn, auth } from "@/infrastructure/auth/auth";
 import { getDashboardPath } from "@/infrastructure/auth/rbac";
 import { prisma } from "@/infrastructure/database/prisma";
 import { verifyTotp } from "@/infrastructure/security/totp";
-import { rateLimit } from "@/infrastructure/security/rate-limit";
+import { rateLimitAsync } from "@/infrastructure/security/rate-limit";
 
 const loginSchema = z.object({
   email: z.string().min(1, "ইমেইল বা মোবাইল দিন"),
@@ -40,7 +40,7 @@ export async function loginAction(
   const { email, password } = parsed.data;
   const emailNorm = email.toLowerCase().trim();
 
-  const rl = rateLimit(`login:${emailNorm}`, 8, 15 * 60 * 1000);
+  const rl = await rateLimitAsync(`login:${emailNorm}`, 8, 15 * 60 * 1000);
   if (!rl.ok) {
     return {
       error: `অনেকবার চেষ্টা হয়েছে। ${rl.retryAfterSec} সেকেন্ড পর আবার চেষ্টা করুন।`,

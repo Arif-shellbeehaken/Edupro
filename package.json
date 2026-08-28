@@ -17,7 +17,9 @@
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
     "typecheck": "tsc --noEmit",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "audit:deps": "npm audit --audit-level=high",
+    "healthcheck": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.8.0",

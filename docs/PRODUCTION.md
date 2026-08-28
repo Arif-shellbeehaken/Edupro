@@ -216,3 +216,31 @@ Prisma migrate must hit primary directly (not through pooler in some setups).
 - JSON lines via `@/lib/logger`
 - Every response includes `X-Request-Id`
 - Set `LOG_LEVEL=info` (or `debug` / `warn` / `error`)
+
+
+---
+
+## Graceful shutdown
+
+Next.js `next start` / Docker `node server.js` respond to SIGTERM.
+
+```bash
+# Docker Compose
+docker compose stop   # sends SIGTERM, waits for graceful exit
+
+# Kubernetes: set terminationGracePeriodSeconds: 30
+# readinessProbe: GET /api/health
+# livenessProbe: GET /api/health
+```
+
+Drain LB connections before kill. Prisma disconnects on process exit; long-running SMS loops should respect AbortSignal where added.
+
+## Health dependency matrix
+
+`GET /api/health` returns:
+
+- `checks.database` — primary DB
+- `checks.rateLimitBackend` — memory | upstash
+- `checks.readReplica` — configured | primary-only
+- `checks.sms` — provider name
+- `requestId` — correlation id
