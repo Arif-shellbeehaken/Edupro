@@ -70,3 +70,12 @@ DI lives in `lib/core/di/providers.dart`. UI uses `AsyncValueWidget` for loading
 | Global | `FlutterError.onError` + `PlatformDispatcher.onError` |
 
 Repositories catch `DioException`, rethrow typed `Failure`. Auth 401 clears secure token.
+
+
+## Modules (mobile)
+
+Bottom nav: Home · Modules hub · Students · Notices · Profile.
+
+Feature screens (read lists via `/api/v1/*`): fees, exams, homework, hifz, timetable, library, hostel, transport, staff, messages, certificates, donations, inventory.
+
+Each module: `Repository` → `AsyncNotifier` → `ModuleListPage` + error/retry.

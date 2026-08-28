@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:edupro_mobile/core/utils/async_value_ui.dart';
 import 'package:edupro_mobile/features/auth/presentation/auth_provider.dart';
+import 'package:edupro_mobile/features/home/presentation/dashboard_provider.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.child});
@@ -10,8 +12,8 @@ class HomeShell extends ConsumerWidget {
 
   static const _tabs = [
     ('/home', 'হোম', Icons.home_outlined, Icons.home),
+    ('/modules', 'মডিউল', Icons.apps_outlined, Icons.apps),
     ('/students', 'শিক্ষার্থী', Icons.people_outline, Icons.people),
-    ('/attendance', 'উপস্থিতি', Icons.fact_check_outlined, Icons.fact_check),
     ('/notices', 'নোটিশ', Icons.campaign_outlined, Icons.campaign),
     ('/profile', 'প্রোফাইল', Icons.person_outline, Icons.person),
   ];
@@ -20,7 +22,7 @@ class HomeShell extends ConsumerWidget {
     for (var i = 0; i < _tabs.length; i++) {
       if (location.startsWith(_tabs[i].$1)) return i;
     }
-    return 0;
+    return 1; // modules for deep feature routes
   }
 
   @override
@@ -31,7 +33,7 @@ class HomeShell extends ConsumerWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: idx,
+        selectedIndex: idx.clamp(0, _tabs.length - 1),
         onDestinationSelected: (i) => context.go(_tabs[i].$1),
         destinations: [
           for (var i = 0; i < _tabs.length; i++)
@@ -52,12 +54,18 @@ class HomeDashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
+    final stats = ref.watch(dashboardControllerProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edupro'),
         actions: [
+          IconButton(
+            tooltip: 'সব মডিউল',
+            onPressed: () => context.go('/modules'),
+            icon: const Icon(Icons.apps),
+          ),
           IconButton(
             tooltip: 'লগআউট',
             onPressed: () async {
@@ -68,88 +76,85 @@ class HomeDashboardPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'আসসালামু আলাইকুম',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
+      body: RefreshIndicator(
+        onRefresh: () =>
+            ref.read(dashboardControllerProvider.notifier).refresh(),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'আসসালামু আলাইকুম',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.primary,
+              ),
             ),
-          ),
-          Text(
-            user?.name ?? 'User',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
+            Text(
+              user?.name ?? 'User',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${user?.role ?? ''} · ${user?.email ?? ''}',
-            style: theme.textTheme.bodySmall,
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _QuickCard(
-                icon: Icons.people,
-                label: 'শিক্ষার্থী',
-                onTap: () => context.go('/students'),
+            Text(
+              '${user?.role ?? ''} · ${user?.email ?? ''}',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            AsyncValueWidget<Map<String, dynamic>>(
+              value: stats,
+              onRetry: () =>
+                  ref.read(dashboardControllerProvider.notifier).refresh(),
+              data: (s) => Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  _StatChip(label: 'শিক্ষার্থী', value: '${s['students'] ?? 0}'),
+                  _StatChip(label: 'স্টাফ', value: '${s['staff'] ?? 0}'),
+                  _StatChip(
+                      label: 'বকেয়া চালান',
+                      value: '${s['invoicesOpen'] ?? 0}'),
+                  _StatChip(label: 'নোটিশ', value: '${s['notices'] ?? 0}'),
+                  _StatChip(label: 'হোমওয়ার্ক', value: '${s['homework'] ?? 0}'),
+                  _StatChip(label: 'পরীক্ষা', value: '${s['exams'] ?? 0}'),
+                ],
               ),
-              _QuickCard(
-                icon: Icons.fact_check,
-                label: 'উপস্থিতি',
-                onTap: () => context.go('/attendance'),
-              ),
-              _QuickCard(
-                icon: Icons.campaign,
-                label: 'নোটিশ',
-                onTap: () => context.go('/notices'),
-              ),
-              _QuickCard(
-                icon: Icons.person,
-                label: 'প্রোফাইল',
-                onTap: () => context.go('/profile'),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 20),
+            FilledButton.tonalIcon(
+              onPressed: () => context.go('/modules'),
+              icon: const Icon(Icons.apps),
+              label: const Text('সব মডিউল দেখুন'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _QuickCard extends StatelessWidget {
-  const _QuickCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
+class _StatChip extends StatelessWidget {
+  const _StatChip({required this.label, required this.value});
   final String label;
-  final VoidCallback onTap;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return SizedBox(
-      width: (MediaQuery.sizeOf(context).width - 44) / 2,
+      width: (MediaQuery.sizeOf(context).width - 42) / 2,
       child: Card(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-            child: Column(
-              children: [
-                Icon(icon, color: theme.colorScheme.primary, size: 28),
-                const SizedBox(height: 8),
-                Text(label, style: theme.textTheme.titleSmall),
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
           ),
         ),
       ),

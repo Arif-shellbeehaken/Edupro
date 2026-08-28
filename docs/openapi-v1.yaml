@@ -11,6 +11,35 @@ security:
   - ApiKeyAuth: []
   - BearerAuth: []
 paths:
+  /dashboard:
+    get: { summary: Tenant KPI counts }
+  /invoices:
+    get: { summary: Fee invoices list }
+  /exams:
+    get: { summary: Exams list }
+  /homework:
+    get: { summary: Homework list }
+  /hifz:
+    get: { summary: Hifz progress }
+  /library:
+    get: { summary: Active book issues }
+  /hostel:
+    get: { summary: Hostel allocations }
+  /transport:
+    get: { summary: Transport assignments }
+  /staff:
+    get: { summary: Active staff }
+  /timetable:
+    get: { summary: Timetable slots }
+  /messages:
+    get: { summary: SMS message log }
+  /certificates:
+    get: { summary: Certificates }
+  /donations:
+    get: { summary: Donations }
+  /inventory:
+    get: { summary: Inventory items }
+
   /auth/login:
     post:
       summary: Mobile/API login (JWT Bearer)
