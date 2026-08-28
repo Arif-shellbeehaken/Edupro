@@ -17,6 +17,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import { CreateInvoiceForm } from "./create-invoice-form";
 import { RecordPaymentForm } from "./record-payment-form";
 import { BkashPayButton } from "./bkash-pay-button";
@@ -194,7 +196,10 @@ export default async function FinancePage() {
 
               <CardContent>
                 {invoices.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">এখনো কোনো চালান নেই</p>
+                  <EmptyState
+                    title="এখনো কোনো চালান নেই"
+                    description="ফি স্ট্রাকচার থেকে ইনভয়েস তৈরি করুন"
+                  />
                 ) : (
                   <div className="space-y-3">
                     {invoices.map((inv) => (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import {
   updateBrandingAction,
   type TicketState,
@@ -24,6 +25,20 @@ export function BrandingForm({
     updateBrandingAction,
     {} as TicketState
   );
+  const { toast } = useToast();
+  useEffect(() => {
+    if (state.success) {
+      toast({
+        title: "ব্র্যান্ডিং সেভ হয়েছে",
+        description: state.message || "থিম আপডেট হয়েছে",
+        kind: "success",
+      });
+    }
+    if (state.error) {
+      toast({ title: "ত্রুটি", description: state.error, kind: "error" });
+    }
+  }, [state, toast]);
+
   const [primary, setPrimary] = useState(defaults.primaryColor || "#059669");
   const [secondary, setSecondary] = useState(
     defaults.secondaryColor || "#0f766e"

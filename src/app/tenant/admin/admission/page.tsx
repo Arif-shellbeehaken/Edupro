@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdmissionForms } from "./admission-forms";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -98,7 +99,10 @@ export default async function AdmissionPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {leads.length === 0 ? (
-                <p className="text-sm text-muted-foreground">কোনো লিড নেই</p>
+                <EmptyState
+                  title="কোনো লিড নেই"
+                  description="নতুন inquiry যোগ করুন বা পাবলিক আবেদন ফর্ম শেয়ার করুন"
+                />
               ) : (
                 leads.map((l) => (
                   <div

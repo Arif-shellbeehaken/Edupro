@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TableScroll } from "@/components/ui/table-scroll";
 import { Button } from "@/components/ui/button";
 
 export default async function AuditPage({
