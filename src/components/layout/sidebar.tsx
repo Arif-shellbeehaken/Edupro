@@ -221,6 +221,36 @@ export function Sidebar({
     };
   }, [mobileOpen]);
 
+  // Focus trap + Escape for mobile drawer (a11y)
+  useEffect(() => {
+    if (!mobileOpen || typeof document === "undefined") return;
+    const drawer = document.getElementById("app-sidebar-drawer");
+    if (!drawer) return;
+    const focusable = drawer.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        return;
+      }
+      if (e.key !== "Tab" || focusable.length === 0) return;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
 
   const q = navQuery.trim().toLowerCase();
   const filteredSections = useMemo(() => {
@@ -267,7 +297,10 @@ export function Sidebar({
         />
       )}
     <aside
-      className={
+      id="app-sidebar-drawer"
+      role="navigation"
+      aria-label="মূল নেভিগেশন"
+            className={
         "fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-[min(18rem,88vw)] flex-col border-r border-border bg-card shadow-xl transition-transform duration-200 md:static md:z-auto md:w-64 md:shadow-none md:translate-x-0 " +
         (mobileOpen ? "translate-x-0" : "-translate-x-full")
       }

@@ -5,6 +5,7 @@ import { useState, useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Mosque, ArrowLeft, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import {
   Card,
   CardContent,
@@ -38,14 +39,21 @@ export default function LoginPage() {
   const emailFor2FA = loginState.email || otpState.email || emailCache;
   const activeError = requires2FA ? otpState.error : loginState.error;
   const isPending = loginPending || otpPending;
+  const { toast } = useToast();
 
   useEffect(() => {
     const s = otpState.success ? otpState : loginState;
     if (s.success && s.redirectTo) {
+      toast({ title: "লগইন সফল", kind: "success" });
       router.push(s.redirectTo);
       router.refresh();
     }
-  }, [loginState, otpState, router]);
+  }, [loginState, otpState, router, toast]);
+
+  useEffect(() => {
+    const err = requires2FA ? otpState.error : loginState.error;
+    if (err) toast({ title: "লগইন ব্যর্থ", description: err, kind: "error" });
+  }, [loginState.error, otpState.error, requires2FA, toast]);
 
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-background to-background px-4 py-8 dark:from-emerald-950/20">

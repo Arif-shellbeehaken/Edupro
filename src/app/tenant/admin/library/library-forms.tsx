@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import {
   Card,
   CardContent,
@@ -32,6 +33,21 @@ export function LibraryForms({
   const [addState, addAction, addPending] = useActionState(createBookAction, {} as OpsState);
   const [issueState, issueAction, issuePending] = useActionState(issueBookAction, {} as OpsState);
   const [retState, retAction, retPending] = useActionState(returnBookAction, {} as OpsState);
+  const { toast } = useToast();
+  useEffect(() => {
+    for (const s of [addState, issueState, retState]) {
+      if (s?.success) {
+        toast({
+          title: "সফল",
+          description: s.message || "সংরক্ষণ হয়েছে",
+          kind: "success",
+        });
+      }
+      if (s?.error) {
+        toast({ title: "ত্রুটি", description: s.error, kind: "error" });
+      }
+    }
+  }, [addState, issueState, retState, toast]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">

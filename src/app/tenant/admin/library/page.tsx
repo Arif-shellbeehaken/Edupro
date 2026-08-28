@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { LibraryForms } from "./library-forms";
 import { OverdueNotifyButton } from "./overdue-notify";
 
@@ -104,7 +105,7 @@ export default async function LibraryPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {overdue.length === 0 ? (
-                <p className="text-sm text-muted-foreground">কোনো ওভারডিউ নেই</p>
+                <EmptyState title="কোনো ওভারডিউ নেই" description="সব ইস্যু সময়মতো আছে" />
               ) : (
                 overdue.slice(0, 15).map((o) => (
                   <div
@@ -151,7 +152,10 @@ export default async function LibraryPage() {
             </CardHeader>
             <CardContent>
               {books.length === 0 ? (
-                <p className="text-sm text-muted-foreground">কোনো বই নেই</p>
+                <EmptyState
+                  title="কোনো বই নেই"
+                  description="লাইব্রেরি ক্যাটালগে প্রথম বই যোগ করুন"
+                />
               ) : (
                 <div className="space-y-2">
                   {books.map((b) => (

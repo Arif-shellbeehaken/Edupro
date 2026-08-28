@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
 export default async function HrDashboardPage() {
@@ -149,12 +150,15 @@ export default async function HrDashboardPage() {
               </CardHeader>
               <CardContent>
                 {staffList.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    কোনো স্টাফ নেই।{" "}
-                    <Link href="/tenant/admin/hr/staff/new" className="text-emerald-600 underline">
-                      প্রথম স্টাফ যোগ করুন
-                    </Link>
-                  </p>
+                  <EmptyState
+                    title="কোনো স্টাফ নেই"
+                    description="HR মডিউল শুরু করতে প্রথম স্টাফ প্রোফাইল তৈরি করুন"
+                    action={
+                      <Button asChild size="sm">
+                        <Link href="/tenant/admin/hr/staff/new">প্রথম স্টাফ যোগ করুন</Link>
+                      </Button>
+                    }
+                  />
                 ) : (
                   <div className="space-y-3">
                     {staffList.map((s) => (
@@ -190,7 +194,10 @@ export default async function HrDashboardPage() {
               </CardHeader>
               <CardContent>
                 {recentLeaves.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">কোনো ছুটির আবেদন নেই</p>
+                  <EmptyState
+                    title="কোনো ছুটির আবেদন নেই"
+                    description="স্টাফ ছুটির অনুরোধ এখানে দেখাবে"
+                  />
                 ) : (
                   <div className="space-y-3">
                     {recentLeaves.map((lv) => (
