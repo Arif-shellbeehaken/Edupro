@@ -191,7 +191,7 @@ export default function HomePage() {
                     জুজ ১২ · সূরা ইউনুস · পৃষ্ঠা ২১৮-২২০
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4 p-6">
+                <CardContent className="page-pad">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">সবক সম্পন্ন</span>
                     <span className="font-semibold text-emerald-600">৮৫%</span>
@@ -286,7 +286,7 @@ export default function HomePage() {
           </p>
           <Button
             size="lg"
-            className="mt-8 bg-white text-emerald-700 hover:bg-emerald-50"
+            className="mt-8 bg-card text-emerald-700 hover:bg-emerald-50"
             asChild
           >
             <Link href="/login">

@@ -34,7 +34,7 @@ export default async function CanteenPage() {
   const todayTotal = sales.reduce((a, s) => a + s.total, 0);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">ক্যান্টিন / মেস POS</h1>
         <p className="text-sm text-muted-foreground">

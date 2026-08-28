@@ -53,7 +53,7 @@ export default async function InventoryPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">

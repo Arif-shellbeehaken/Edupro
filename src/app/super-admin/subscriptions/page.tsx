@@ -67,7 +67,7 @@ export default async function SubscriptionsPage() {
           userName={session.user.name ?? "Super Admin"}
           userRole={session.user.role}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
       <ExpiryNotifyForm />
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>

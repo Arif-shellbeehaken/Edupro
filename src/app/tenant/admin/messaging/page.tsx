@@ -36,7 +36,7 @@ export default async function MessagingPage({
         userName={session.user.name ?? "Admin"}
         userRole={session.user.role}
       />
-      <div className="mx-auto max-w-2xl space-y-4 p-6">
+      <div className="mx-auto max-w-2xl page-pad">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">থ্রেড: {threadKey}</CardTitle>

@@ -29,7 +29,7 @@ export default async function VehiclesPage() {
   const spend = rows.reduce((a, r) => a + (r.amount ?? 0), 0);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">যানবাহন মেইনটেন্যান্স</h1>
         <p className="text-sm text-muted-foreground">

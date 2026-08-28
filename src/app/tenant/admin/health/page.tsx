@@ -23,7 +23,7 @@ export default async function HealthPage() {
     students = list.map((s) => ({ id: s.id, name: s.name, nameBn: s.nameBn }));
   } catch { /* empty */ }
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">স্বাস্থ্য ও ক্লিনিক</h1>
         <p className="text-sm text-muted-foreground">অ্যালার্জি · টিকা · ভিজিট লগ</p>

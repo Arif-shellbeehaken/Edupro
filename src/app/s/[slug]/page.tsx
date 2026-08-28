@@ -47,7 +47,7 @@ export default async function PublicTenantSite({
   const title = tenant.nameBn || tenant.name;
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-background">
       <header
         className="border-b text-white"
         style={{ backgroundColor: primary }}
@@ -59,10 +59,10 @@ export default async function PublicTenantSite({
               <img
                 src={tenant.logoUrl}
                 alt=""
-                className="h-12 w-12 rounded-lg bg-white/20 object-cover"
+                className="h-12 w-12 rounded-lg bg-card/20 object-cover"
               />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/20 text-lg font-bold">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-card/20 text-lg font-bold">
                 {title.slice(0, 1)}
               </div>
             )}

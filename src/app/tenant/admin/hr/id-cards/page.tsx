@@ -57,7 +57,7 @@ export default async function StaffIdCardsPage({
   const roles = [...new Set(staff.map((s) => s.roleType).filter(Boolean))];
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <div className="mx-auto max-w-5xl page-pad">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
           <h1 className="text-2xl font-semibold">স্টাফ আইডি কার্ড</h1>

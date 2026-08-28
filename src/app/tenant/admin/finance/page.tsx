@@ -95,7 +95,7 @@ export default async function FinancePage() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <OverdueFineForm />
           <MonthlyFeeForm classes={feeClasses} />
           <div className="flex flex-wrap gap-2">

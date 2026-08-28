@@ -18,7 +18,7 @@ export default async function NoticesPage() {
   let rows: Awaited<ReturnType<typeof extendedOpsRepository.listNotices>> = [];
   try { rows = await extendedOpsRepository.listNotices(); } catch { /* empty */ }
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">নোটিশ বোর্ড</h1>
         <p className="text-sm text-muted-foreground">ইভেন্ট · ছুটি · ঘোষণা</p>

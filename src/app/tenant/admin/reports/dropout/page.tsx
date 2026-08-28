@@ -38,7 +38,7 @@ export default async function DropoutPage() {
         userName={session.user.name ?? "Admin"}
         userRole={session.user.role}
       />
-      <div className="space-y-6 p-6">
+      <div className="page-pad">
         <DropoutForm />
         <Card>
           <CardHeader>

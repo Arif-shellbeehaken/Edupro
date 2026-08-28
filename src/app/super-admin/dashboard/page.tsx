@@ -73,7 +73,7 @@ export default async function SuperAdminDashboard() {
           isSuperAdmin
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
               <Card key={stat.title}>

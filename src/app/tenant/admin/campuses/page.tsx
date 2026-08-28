@@ -25,7 +25,7 @@ export default async function CampusesPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <CampusDigestForm />
       <div>
         <h1 className="text-2xl font-semibold">মাল্টি-ক্যাম্পাস / শাখা</h1>

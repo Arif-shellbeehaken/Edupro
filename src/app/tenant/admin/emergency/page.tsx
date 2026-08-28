@@ -29,7 +29,7 @@ export default async function EmergencyPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">ইমার্জেন্সি অ্যালার্ট</h1>
         <p className="text-sm text-muted-foreground">

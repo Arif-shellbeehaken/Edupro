@@ -39,7 +39,7 @@ export default async function HijriPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <Card>
             <CardHeader>
               <CardTitle>আজকের হিজরি তারিখ</CardTitle>

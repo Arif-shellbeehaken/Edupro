@@ -51,7 +51,7 @@ export default async function HomeworkPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <HomeworkForm
             classes={classes}
             homeworks={items.map((h) => ({

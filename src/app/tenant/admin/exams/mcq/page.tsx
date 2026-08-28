@@ -44,7 +44,7 @@ export default async function McqExamPage({
         userName={session.user.name ?? "Admin"}
         userRole={session.user.role}
       />
-      <div className="space-y-6 p-6">
+      <div className="page-pad">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">বিষয় নির্বাচন</CardTitle>

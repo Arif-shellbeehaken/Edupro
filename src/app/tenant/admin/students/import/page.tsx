@@ -32,7 +32,7 @@ export default async function StudentImportPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="flex justify-end">
             <Button variant="outline" asChild>
               <Link href="/tenant/admin/students">← শিক্ষার্থী তালিকা</Link>

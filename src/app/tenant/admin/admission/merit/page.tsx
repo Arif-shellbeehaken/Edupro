@@ -31,7 +31,7 @@ export default async function MeritPage() {
         userName={session.user.name ?? "Admin"}
         userRole={session.user.role}
       />
-      <div className="space-y-6 p-6">
+      <div className="page-pad">
         <MeritForm />
         <Card>
           <CardHeader>

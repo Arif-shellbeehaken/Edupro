@@ -72,7 +72,7 @@ export default async function CertificatesPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <PrintQueueForm certs={certs.map((c) => ({ id: c.id, certificateNo: c.certificateNo, studentName: c.studentName, certType: c.certType }))} />
           <CertificateForms students={students} />
 

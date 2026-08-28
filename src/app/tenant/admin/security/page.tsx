@@ -42,7 +42,7 @@ export default async function SecurityPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="flex flex-wrap gap-2">
             <Badge variant={twoFactorEnabled ? "success" : "warning"}>
               2FA: {twoFactorEnabled ? "ON" : "OFF"}

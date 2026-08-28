@@ -19,7 +19,7 @@ export default async function SurveysPage() {
   let rows: Awaited<ReturnType<typeof extendedOpsRepository.listSurveys>> = [];
   try { rows = await extendedOpsRepository.listSurveys(); } catch { /* empty */ }
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <NpsSurveyForm />
       <div>
         <h1 className="text-2xl font-semibold">ফিডব্যাক / সার্ভে</h1>

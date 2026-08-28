@@ -71,7 +71,7 @@ export default async function StaffAttendancePage({
   });
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">স্টাফ উপস্থিতি ও ছুটি ক্যালেন্ডার</h1>

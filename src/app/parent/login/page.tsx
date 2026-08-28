@@ -42,7 +42,7 @@ export default function ParentLoginPage() {
   }, [verState, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-emerald-50 to-zinc-50 p-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-gradient-to-b from-emerald-50 via-background to-background p-3 sm:p-4 dark:from-emerald-950/30">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
           <CardTitle className="text-emerald-800">অভিভাবক লগইন</CardTitle>

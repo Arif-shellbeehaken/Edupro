@@ -41,7 +41,7 @@ export default async function DonationsPage() {
     <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="যাকাত / অনুদান" subtitle="Donation · Zakat · Receipt" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">মোট সংগ্রহ</CardTitle></CardHeader>

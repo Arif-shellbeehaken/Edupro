@@ -49,7 +49,7 @@ export default function PublicAdmissionPage({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-6">
+    <div className="flex min-h-screen items-center justify-center bg-background p-6">
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>অনলাইন ভর্তি আবেদন</CardTitle>

@@ -30,7 +30,7 @@ export default async function GatePage() {
     <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="গেট / ভিজিটর" subtitle="চেক-ইন · চেক-আউট" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">এখন ভিতরে</CardTitle></CardHeader>
             <CardContent><div className="text-2xl font-bold">{inside}</div></CardContent></Card>
           <GateForms insideVisitors={visitors.filter((v) => v.status === "IN").map((v) => ({ id: v.id, name: v.visitorName, purpose: v.purpose }))} />

@@ -18,7 +18,7 @@ export default async function AlumniPage() {
   let rows: Awaited<ReturnType<typeof extendedOpsRepository.listAlumni>> = [];
   try { rows = await extendedOpsRepository.listAlumni(); } catch { /* empty */ }
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">অ্যালামনাই নেটওয়ার্ক</h1>
         <p className="text-sm text-muted-foreground">পাশ করা শিক্ষার্থী · ক্যারিয়ার</p>

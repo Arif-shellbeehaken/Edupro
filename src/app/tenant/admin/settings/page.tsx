@@ -69,7 +69,7 @@ export default async function SettingsPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           {tenant && (
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">Plan: {tenant.plan}</Badge>

@@ -42,7 +42,7 @@ export default async function PublicTenantPage({
   const brand = tenant.primaryColor || "#059669";
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-background">
       <header
         className="border-b px-6 py-8 text-white"
         style={{ backgroundColor: brand }}
@@ -53,7 +53,7 @@ export default async function PublicTenantPage({
             <img
               src={tenant.logoUrl}
               alt=""
-              className="h-14 w-14 rounded-lg bg-white/20 object-cover"
+              className="h-14 w-14 rounded-lg bg-card/20 object-cover"
             />
           ) : null}
           <div>
@@ -64,7 +64,7 @@ export default async function PublicTenantPage({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl space-y-6 p-6">
+      <main className="mx-auto max-w-3xl page-pad">
         <Card>
           <CardHeader>
             <CardTitle>যোগাযোগ</CardTitle>

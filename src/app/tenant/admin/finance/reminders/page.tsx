@@ -57,7 +57,7 @@ export default async function FeeRemindersPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="flex flex-wrap gap-2 text-sm">
             <Link href="/tenant/admin/finance" className="underline">
               ফিন্যান্স

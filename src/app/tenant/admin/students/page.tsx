@@ -56,7 +56,7 @@ export default async function StudentsPage() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <StudentStatusForm students={students.map((s) => ({ id: s.id, name: s.name, nameBn: s.nameBn, studentId: s.studentId, status: s.status }))} />
           <div className="flex flex-wrap gap-2">
             <Link

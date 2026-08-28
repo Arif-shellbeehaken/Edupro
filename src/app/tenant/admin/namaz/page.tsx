@@ -64,7 +64,7 @@ export default async function NamazPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="grid gap-3 sm:grid-cols-5">
             {prayers.map((p) => (
               <Card key={p}>

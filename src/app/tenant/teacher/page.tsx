@@ -82,7 +82,7 @@ export default async function TeacherPortalPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b px-6 py-4">
+      <header className="border-b px-3 py-3 sm:px-6 sm:py-4">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">শিক্ষক পোর্টাল</h1>
@@ -99,7 +99,7 @@ export default async function TeacherPortalPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl space-y-6 p-6">
+      <main className="mx-auto max-w-4xl page-pad">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">দ্রুত লিংক</CardTitle>

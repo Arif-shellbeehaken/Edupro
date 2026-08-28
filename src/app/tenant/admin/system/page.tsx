@@ -45,7 +45,7 @@ export default async function TenantSystemPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">সিস্টেম স্ট্যাটাস</h1>
         <p className="text-sm text-muted-foreground">

@@ -92,7 +92,7 @@ export default async function LedgerPage() {
   const net = income - expense;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">অ্যাকাউন্টিং লেজার</h1>

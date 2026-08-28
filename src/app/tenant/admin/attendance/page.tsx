@@ -66,7 +66,7 @@ export default async function AttendancePage() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="grid gap-4 sm:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">

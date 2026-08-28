@@ -75,7 +75,7 @@ export default async function TimetablePage() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <PublishDayForm classes={classes.map((c) => ({ id: c.id, name: c.nameBn || c.name }))} />
           <TimetableDigestForm classes={classes} />
           <div className="grid gap-6 lg:grid-cols-3">

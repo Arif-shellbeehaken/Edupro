@@ -31,7 +31,7 @@ export default async function GrievancePage() {
     <>
       <main className="flex-1 overflow-y-auto bg-background">
         <AppHeader title="অভিযোগ সেল" subtitle="Grievance tracking" userName={session.user.name ?? "Admin"} userRole={session.user.role} tenantName={tenantName} />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
       <GrievanceSlaForm />
           <Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">ওপেন</CardTitle></CardHeader>
             <CardContent><div className="text-2xl font-bold text-amber-600">{open}</div></CardContent></Card>

@@ -35,9 +35,9 @@ export default async function StudentPortalPage() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="border-b bg-white px-6 py-4 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
+    <div className="min-h-[100dvh] bg-background">
+      <header className="border-b bg-card px-3 py-3 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-2">
           <div>
             <h1 className="text-lg font-bold text-emerald-800">শিক্ষার্থী পোর্টাল</h1>
             <p className="text-xs text-muted-foreground">
@@ -49,7 +49,7 @@ export default async function StudentPortalPage() {
           </Button>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl space-y-6 p-6">
+      <main className="mx-auto max-w-3xl page-pad">
         <Card>
           <CardHeader>
             <CardTitle>হোমওয়ার্ক / অ্যাসাইনমেন্ট</CardTitle>

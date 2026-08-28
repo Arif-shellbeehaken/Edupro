@@ -18,7 +18,7 @@ export default async function LmsPage() {
   let rows: Awaited<ReturnType<typeof extendedOpsRepository.listMaterials>> = [];
   try { rows = await extendedOpsRepository.listMaterials(); } catch { /* empty */ }
   return (
-    <div className="space-y-6 p-6">
+    <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">LMS / স্টাডি ম্যাটেরিয়াল</h1>
         <p className="text-sm text-muted-foreground">নোট · ভিডিও · লিংক</p>

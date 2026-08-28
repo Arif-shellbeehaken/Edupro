@@ -50,7 +50,7 @@ export default async function TenantsPage() {
           isSuperAdmin
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               মোট {tenants.length} টি প্রতিষ্ঠান

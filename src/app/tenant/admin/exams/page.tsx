@@ -87,7 +87,7 @@ export default async function ExamsPage() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <ExamSeatingForm
             exams={exams.map((e) => ({ id: e.id, name: e.name, nameBn: e.nameBn ?? null }))}
             classes={classes}

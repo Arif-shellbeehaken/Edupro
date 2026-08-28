@@ -66,7 +66,7 @@ export default async function AuditPage({
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <AuditExportForm />
 
           <Card>

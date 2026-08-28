@@ -63,7 +63,7 @@ export default async function AcademicRolloverPage() {
           userRole={session.user.role}
           tenantName={tenantName}
         />
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <div className="flex flex-wrap gap-2 text-sm">
             <Link href="/tenant/admin/students/promote" className="underline">
               ব্যাচ প্রমোশন

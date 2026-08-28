@@ -220,7 +220,7 @@ export default async function TenantAdminDashboard() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           {!branding.onboardingDone && (
             <Card className="border-amber-200 bg-amber-50/50">
               <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">

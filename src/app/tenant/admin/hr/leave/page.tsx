@@ -71,7 +71,7 @@ export default async function LeavePage() {
           tenantName={tenantName}
         />
 
-        <div className="space-y-6 p-6">
+        <div className="page-pad">
           <LeaveBalanceForm staff={staff} />
           <Link href="/tenant/admin/hr" className="text-sm text-emerald-600 hover:underline">
             ← HR ড্যাশবোর্ড

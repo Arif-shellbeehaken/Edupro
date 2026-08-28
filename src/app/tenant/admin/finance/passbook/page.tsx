@@ -66,7 +66,7 @@ export default async function FeePassbookPage({
   const due = billed - paid;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
+    <div className="mx-auto max-w-3xl page-pad">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
           <h1 className="text-2xl font-semibold">ফি পাসবুক / সেটেলমেন্ট</h1>
