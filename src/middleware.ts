@@ -10,6 +10,7 @@ const publicExact = new Set(["/", "/login"]);
 const publicPrefixes = [
   "/api/auth",
   "/api/health",
+  "/api/cron",
   "/parent",
 ];
 

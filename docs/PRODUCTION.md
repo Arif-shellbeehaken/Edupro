@@ -160,3 +160,21 @@ docker compose down
 ```
 
 App service depends on Postgres healthcheck; app exposes `/api/health` for LB probes.
+
+
+---
+
+## Rate limiting
+
+- Default: in-memory (single node)
+- Scale-out: set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
+- Use `rateLimitAsync` for Redis-backed paths when wiring new endpoints
+
+## Data retention cron
+
+```bash
+curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
+  https://your-domain/api/cron/retention
+```
+
+Schedule daily via system cron, GitHub Actions scheduled workflow, or cloud scheduler.
