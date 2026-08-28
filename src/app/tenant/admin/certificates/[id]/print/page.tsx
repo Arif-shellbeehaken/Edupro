@@ -123,7 +123,7 @@ export default async function CertificatePrintPage({
                 <strong>{issueDate}</strong> তারিখ থেকে এ প্রতিষ্ঠান থেকে অব্যাহতি
                 দেওয়া হলো।
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-2 rounded border border-zinc-200 p-3 text-sm">
+              <div className="mt-4 grid grid-cols-2 gap-2 rounded border border-border p-3 text-sm">
                 <p>
                   Certificate No: <strong>{cert.certificateNo}</strong>
                 </p>

@@ -91,7 +91,7 @@ export default function LoginPage() {
                   defaultValue={emailCache}
                   onChange={(e) => setEmailCache(e.target.value)}
                   placeholder="admin@demo-madrasah.edu.bd"
-                  className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
               <div className="space-y-2">
@@ -108,7 +108,7 @@ export default function LoginPage() {
                     defaultValue={passwordCache}
                     onChange={(e) => setPasswordCache(e.target.value)}
                     placeholder="••••••••"
-                    className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 pr-10 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 pr-10 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                   <button
                     type="button"
@@ -154,7 +154,7 @@ export default function LoginPage() {
                   required
                   maxLength={8}
                   placeholder="000000"
-                  className="flex h-12 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-center text-2xl tracking-[0.4em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex h-12 w-full rounded-lg border border-border bg-background px-3 py-2 text-center text-2xl tracking-[0.4em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
               {activeError && (
@@ -176,7 +176,7 @@ export default function LoginPage() {
             </form>
           )}
 
-          <div className="rounded-lg border border-dashed border-zinc-200 bg-muted/30 p-3 text-xs text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 text-xs text-muted-foreground">
             <p className="mb-1 font-medium text-foreground">ডেমো অ্যাকাউন্ট:</p>
             <p>Super Admin → super@edupro.app / Super@1234</p>
             <p>Institution Admin → admin@demo-madrasah.edu.bd / Admin@1234</p>

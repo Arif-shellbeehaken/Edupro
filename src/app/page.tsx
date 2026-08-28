@@ -236,7 +236,7 @@ export default function HomePage() {
               <Card
                 key={plan.name}
                 className={`relative flex flex-col ${
-                  plan.popular ? "border-emerald-500 shadow-lg ring-1 ring-emerald-500" : ""
+                  plan.popular ? "border-emerald-500 shadow-lg ring-1 ring-ring" : ""
                 }`}
               >
                 {plan.popular && (

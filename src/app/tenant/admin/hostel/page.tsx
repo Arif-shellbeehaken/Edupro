@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { HostelForms } from "./hostel-forms";
 
 export default async function HostelPage() {
@@ -110,7 +111,10 @@ export default async function HostelPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {rooms.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">কোনো রুম নেই</p>
+                  <EmptyState
+                    title="কোনো রুম নেই"
+                    description="হোস্টেল রুম যোগ করে অ্যালোকেশন শুরু করুন"
+                  />
                 ) : (
                   rooms.map((r) => (
                     <div
@@ -136,7 +140,10 @@ export default async function HostelPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {allocations.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">কোনো অ্যালোকেশন নেই</p>
+                  <EmptyState
+                    title="কোনো অ্যালোকেশন নেই"
+                    description="শিক্ষার্থীকে রুমে বরাদ্দ করুন"
+                  />
                 ) : (
                   allocations.map((a) => (
                     <div key={a.id} className="rounded-lg border px-3 py-2 text-sm">

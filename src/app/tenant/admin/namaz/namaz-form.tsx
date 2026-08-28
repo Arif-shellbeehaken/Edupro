@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { markNamazAction, type NamazState } from "@/application/use-cases/namaz/mark";
 
 const selectClass =
-  "h-8 rounded border border-zinc-200 bg-background px-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500";
+  "h-8 rounded border border-border bg-background px-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 const PRAYERS = [
   { key: "fajr", label: "ফজর" },

@@ -34,7 +34,7 @@ export function AttendanceForm({
             type="date"
             required
             defaultValue={defaultDate}
-            className="flex h-10 rounded-lg border border-zinc-200 bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="flex h-10 rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
         <label className="flex items-center gap-2 text-sm">
@@ -75,7 +75,7 @@ export function AttendanceForm({
             <select
               name={`status__${s.id}`}
               defaultValue="PRESENT"
-              className="h-9 rounded-lg border border-zinc-200 bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+              className="h-9 rounded-lg border border-border bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="PRESENT">উপস্থিত</option>
               <option value="ABSENT">অনুপস্থিত</option>

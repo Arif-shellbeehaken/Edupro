@@ -17,7 +17,7 @@ import {
 } from "@/application/use-cases/crm/public-admission";
 
 const inputClass =
-  "flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm";
+  "flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm";
 
 export default function PublicAdmissionPage({
   params,

@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { InventoryForms } from "./inventory-forms";
 import { LowStockNotifyButton } from "./low-stock-notify";
 
@@ -107,7 +108,10 @@ export default async function InventoryPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {items.length === 0 ? (
-                <p className="text-sm text-muted-foreground">কোনো আইটেম নেই</p>
+                <EmptyState
+                  title="কোনো আইটেম নেই"
+                  description="স্টক আইটেম যোগ করে ইনভেন্টরি শুরু করুন"
+                />
               ) : (
                 items.map((i) => (
                   <div

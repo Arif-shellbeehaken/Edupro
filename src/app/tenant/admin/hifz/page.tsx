@@ -181,7 +181,7 @@ export default async function HifzPage() {
               <input
                 type="search"
                 placeholder="নাম বা আইডি দিয়ে খুঁজুন..."
-                className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background pl-9 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                className="flex h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
             <Button asChild>

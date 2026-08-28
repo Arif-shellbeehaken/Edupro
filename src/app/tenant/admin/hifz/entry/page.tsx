@@ -62,7 +62,7 @@ export default function HifzEntryPage() {
                   required
                   defaultValue={studentId}
                   placeholder="Student cuid"
-                  className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -75,7 +75,7 @@ export default function HifzEntryPage() {
                   name="stream"
                   required
                   defaultValue="SABAK"
-                  className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="SABAK">সবক (নতুন হিফজ)</option>
                   <option value="SABKI">সবকি (সাম্প্রতিক রিভিশন)</option>
@@ -96,7 +96,7 @@ export default function HifzEntryPage() {
                     max={30}
                     required
                     defaultValue={1}
-                    className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="space-y-2">
@@ -111,7 +111,7 @@ export default function HifzEntryPage() {
                     max={604}
                     required
                     defaultValue={1}
-                    className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="space-y-2">
@@ -126,7 +126,7 @@ export default function HifzEntryPage() {
                     max={30}
                     required
                     defaultValue={1}
-                    className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <div className="space-y-2">
@@ -141,7 +141,7 @@ export default function HifzEntryPage() {
                     max={604}
                     required
                     defaultValue={2}
-                    className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
               </div>
@@ -155,7 +155,7 @@ export default function HifzEntryPage() {
                   name="quality"
                   required
                   defaultValue="GOOD"
-                  className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="EXCELLENT">চমৎকার (৫)</option>
                   <option value="GOOD">ভালো (৪)</option>
@@ -174,7 +174,7 @@ export default function HifzEntryPage() {
                   name="mistakesCount"
                   type="number"
                   min={0}
-                  className="flex h-10 w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
@@ -186,7 +186,7 @@ export default function HifzEntryPage() {
                   id="teacherNote"
                   name="teacherNote"
                   rows={3}
-                  className="flex w-full rounded-lg border border-zinc-200 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="flex w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
 
