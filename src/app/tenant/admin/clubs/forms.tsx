@@ -9,7 +9,7 @@ import {
 } from "@/application/use-cases/extended/actions";
 
 const inputClass =
-  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm";
+  "flex h-9 w-full rounded-md border border-border bg-background px-3 py-1 text-sm";
 
 export function ModuleForm({
   clubs = [],

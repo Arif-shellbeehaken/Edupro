@@ -4,6 +4,7 @@ import { extendedOpsRepository } from "@/infrastructure/database/repositories/ex
 import { createVehicleLogAction } from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
 function bdt(n: number) {
@@ -68,7 +69,10 @@ export default async function VehiclesPage() {
       </Card>
 
       <div className="space-y-2">
-        {rows.map((r) => (
+        {rows.length === 0 ? (
+          <EmptyState title="কোনো যানবাহন লগ নেই" description="সার্ভিস/জ্বালানি লগ যোগ করুন" />
+        ) : (
+        rows.map((r) => (
           <Card key={r.id}>
             <CardContent className="flex flex-wrap items-center justify-between gap-2 py-3">
               <div>
@@ -87,7 +91,8 @@ export default async function VehiclesPage() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        ))
+        )}
       </div>
     </div>
   );

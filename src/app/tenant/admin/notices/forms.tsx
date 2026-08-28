@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createNoticeAction, type ExtState } from "@/application/use-cases/extended/actions";
 
-const inputClass = "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm";
+const inputClass = "flex h-9 w-full rounded-md border border-border bg-background px-3 py-1 text-sm";
 
 export function ModuleForm() {
   const [state, action, pending] = useActionState(createNoticeAction, {} as ExtState);

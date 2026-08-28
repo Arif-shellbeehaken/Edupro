@@ -4,6 +4,8 @@ import { auth } from "@/infrastructure/auth/auth";
 import { ModuleForm } from "./forms";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
+import { updateAlumniAction } from "@/application/use-cases/extended/extended-actions";
 
 export default async function AlumniPage() {
   const session = await auth();
@@ -37,7 +39,15 @@ export default async function AlumniPage() {
                   {[a.graduationYear, a.lastClass, a.currentJob, a.organization].filter(Boolean).join(" · ")}
                 </p>
               </div>
-              <p className="text-xs text-muted-foreground">{a.phone || a.email}</p>
+              <div className="w-full sm:w-auto">
+                <p className="text-xs text-muted-foreground mb-1">{a.phone || a.email || "—"}</p>
+                <form action={updateAlumniAction} className="flex flex-wrap gap-1">
+                  <input type="hidden" name="id" value={a.id} />
+                  <input name="phone" defaultValue={a.phone || ""} placeholder="ফোন" className="h-8 w-28 rounded border border-border bg-background px-2 text-xs" />
+                  <input name="currentJob" defaultValue={a.currentJob || ""} placeholder="পেশা" className="h-8 w-28 rounded border border-border bg-background px-2 text-xs" />
+                  <Button type="submit" size="sm" variant="outline">আপডেট</Button>
+                </form>
+              </div>
             </CardContent>
           </Card>
         ))}

@@ -5,6 +5,7 @@ import { auth } from "@/infrastructure/auth/auth";
 import { ModuleForm } from "./forms";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function SurveysPage() {
   const session = await auth();
@@ -27,7 +28,9 @@ export default async function SurveysPage() {
       </div>
       <ModuleForm />
       <div className="space-y-2">
-        {rows.map((s) => {
+        {rows.length === 0 ? (
+        <EmptyState title="কোনো সার্ভে নেই" />
+      ) : rows.map((s) => {
           const scores = s.responses.map((r) => r.score).filter((x): x is number => x != null);
           const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : "—";
           return (

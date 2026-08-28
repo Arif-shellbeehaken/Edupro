@@ -7,6 +7,7 @@ import {
 } from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
 export default async function CareerPage() {
@@ -87,7 +88,9 @@ export default async function CareerPage() {
       </Card>
 
       <div className="space-y-2">
-        {rows.map((r) => (
+        {rows.length === 0 ? (
+        <EmptyState title="কোনো জব পোস্ট নেই" />
+      ) : rows.map((r) => (
           <Card key={r.id}>
             <CardContent className="py-4">
               <div className="flex flex-wrap items-center justify-between gap-2">

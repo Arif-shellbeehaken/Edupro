@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/ui/empty-state";
 import { extendedOpsRepository } from "@/infrastructure/database/repositories/extended-ops-repository";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { auth } from "@/infrastructure/auth/auth";
@@ -25,7 +26,9 @@ export default async function LmsPage() {
       </div>
       <ModuleForm />
       <div className="space-y-2">
-        {rows.map((m) => (
+        {rows.length === 0 ? (
+        <EmptyState title="কোনো ম্যাটেরিয়াল নেই" />
+      ) : rows.map((m) => (
           <Card key={m.id}>
             <CardContent className="flex flex-wrap items-center justify-between gap-2 py-3">
               <div>

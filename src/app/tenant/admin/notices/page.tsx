@@ -4,6 +4,7 @@ import { auth } from "@/infrastructure/auth/auth";
 import { ModuleForm } from "./forms";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function NoticesPage() {
   const session = await auth();
@@ -25,7 +26,10 @@ export default async function NoticesPage() {
       </div>
       <ModuleForm />
       <div className="space-y-2">
-        {rows.map((n) => (
+        {rows.length === 0 ? (
+          <EmptyState title="কোনো নোটিশ নেই" description="প্রথম নোটিশ প্রকাশ করুন" />
+        ) : (
+        rows.map((n) => (
           <Card key={n.id}>
             <CardContent className="py-3">
               <div className="flex items-center justify-between gap-2">
@@ -35,7 +39,8 @@ export default async function NoticesPage() {
               <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{n.body}</p>
             </CardContent>
           </Card>
-        ))}
+        ))
+        )}
       </div>
     </div>
   );
