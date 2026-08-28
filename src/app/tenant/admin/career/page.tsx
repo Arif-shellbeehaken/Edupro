@@ -1,7 +1,10 @@
 import { auth } from "@/infrastructure/auth/auth";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { extendedOpsRepository } from "@/infrastructure/database/repositories/extended-ops-repository";
-import { createJobAction } from "@/application/use-cases/extended/extended-actions";
+import {
+  createJobAction,
+  toggleJobActiveAction,
+} from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -89,7 +92,19 @@ export default async function CareerPage() {
             <CardContent className="py-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-medium">{r.title}</p>
-                <Badge variant="secondary">{r.jobType}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{r.jobType}</Badge>
+                  <Badge variant={r.isActive ? "success" : "outline"}>
+                    {r.isActive ? "সক্রিয়" : "বন্ধ"}
+                  </Badge>
+                  <form action={toggleJobActiveAction}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <input type="hidden" name="active" value={r.isActive ? "false" : "true"} />
+                    <Button type="submit" size="sm" variant="outline">
+                      {r.isActive ? "বন্ধ করুন" : "সক্রিয়"}
+                    </Button>
+                  </form>
+                </div>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 {[r.company, r.location].filter(Boolean).join(" · ")}

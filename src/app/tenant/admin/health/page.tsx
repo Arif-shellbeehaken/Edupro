@@ -4,6 +4,8 @@ import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { auth } from "@/infrastructure/auth/auth";
 import { ModuleForm } from "./forms";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default async function HealthPage() {
   const session = await auth();
@@ -21,28 +23,65 @@ export default async function HealthPage() {
     records = await extendedOpsRepository.listHealth();
     const list = await studentRepository.list({ take: 200 });
     students = list.map((s) => ({ id: s.id, name: s.name, nameBn: s.nameBn }));
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
+  const nameById = Object.fromEntries(
+    students.map((s) => [s.id, s.nameBn || s.name])
+  );
+
   return (
     <div className="page-pad">
       <div>
         <h1 className="text-2xl font-semibold">স্বাস্থ্য ও ক্লিনিক</h1>
-        <p className="text-sm text-muted-foreground">অ্যালার্জি · টিকা · ভিজিট লগ</p>
+        <p className="text-sm text-muted-foreground">
+          অ্যালার্জি · ক্রনিক · টিকা · ইমার্জেন্সি কন্টাক্ট · ভিজিট নোট · অভিভাবক SMS
+        </p>
       </div>
       <ModuleForm students={students} />
       <div className="space-y-2">
-        {records.map((r) => (
-          <Card key={r.id}>
-            <CardContent className="py-3">
-              <p className="text-sm font-medium">Student: {r.studentId}</p>
-              <p className="text-xs text-muted-foreground">
-                {[r.bloodGroup, r.allergies, r.chronicConditions, r.emergencyContact]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-              {r.lastVisitNote && <p className="mt-1 text-sm">{r.lastVisitNote}</p>}
-            </CardContent>
-          </Card>
-        ))}
+        {records.length === 0 ? (
+          <EmptyState
+            title="কোনো স্বাস্থ্য রেকর্ড নেই"
+            description="শিক্ষার্থী নির্বাচন করে অ্যালার্জি/টিকা/ভিজিট সংরক্ষণ করুন"
+          />
+        ) : (
+          records.map((r) => (
+            <Card key={r.id}>
+              <CardContent className="space-y-1 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-medium">
+                    {nameById[r.studentId] || r.studentId}
+                  </p>
+                  {r.bloodGroup && (
+                    <Badge variant="secondary">{r.bloodGroup}</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {[
+                    r.allergies ? `অ্যালার্জি: ${r.allergies}` : null,
+                    r.chronicConditions
+                      ? `ক্রনিক: ${r.chronicConditions}`
+                      : null,
+                    r.emergencyContact
+                      ? `জরুরি: ${r.emergencyContact}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                {r.vaccinations && (
+                  <p className="text-xs">টিকা: {r.vaccinations}</p>
+                )}
+                {r.lastVisitNote && (
+                  <p className="mt-1 text-sm border-t border-border pt-2">
+                    {r.lastVisitNote}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );

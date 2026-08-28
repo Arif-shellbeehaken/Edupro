@@ -623,3 +623,73 @@ export async function scheduleEmergencyDrillAction(formData: FormData) {
   revalidatePath("/tenant/admin/emergency");
   revalidatePath("/tenant/admin/communication");
 }
+
+
+/** Lifecycle: asset condition / retire */
+export async function updateAssetConditionAction(formData: FormData) {
+  const session = await ctx();
+  const id = String(formData.get("id") || "");
+  const condition = String(formData.get("condition") || "GOOD");
+  const retire = formData.get("retire") === "on";
+  if (!id) return;
+  await extendedOpsRepository.updateAssetCondition(
+    id,
+    condition,
+    retire ? false : undefined
+  );
+  revalidatePath("/tenant/admin/assets");
+}
+
+export async function toggleCanteenItemAction(formData: FormData) {
+  const session = await ctx();
+  const id = String(formData.get("id") || "");
+  const available = formData.get("available") === "true";
+  if (!id) return;
+  await extendedOpsRepository.setCanteenItemAvailability(id, available);
+  revalidatePath("/tenant/admin/canteen");
+}
+
+export async function toggleJobActiveAction(formData: FormData) {
+  const session = await ctx();
+  const id = String(formData.get("id") || "");
+  const active = formData.get("active") === "true";
+  if (!id) return;
+  await extendedOpsRepository.setJobActive(id, active);
+  revalidatePath("/tenant/admin/career");
+}
+
+export async function updateAlumniAction(formData: FormData) {
+  const session = await ctx();
+  const id = String(formData.get("id") || "");
+  if (!id) return;
+  await extendedOpsRepository.updateAlumni(id, {
+    phone: String(formData.get("phone") || "") || undefined,
+    email: String(formData.get("email") || "") || undefined,
+    currentJob: String(formData.get("currentJob") || "") || undefined,
+    organization: String(formData.get("organization") || "") || undefined,
+  });
+  revalidatePath("/tenant/admin/alumni");
+}
+
+/** Canteen sale from menu item id — auto price */
+export async function sellCanteenItemAction(formData: FormData) {
+  const session = await ctx();
+  const itemId = String(formData.get("itemId") || "");
+  const qty = Math.max(1, Number(formData.get("quantity") || 1));
+  const item = itemId
+    ? await extendedOpsRepository.getCanteenItem(itemId)
+    : null;
+  const itemName = item?.name || String(formData.get("itemName") || "");
+  const unit = item?.price ?? Number(formData.get("unitPrice") || 0);
+  if (!itemName || unit <= 0) return;
+  await extendedOpsRepository.createCanteenSale({
+    tenantId: session.user.tenantId!,
+    itemName,
+    quantity: qty,
+    unitPrice: unit,
+    studentId: String(formData.get("studentId") || "") || undefined,
+    paidVia: String(formData.get("paidVia") || "CASH"),
+    note: String(formData.get("note") || "") || undefined,
+  });
+  revalidatePath("/tenant/admin/canteen");
+}

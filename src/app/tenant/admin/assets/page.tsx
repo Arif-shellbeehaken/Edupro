@@ -1,7 +1,10 @@
 import { auth } from "@/infrastructure/auth/auth";
 import { setTenantContext } from "@/infrastructure/tenancy/tenant-context";
 import { extendedOpsRepository } from "@/infrastructure/database/repositories/extended-ops-repository";
-import { createAssetAction } from "@/application/use-cases/extended/extended-actions";
+import {
+  createAssetAction,
+  updateAssetConditionAction,
+} from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -118,9 +121,23 @@ export default async function AssetsPage() {
                     .join(" · ")}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{r.category}</Badge>
                 <Badge>{r.condition}</Badge>
+                {!r.isActive && <Badge variant="outline">নিষ্ক্রিয়</Badge>}
+                <form action={updateAssetConditionAction} className="flex flex-wrap items-center gap-1">
+                  <input type="hidden" name="id" value={r.id} />
+                  <select name="condition" defaultValue={r.condition} className="h-8 rounded border border-border bg-background px-2 text-xs">
+                    <option value="GOOD">ভালো</option>
+                    <option value="FAIR">মোটামুটি</option>
+                    <option value="POOR">খারাপ</option>
+                    <option value="RETIRED">অবসর</option>
+                  </select>
+                  <label className="flex items-center gap-1 text-xs">
+                    <input type="checkbox" name="retire" /> অবসর
+                  </label>
+                  <Button type="submit" size="sm" variant="outline">আপডেট</Button>
+                </form>
               </div>
             </CardContent>
           </Card>

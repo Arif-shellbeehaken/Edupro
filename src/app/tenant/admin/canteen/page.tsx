@@ -4,6 +4,8 @@ import { extendedOpsRepository } from "@/infrastructure/database/repositories/ex
 import {
   createCanteenItemAction,
   createCanteenSaleAction,
+  sellCanteenItemAction,
+  toggleCanteenItemAction,
 } from "@/application/use-cases/extended/extended-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +75,26 @@ export default async function CanteenPage() {
 
         <Card>
           <CardHeader>
+            
+            <form action={sellCanteenItemAction} className="mb-4 grid gap-2 sm:grid-cols-2 rounded-lg border border-emerald-200 bg-emerald-50/30 p-3">
+              <select name="itemId" required className="rounded-md border border-border bg-background px-3 py-2 text-sm sm:col-span-2">
+                <option value="">মেনু থেকে আইটেম *</option>
+                {items.filter((i) => i.isAvailable).map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.nameBn || i.name} — ৳{i.price}
+                  </option>
+                ))}
+              </select>
+              <input name="quantity" type="number" min={1} defaultValue={1} className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
+              <select name="paidVia" className="rounded-md border border-border bg-background px-3 py-2 text-sm">
+                <option value="CASH">নগদ</option>
+                <option value="CARD">কার্ড</option>
+                <option value="ACCOUNT">হিসাব</option>
+              </select>
+              <input name="studentId" placeholder="Student internal id (optional)" className="rounded-md border border-border bg-background px-3 py-2 text-sm sm:col-span-2" />
+              <Button type="submit" className="sm:col-span-2">POS বিক্রি</Button>
+            </form>
+
             <CardTitle>বিক্রি রেকর্ড · অভিভাবক SMS</CardTitle>
           </CardHeader>
           <CardContent>

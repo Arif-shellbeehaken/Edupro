@@ -456,4 +456,50 @@ export const extendedOpsRepository = {
       },
     });
   },
+
+  async updateAssetCondition(id: string, condition: string, isActive?: boolean) {
+    const tid = requireTenantId();
+    return prisma.fixedAsset.updateMany({
+      where: { id, tenantId: tid },
+      data: {
+        condition,
+        ...(typeof isActive === "boolean" ? { isActive } : {}),
+      },
+    });
+  },
+  async setCanteenItemAvailability(id: string, isAvailable: boolean) {
+    const tid = requireTenantId();
+    return prisma.canteenItem.updateMany({
+      where: { id, tenantId: tid },
+      data: { isAvailable },
+    });
+  },
+  async setJobActive(id: string, isActive: boolean) {
+    const tid = requireTenantId();
+    return prisma.jobPosting.updateMany({
+      where: { id, tenantId: tid },
+      data: { isActive },
+    });
+  },
+  async updateAlumni(id: string, data: {
+    phone?: string;
+    email?: string;
+    currentJob?: string;
+    organization?: string;
+  }) {
+    const tid = requireTenantId();
+    return prisma.alumni.updateMany({
+      where: { id, tenantId: tid },
+      data: {
+        phone: data.phone,
+        email: data.email,
+        currentJob: data.currentJob,
+        organization: data.organization,
+      },
+    });
+  },
+  async getCanteenItem(id: string) {
+    const tid = requireTenantId();
+    return prisma.canteenItem.findFirst({ where: { id, tenantId: tid } });
+  },
 };
