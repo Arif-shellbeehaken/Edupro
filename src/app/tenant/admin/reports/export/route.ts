@@ -1,5 +1,6 @@
 import { auth } from "@/infrastructure/auth/auth";
-import { prisma } from "@/infrastructure/database/prisma";
+import { getReadPrisma } from "@/infrastructure/database/prisma";
+
 import { NextResponse } from "next/server";
 
 function csvEscape(v: string | number | null | undefined) {
@@ -15,6 +16,7 @@ function csvEscape(v: string | number | null | undefined) {
  * ?type=students | staff | attendance
  */
 export async function GET(req: Request) {
+  const db = getReadPrisma();
   const session = await auth();
   if (!session?.user?.tenantId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,7 +28,7 @@ export async function GET(req: Request) {
   const date = new Date().toISOString().slice(0, 10);
 
   if (type === "staff") {
-    const staff = await prisma.staff.findMany({
+    const staff = await db.staff.findMany({
       where: { tenantId: tid, deletedAt: null },
       orderBy: { employeeId: "asc" },
     });
@@ -78,7 +80,7 @@ export async function GET(req: Request) {
     // Last 30 days summary per student
     const since = new Date();
     since.setDate(since.getDate() - 30);
-    const students = await prisma.student.findMany({
+    const students = await db.student.findMany({
       where: { tenantId: tid, deletedAt: null, status: "ACTIVE" },
       select: {
         id: true,
@@ -89,7 +91,7 @@ export async function GET(req: Request) {
       },
       take: 2000,
     });
-    const att = await prisma.attendance.findMany({
+    const att = await db.attendance.findMany({
       where: {
         tenantId: tid,
         date: { gte: since },
@@ -145,7 +147,7 @@ export async function GET(req: Request) {
   }
 
   // default: students BANBEIS census
-  const students = await prisma.student.findMany({
+  const students = await db.student.findMany({
     where: { tenantId: tid, deletedAt: null },
     include: {
       currentClass: { select: { name: true, nameBn: true } },

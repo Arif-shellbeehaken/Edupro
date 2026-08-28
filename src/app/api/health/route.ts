@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/infrastructure/database/prisma";
+import { logger, newRequestId } from "@/lib/logger";
 
 /**
  * GET /api/health
  * Liveness + DB readiness for load balancers / Docker / K8s.
  */
-export async function GET() {
+export async function GET(req: Request) {
   const started = Date.now();
+  const requestId =
+    req.headers.get("x-request-id") || newRequestId();
+
   let db: "up" | "down" = "down";
   let dbMs = 0;
 
@@ -17,6 +21,7 @@ export async function GET() {
     db = "up";
   } catch {
     db = "down";
+    logger.warn("health_db_down", { requestId });
   }
 
   const status = db === "up" ? 200 : 503;
@@ -37,6 +42,7 @@ export async function GET() {
       status,
       headers: {
         "Cache-Control": "no-store",
+        "X-Request-Id": requestId,
       },
     }
   );

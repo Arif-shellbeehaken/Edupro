@@ -178,3 +178,41 @@ curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
 ```
 
 Schedule daily via system cron, GitHub Actions scheduled workflow, or cloud scheduler.
+
+
+---
+
+## Database connection pool
+
+Append to `DATABASE_URL`:
+
+```
+?connection_limit=10&pool_timeout=20&connect_timeout=10
+```
+
+| Deploy size | connection_limit (app) | Notes |
+|-------------|------------------------|-------|
+| Single 1GB  | 5–10 | Match Postgres `max_connections` |
+| 2–3 app replicas | 5 each | Use PgBouncer transaction mode |
+| Heavy read | set `DATABASE_URL_READ` | `getReadPrisma()` for reports/export |
+
+**PgBouncer** (recommended at scale):
+
+```
+DATABASE_URL=postgresql://user:pass@pgbouncer:6432/edupro?pgbouncer=true&connection_limit=20
+```
+
+Prisma migrate must hit primary directly (not through pooler in some setups).
+
+## Read replica
+
+1. Provision Postgres read replica (RDS / Cloud SQL / Patroni).
+2. Set `DATABASE_URL_READ` to replica URL.
+3. Use `import { getReadPrisma } from "@/infrastructure/database/prisma"` in report/export routes.
+4. Writes always use `prisma` (primary).
+
+## Structured logs
+
+- JSON lines via `@/lib/logger`
+- Every response includes `X-Request-Id`
+- Set `LOG_LEVEL=info` (or `debug` / `warn` / `error`)

@@ -1,9 +1,9 @@
 import { auth } from "@/infrastructure/auth/auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { newRequestId } from "@/lib/logger";
 
 /**
- * Auth + Route Protection + baseline security headers
+ * Auth + Route Protection + security headers + X-Request-Id
  */
 
 const publicExact = new Set(["/", "/login"]);
@@ -21,7 +21,8 @@ function isPublic(pathname: string) {
   );
 }
 
-function withSecurityHeaders(res: NextResponse) {
+function withSecurityHeaders(res: NextResponse, requestId: string) {
+  res.headers.set("X-Request-Id", requestId);
   res.headers.set("X-Frame-Options", "SAMEORIGIN");
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -30,7 +31,6 @@ function withSecurityHeaders(res: NextResponse) {
     "camera=(), microphone=(), geolocation=()"
   );
   res.headers.set("X-DNS-Prefetch-Control", "on");
-  // Soft CSP — allow self + inline for Next; tighten later with nonces
   if (!res.headers.has("Content-Security-Policy")) {
     res.headers.set(
       "Content-Security-Policy",
@@ -44,6 +44,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
   const isLoggedIn = !!session?.user;
+  const requestId = req.headers.get("x-request-id") || newRequestId();
 
   if (isPublic(pathname)) {
     if (isLoggedIn && pathname === "/login") {
@@ -51,40 +52,43 @@ export default auth((req) => {
         ? "/super-admin/dashboard"
         : "/tenant/admin/dashboard";
       return withSecurityHeaders(
-        NextResponse.redirect(new URL(dest, req.url))
+        NextResponse.redirect(new URL(dest, req.url)),
+        requestId
       );
     }
-    return withSecurityHeaders(NextResponse.next());
+    return withSecurityHeaders(NextResponse.next(), requestId);
   }
 
   if (!isLoggedIn) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
-    return withSecurityHeaders(NextResponse.redirect(loginUrl));
+    return withSecurityHeaders(NextResponse.redirect(loginUrl), requestId);
   }
 
   if (pathname.startsWith("/super-admin")) {
     if (!session.user.isSuperAdmin) {
       return withSecurityHeaders(
-        NextResponse.redirect(new URL("/tenant/admin/dashboard", req.url))
+        NextResponse.redirect(new URL("/tenant/admin/dashboard", req.url)),
+        requestId
       );
     }
-    return withSecurityHeaders(NextResponse.next());
+    return withSecurityHeaders(NextResponse.next(), requestId);
   }
 
   if (pathname.startsWith("/tenant")) {
     if (session.user.isSuperAdmin) {
-      return withSecurityHeaders(NextResponse.next());
+      return withSecurityHeaders(NextResponse.next(), requestId);
     }
     if (!session.user.tenantId) {
       return withSecurityHeaders(
-        NextResponse.redirect(new URL("/login", req.url))
+        NextResponse.redirect(new URL("/login", req.url)),
+        requestId
       );
     }
-    return withSecurityHeaders(NextResponse.next());
+    return withSecurityHeaders(NextResponse.next(), requestId);
   }
 
-  return withSecurityHeaders(NextResponse.next());
+  return withSecurityHeaders(NextResponse.next(), requestId);
 });
 
 export const config = {
