@@ -6,20 +6,32 @@ final messagesRepositoryProvider = Provider(
   (ref) => MessagesRepository(ref.watch(apiClientProvider)),
 );
 
-final messagesControllerProvider =
-    AsyncNotifierProvider.autoDispose<MessagesController, List<Map<String, dynamic>>>(
-  MessagesController.new,
-);
+final messagesControllerProvider = AsyncNotifierProvider.autoDispose<
+    MessagesController, List<Map<String, dynamic>>>(MessagesController.new);
 
 class MessagesController
     extends AutoDisposeAsyncNotifier<List<Map<String, dynamic>>> {
   @override
-  Future<List<Map<String, dynamic>>> build() {
-    return ref.read(messagesRepositoryProvider).list();
-  }
+  Future<List<Map<String, dynamic>>> build() =>
+      ref.read(messagesRepositoryProvider).list();
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => ref.read(messagesRepositoryProvider).list());
+    state = await AsyncValue.guard(
+      () => ref.read(messagesRepositoryProvider).list(),
+    );
+  }
+
+  Future<void> send({
+    required String recipient,
+    required String body,
+    String channel = 'SMS',
+  }) async {
+    await ref.read(messagesRepositoryProvider).send(
+          recipient: recipient,
+          body: body,
+          channel: channel,
+        );
+    await refresh();
   }
 }
