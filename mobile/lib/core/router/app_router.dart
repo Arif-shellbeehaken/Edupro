@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:edupro_mobile/features/auth/presentation/auth_provider.dart';
 import 'package:edupro_mobile/features/auth/presentation/login_page.dart';
 import 'package:edupro_mobile/features/attendance/presentation/attendance_page.dart';
+import 'package:edupro_mobile/features/attendance/presentation/mark_attendance_page.dart';
 import 'package:edupro_mobile/features/attendance/presentation/attendance_mark_page.dart';
 import 'package:edupro_mobile/features/parent/presentation/parent_login_page.dart';
 import 'package:edupro_mobile/features/parent/presentation/parent_home_page.dart';
@@ -75,6 +76,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/attendance',
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: AttendancePage()),
+          ),
+          GoRoute(
+            path: '/attendance/mark',
+            builder: (_, __) => const MarkAttendancePage(),
           ),
           GoRoute(
             path: '/attendance/mark',

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:edupro_mobile/core/utils/async_value_ui.dart';
 import 'package:edupro_mobile/features/attendance/data/attendance_repository.dart';
 import 'package:edupro_mobile/features/attendance/presentation/attendance_provider.dart';
+import 'package:edupro_mobile/features/attendance/presentation/mark_attendance_page.dart';
 
 class AttendancePage extends ConsumerWidget {
   const AttendancePage({super.key});

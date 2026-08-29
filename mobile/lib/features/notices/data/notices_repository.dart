@@ -53,4 +53,33 @@ class NoticesRepository {
       throwMapped(e, st);
     }
   }
+
+  Future<void> create({
+    required String title,
+    required String body,
+    String? titleBn,
+    String audience = 'ALL',
+  }) async {
+    try {
+      await _api.dio.post(
+        '/api/v1/notices',
+        data: {
+          'title': title,
+          'titleBn': titleBn,
+          'body': body,
+          'audience': audience,
+        },
+      );
+    } on Failure {
+      rethrow;
+    } on DioException catch (e, st) {
+      final f = e.error is Failure
+          ? e.error as Failure
+          : ExceptionMapper.fromDio(e);
+      ErrorLogger.log(f, st, 'NoticesRepository.create');
+      throw f;
+    } catch (e, st) {
+      throwMapped(e, st);
+    }
+  }
 }

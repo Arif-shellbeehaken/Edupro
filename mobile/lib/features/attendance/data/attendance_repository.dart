@@ -58,7 +58,8 @@ class AttendanceRepository {
     }
   }
 
-  Future<({int marked, int smsSent})> mark({
+  /// Mark attendance for many students.
+  Future<({int count, int smsSent})> mark({
     required String date,
     required List<({String studentId, String status})> entries,
     bool notifyAbsent = false,
@@ -68,15 +69,17 @@ class AttendanceRepository {
         '/api/v1/attendance',
         data: {
           'date': date,
-          'entries': entries
-              .map((e) => {'studentId': e.studentId, 'status': e.status})
-              .toList(),
           'notifyAbsent': notifyAbsent,
+          'entries': [
+            for (final e in entries)
+              {'studentId': e.studentId, 'status': e.status},
+          ],
         },
       );
+      final data = res.data ?? {};
       return (
-        marked: (res.data?['marked'] as int?) ?? entries.length,
-        smsSent: (res.data?['smsSent'] as int?) ?? 0,
+        count: (data['count'] as num?)?.toInt() ?? entries.length,
+        smsSent: (data['smsSent'] as num?)?.toInt() ?? 0,
       );
     } on Failure {
       rethrow;

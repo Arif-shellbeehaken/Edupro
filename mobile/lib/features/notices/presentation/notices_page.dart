@@ -1,11 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:edupro_mobile/core/di/providers.dart';
+import 'package:edupro_mobile/core/error/failures.dart';
 import 'package:edupro_mobile/core/utils/async_value_ui.dart';
+import 'package:edupro_mobile/core/utils/messenger.dart';
 import 'package:edupro_mobile/features/notices/data/notices_repository.dart';
 import 'package:edupro_mobile/features/notices/presentation/notices_provider.dart';
 
 class NoticesPage extends ConsumerWidget {
   const NoticesPage({super.key});
+
+  Future<void> _create(BuildContext context, WidgetRef ref) async {
+    final titleCtrl = TextEditingController();
+    final bodyCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('নতুন নোটিশ'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(labelText: 'শিরোনাম *'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: bodyCtrl,
+                maxLines: 4,
+                decoration: const InputDecoration(labelText: 'বিবরণ *'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('বাতিল'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('প্রকাশ'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    if (titleCtrl.text.trim().isEmpty || bodyCtrl.text.trim().isEmpty) {
+      showAppError(const ValidationFailure('শিরোনাম ও বিবরণ দিন'));
+      return;
+    }
+    try {
+      await ref.read(noticesRepositoryProvider).create(
+            title: titleCtrl.text.trim(),
+            body: bodyCtrl.text.trim(),
+          );
+      ref.invalidate(noticesControllerProvider);
+      showAppSuccess('নোটিশ প্রকাশ হয়েছে');
+    } catch (e) {
+      showAppError(e is Failure ? e : UnknownFailure(e.toString()));
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -13,6 +69,10 @@ class NoticesPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('নোটিশ')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _create(context, ref),
+        child: const Icon(Icons.add),
+      ),
       body: AsyncValueWidget<List<NoticeDto>>(
         value: async,
         onRetry: () => ref.read(noticesControllerProvider.notifier).refresh(),
