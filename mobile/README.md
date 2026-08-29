@@ -79,3 +79,15 @@ Bottom nav: Home · Modules hub · Students · Notices · Profile.
 Feature screens (read lists via `/api/v1/*`): fees, exams, homework, hifz, timetable, library, hostel, transport, staff, messages, certificates, donations, inventory.
 
 Each module: `Repository` → `AsyncNotifier` → `ModuleListPage` + error/retry.
+
+
+## Complete modules (read + write)
+
+| Module | List | Create / Action |
+|--------|------|-----------------|
+| Attendance | ✅ | ✅ Mark + SMS |
+| Notices | ✅ | ✅ Publish |
+| Fees | ✅ | ✅ Record payment |
+| Homework | ✅ | ✅ Assign |
+| Hifz | ✅ | ✅ Daily entry |
+| Students | ✅ | Search + filter |

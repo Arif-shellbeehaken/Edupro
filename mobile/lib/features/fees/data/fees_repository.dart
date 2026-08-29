@@ -1,5 +1,9 @@
 import 'package:edupro_mobile/core/network/api_client.dart';
 import 'package:edupro_mobile/core/network/list_fetch.dart';
+import 'package:dio/dio.dart';
+import 'package:edupro_mobile/core/error/error_logger.dart';
+import 'package:edupro_mobile/core/error/exception_mapper.dart';
+import 'package:edupro_mobile/core/error/failures.dart';
 
 class FeesRepository {
   FeesRepository(this._api);
@@ -7,4 +11,31 @@ class FeesRepository {
 
   Future<List<Map<String, dynamic>>> list() =>
       fetchList(_api, '/api/v1/invoices', query: {'take': 50}, logTag: 'fees');
+
+  Future<void> pay({
+    required String invoiceId,
+    required num amount,
+    String method = 'CASH',
+    String? notes,
+  }) async {
+    try {
+      await _api.dio.post(
+        '/api/v1/invoices/$invoiceId/pay',
+        data: {
+          'amount': amount,
+          'method': method,
+          if (notes != null) 'notes': notes,
+        },
+      );
+    } on Failure {
+      rethrow;
+    } on DioException catch (e, st) {
+      final f =
+          e.error is Failure ? e.error as Failure : ExceptionMapper.fromDio(e);
+      ErrorLogger.log(f, st, 'FeesRepository.pay');
+      throw f;
+    } catch (e, st) {
+      throwMapped(e, st);
+    }
+  }
 }

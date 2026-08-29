@@ -22,4 +22,17 @@ class FeesController
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => ref.read(feesRepositoryProvider).list());
   }
+
+  Future<void> pay({
+    required String invoiceId,
+    required num amount,
+    String method = 'CASH',
+  }) async {
+    await ref.read(feesRepositoryProvider).pay(
+          invoiceId: invoiceId,
+          amount: amount,
+          method: method,
+        );
+    await refresh();
+  }
 }

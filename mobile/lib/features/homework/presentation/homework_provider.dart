@@ -6,20 +6,34 @@ final homeworkRepositoryProvider = Provider(
   (ref) => HomeworkRepository(ref.watch(apiClientProvider)),
 );
 
-final homeworkControllerProvider =
-    AsyncNotifierProvider.autoDispose<HomeworkController, List<Map<String, dynamic>>>(
-  HomeworkController.new,
-);
+final homeworkControllerProvider = AsyncNotifierProvider.autoDispose<
+    HomeworkController, List<Map<String, dynamic>>>(HomeworkController.new);
 
 class HomeworkController
     extends AutoDisposeAsyncNotifier<List<Map<String, dynamic>>> {
   @override
-  Future<List<Map<String, dynamic>>> build() {
-    return ref.read(homeworkRepositoryProvider).list();
-  }
+  Future<List<Map<String, dynamic>>> build() =>
+      ref.read(homeworkRepositoryProvider).list();
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => ref.read(homeworkRepositoryProvider).list());
+    state = await AsyncValue.guard(
+      () => ref.read(homeworkRepositoryProvider).list(),
+    );
+  }
+
+  Future<void> create({
+    required String title,
+    String? description,
+    String? subjectName,
+    String? dueDate,
+  }) async {
+    await ref.read(homeworkRepositoryProvider).create(
+          title: title,
+          description: description,
+          subjectName: subjectName,
+          dueDate: dueDate,
+        );
+    await refresh();
   }
 }
