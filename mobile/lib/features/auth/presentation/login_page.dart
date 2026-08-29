@@ -137,6 +137,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             )
                           : const Text('লগইন'),
                     ),
+                    TextButton(
+                      onPressed: () => context.go('/parent-login'),
+                      child: const Text('অভিভাবক OTP লগইন'),
+                    ),
                   ],
                 ),
               ),

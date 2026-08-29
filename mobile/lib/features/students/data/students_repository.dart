@@ -6,6 +6,7 @@ import 'package:edupro_mobile/core/network/api_client.dart';
 
 class StudentDto {
   StudentDto({
+    required this.id,
     required this.studentId,
     required this.name,
     this.nameBn,
@@ -14,6 +15,7 @@ class StudentDto {
     this.guardianPhone,
   });
 
+  final String id;
   final String studentId;
   final String name;
   final String? nameBn;
@@ -22,6 +24,7 @@ class StudentDto {
   final String? guardianPhone;
 
   factory StudentDto.fromJson(Map<String, dynamic> j) => StudentDto(
+        id: j['id']?.toString() ?? '',
         studentId: j['studentId']?.toString() ?? '',
         name: j['name']?.toString() ?? '',
         nameBn: j['nameBn']?.toString(),

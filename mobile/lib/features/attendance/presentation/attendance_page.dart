@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:edupro_mobile/core/utils/async_value_ui.dart';
 import 'package:edupro_mobile/features/attendance/data/attendance_repository.dart';
@@ -13,6 +14,11 @@ class AttendancePage extends ConsumerWidget {
     final date = ref.watch(attendanceDateProvider);
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/attendance/mark'),
+        icon: const Icon(Icons.edit_calendar),
+        label: const Text('মার্ক'),
+      ),
       appBar: AppBar(
         title: const Text('উপস্থিতি'),
         actions: [

@@ -57,4 +57,38 @@ class AttendanceRepository {
       throwMapped(e, st);
     }
   }
+
+  Future<({int marked, int smsSent})> mark({
+    required String date,
+    required List<({String studentId, String status})> entries,
+    bool notifyAbsent = false,
+  }) async {
+    try {
+      final res = await _api.dio.post<Map<String, dynamic>>(
+        '/api/v1/attendance',
+        data: {
+          'date': date,
+          'entries': entries
+              .map((e) => {'studentId': e.studentId, 'status': e.status})
+              .toList(),
+          'notifyAbsent': notifyAbsent,
+        },
+      );
+      return (
+        marked: (res.data?['marked'] as int?) ?? entries.length,
+        smsSent: (res.data?['smsSent'] as int?) ?? 0,
+      );
+    } on Failure {
+      rethrow;
+    } on DioException catch (e, st) {
+      final f = e.error is Failure
+          ? e.error as Failure
+          : ExceptionMapper.fromDio(e);
+      ErrorLogger.log(f, st, 'AttendanceRepository.mark');
+      throw f;
+    } catch (e, st) {
+      ErrorLogger.log(e, st, 'AttendanceRepository.mark');
+      throwMapped(e, st);
+    }
+  }
 }

@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:edupro_mobile/features/auth/presentation/auth_provider.dart';
 import 'package:edupro_mobile/features/auth/presentation/login_page.dart';
 import 'package:edupro_mobile/features/attendance/presentation/attendance_page.dart';
+import 'package:edupro_mobile/features/attendance/presentation/attendance_mark_page.dart';
+import 'package:edupro_mobile/features/parent/presentation/parent_login_page.dart';
+import 'package:edupro_mobile/features/parent/presentation/parent_home_page.dart';
 import 'package:edupro_mobile/features/certificates/presentation/certificates_page.dart';
 import 'package:edupro_mobile/features/donations/presentation/donations_page.dart';
 import 'package:edupro_mobile/features/exams/presentation/exams_page.dart';
@@ -34,12 +37,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final user = auth.valueOrNull;
       final loading = auth.isLoading;
       if (loading) return null;
-      if (user == null && !loggingIn) return '/login';
-      if (user != null && loggingIn) return '/home';
+      final isParentLogin = state.matchedLocation == '/parent-login';
+      if (user == null && !loggingIn && !isParentLogin) return '/login';
+      if (user != null && (loggingIn || isParentLogin)) {
+        return user.role == 'PARENT' ? '/parent-home' : '/home';
+      }
+      if (user != null &&
+          user.role == 'PARENT' &&
+          !state.matchedLocation.startsWith('/parent')) {
+        return '/parent-home';
+      }
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
+      GoRoute(path: '/parent-login', builder: (_, __) => const ParentLoginPage()),
+      GoRoute(path: '/parent-home', builder: (_, __) => const ParentHomePage()),
       ShellRoute(
         builder: (context, state, child) => HomeShell(child: child),
         routes: [
@@ -62,6 +75,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/attendance',
             pageBuilder: (_, __) =>
                 const NoTransitionPage(child: AttendancePage()),
+          ),
+          GoRoute(
+            path: '/attendance/mark',
+            builder: (_, __) => const AttendanceMarkPage(),
           ),
           GoRoute(
             path: '/notices',
